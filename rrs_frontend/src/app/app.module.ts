@@ -10,3 +10,4 @@ import { StoreModule } from '@ngrx/store';
   bootstrap: [AppComponent],
 })
 export class AppModule {}
+
