@@ -66,6 +66,17 @@ public class SessionService {
 
         return playerOverviewDtoMapper.map(sessionPlayers);
     }
+    public List<PlayerDto> getPlayers2() {
+        if (!gameState.equals(RUNNING)) {
+            throw new IllegalStateException("get players failed - session is not running");
+        }
+
+        List<PlayerDto> playerDtos = new ArrayList<>();
+        for (Player player : sessionPlayers) {
+            playerDtos.add(playerDtoMapper.map(player));
+        }
+        return playerDtos;
+    }
 
     public boolean startSession() {
         if (CollectionUtils.isEmpty(sessionPlayers)) {
