@@ -11,4 +11,5 @@ public class Station {
     Integer requierdEmployes = 3;
     Integer requiredPower = 4;
     Integer trainCapacity = 5; // Default capacity
+    Integer railCapacity = 5;
 }

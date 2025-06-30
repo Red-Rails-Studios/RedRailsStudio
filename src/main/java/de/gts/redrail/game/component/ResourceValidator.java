@@ -56,11 +56,24 @@ public class ResourceValidator {
     public boolean canBuyNewTrain(Player player) {
         return player.getResourceRack().getDbCoin() >= NEW_TRAIN;
     }
+    public Integer getFreeEmployees(Player player) {
+        Integer freeEmployees = player.getResourceRack().getEmployees();
+        for (Train train : player.getTrains()) {
+            freeEmployees -= train.getRequiredEmployees();
+        }
+        for (Station station : player.getStations()) {
+            freeEmployees -= station.getRequierdEmployes();
+        }
+        return freeEmployees;
+    }
 
     public boolean canUpgradeTrain(Player player, String trainUid) {
         Optional<Train> trainOptional = TrainUtil.getTrainByUid(player.getTrains(), trainUid);
         if (trainOptional.isEmpty()) {
             return false;
+        }
+        if(train.getLevel() >= 10) {
+            return false; // Assuming level 5 is the max level for a train
         }
 
         return player.getResourceRack().getDbCoin() >= (trainOptional.get().getLevel() + 1) * UPGRADE_TRAIN_FACTOR;

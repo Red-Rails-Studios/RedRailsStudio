@@ -93,9 +93,20 @@ public class PlayComponentsStore {
         if (stationOptional.isEmpty()) {
             return new ActionResult(false, ACTION_FAILED_NO_MATCH_PLAY_COMPONENT);
         }
+        if(resourceValidator.getFreeEmployees(player) < stationOptional.get().getRequierdEmployes()+2) {
+            return new ActionResult(false, NOT_ENOUGH_EMPLOYEES);
+            
+        }
+        if(stationOptional.get().getLevel() >= 10) {
+            return new ActionResult(false, ACTION_FAILED_MAX_LEVEL_REACHED);
+        }
 
         Station station = stationOptional.get();
         Integer level = station.getLevel() + 1;
+        Integer trainCapacity = station.getTrainCapacity() + 2; // Assuming each upgrade increases train capacity by 1
+        Integer railCapacity = station.getRailCapacity() + 2; // Assuming each upgrade increases rail capacity by 1
+        station.setTrainCapacity(trainCapacity);
+        station.setRailCapacity(railCapacity);
         station.setLevel(level);
 
         Integer dbCoin = player.getResourceRack().getDbCoin();
@@ -137,10 +148,14 @@ public class PlayComponentsStore {
         if (trainOptional.isEmpty()) {
             return new ActionResult(false, ACTION_FAILED_NO_MATCH_PLAY_COMPONENT);
         }
+        
 
         Train train = trainOptional.get();
         Integer level = train.getLevel() + 1;
+        Integer capacity = train.getCapacity() + 2; 
         train.setLevel(level);
+        train.setCapacity(capacity);
+    
 
         Integer dbCoin = player.getResourceRack().getDbCoin();
         player.getResourceRack().setDbCoin(dbCoin - (level * UPGRADE_RAIL_FACTOR));

@@ -240,6 +240,7 @@ public class SessionService {
         if (playerOptional.isEmpty()) {
             return new ActionResult(false, ACTION_FAILED_NO_MATCH_PLAYER);
         }
+        
 
         resourceCalculator.calculateResource(List.of(playerOptional.get()));
 

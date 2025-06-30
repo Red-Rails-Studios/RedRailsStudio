@@ -27,5 +27,6 @@ public interface ResponseText {
     String GET_RESOURCE_FAILED_NO_MATCH_PLAYER = "get resource failed - no player matched uid";
     String GET_RESOURCE_FAILED_NO_MATCH_PLAY_COMPONENT = "get resource failed - no play component matched uid";
     String ACTION_FAILED_NO_TRAIN_CAPACITY_LEFT = "action failed - Your stations have no train capacity left";
-
+    String ACTION_FAILED_MAX_LEVEL_REACHED = "action failed - max level reached for this play component";
+    String NOT_ENOUGH_EMPLOYEES = "action failed - not enough employees available for this action";
 }

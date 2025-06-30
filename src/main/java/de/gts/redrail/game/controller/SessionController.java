@@ -99,7 +99,16 @@ public class SessionController {
 
         return ResponseEntity.ok(new SessionEndResponseDto(players, duration).toString());
     }
+     @PatchMapping("/session/{sessionName}/kill")
+    public ResponseEntity<String> killSession(@PathVariable(name = "sessionName")  String sessionName) {
+        if (!sessionService.isSessionNameMatching(sessionName)) {
+            return ResponseEntity.noContent().build();
+        }
 
+        sessionService.killSession();
+
+        return ResponseEntity.ok("Session killed successfully");
+    }
     @GetMapping("/session")
     public ResponseEntity<SessionOverviewDto> getSessionOverview() {
         return ResponseEntity.ok(sessionService.createCurrentSessionOverview());
@@ -185,16 +194,7 @@ public class SessionController {
         return handleActionResult(actionResult);
         //TODO: Es sollte die UID der gekauften Schiene zurückgegeben werden.
     }
-    @PatchMapping("/session/{sessionName}/kill")
-    public ResponseEntity<String> killSession(@PathVariable(name = "sessionName")  String sessionName) {
-        if (!sessionService.isSessionNameMatching(sessionName)) {
-            return ResponseEntity.noContent().build();
-        }
-
-        sessionService.killSession();
-
-        return ResponseEntity.ok("Session killed successfully");
-    }
+   
 
     @PatchMapping("/session/{sessionName}/player/{playerUid}/rail/{railUid}/upgrade")
     public ResponseEntity<String> upgradeRail(@PathVariable(name = "sessionName")  String sessionName, @PathVariable(name = "playerUid")  String playerUid, @PathVariable(name = "railUid")  String railUid) {

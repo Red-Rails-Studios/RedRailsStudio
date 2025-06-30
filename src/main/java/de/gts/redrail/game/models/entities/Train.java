@@ -10,5 +10,6 @@ public class Train {
     Integer level;
     Integer requiredEmployees = 2;
     Integer requiredPower = 1;
+    Integer capacity = 2;
     
 }
