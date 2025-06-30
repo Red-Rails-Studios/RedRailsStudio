@@ -38,7 +38,7 @@ public class PlayComponentsStore {
         player.getRails().add(rail);
 
         Integer dbCoin = player.getResourceRack().getDbCoin();
-        player.getResourceRack().setDbCoin(dbCoin - NEW_RAIL);
+        player.getResourceRack().setDbCoin(dbCoin - (player.getRails().size()*NEW_RAIL)); 
 
         return new ActionResult(true, BOUGHT_NEW_PLAY_COMPONENT);
         // The method returns an ActionResult indicating success and the message for a new rail purchase
@@ -57,6 +57,7 @@ public class PlayComponentsStore {
 
         Rail rail = railOptional.get();
         Integer level = rail.getLevel() + 1;
+        rail.setRequiredTime(rail.getRequiredTime() - 1); 
         rail.setLevel(level);
 
         Integer dbCoin = player.getResourceRack().getDbCoin();

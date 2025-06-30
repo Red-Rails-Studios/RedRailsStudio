@@ -8,4 +8,5 @@ import lombok.NoArgsConstructor;
 public class Rail {
     String uId;
     Integer level;
+    Integer requiredTime = 10;
 }
