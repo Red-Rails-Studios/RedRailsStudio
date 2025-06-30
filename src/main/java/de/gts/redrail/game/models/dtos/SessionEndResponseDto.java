@@ -12,10 +12,10 @@ import lombok.NoArgsConstructor;
 public class SessionEndResponseDto {
     private long duration;
    
-    private List<PlayerOverviewDto> players;
+    private List<PlayerDto> players;
 
 
-    public SessionEndResponseDto(List<PlayerOverviewDto> players, long duration) {
+    public SessionEndResponseDto(List<PlayerDto> players, long duration) {
             this.players = players;
             this.duration = duration;
     }

@@ -93,7 +93,7 @@ public class SessionController {
             return ResponseEntity.badRequest().body("Session is not running");
         }
 
-        List<PlayerOverviewDto> players = sessionService.getPlayers();  
+        List<PlayerDto> players = sessionService.getPlayers2();  
         long duration = gameClock.getSessionDurationInMinutes();
 
         return ResponseEntity.ok(new SessionEndResponseDto(players, duration).toString());
