@@ -92,8 +92,9 @@ public class SessionController {
         if (!sessionService.getGameState().equals(GameStateEnum.RUNNING)) {
             return ResponseEntity.badRequest().body("Session is not running");
         }
-
-        List<PlayerDto> players = sessionService.getPlayers2();  
+        // Get players BEFORE ending the session
+        List<PlayerDto> players = sessionService.getPlayers2();
+        sessionService.endSession();
         long duration = gameClock.getSessionDurationInMinutes();
 
         return ResponseEntity.ok(new SessionEndResponseDto(players, duration).toString());
