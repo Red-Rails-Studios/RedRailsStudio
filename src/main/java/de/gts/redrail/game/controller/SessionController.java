@@ -29,11 +29,13 @@ import de.gts.redrail.game.models.entities.ActionResult;
 import de.gts.redrail.game.service.SessionService;
 import lombok.RequiredArgsConstructor;
 import de.gts.redrail.game.models.dtos.SessionEndResponseDto;
+import de.gts.redrail.game.component.GameClock;
 @RestController
 @RequiredArgsConstructor
 public class SessionController {
 
     public final SessionService sessionService;
+    public final GameClock gameClock;
 
     @PostMapping("/session/player/{playerUid}/resource")
     public ResponseEntity<String> getResource(@PathVariable(name = "playerUid")  String playerUid) {
@@ -91,9 +93,10 @@ public class SessionController {
             return ResponseEntity.badRequest().body("Session is not running");
         }
 
-        List<PlayerOverviewDto> players = sessionService.getPlayers();
+        List<PlayerOverviewDto> players = sessionService.getPlayers();  
+        long duration = gameClock.getSessionDurationInMinutes();
 
-        return ResponseEntity.ok(new SessionEndResponseDto(players).toString());
+        return ResponseEntity.ok(new SessionEndResponseDto(players, duration).toString());
     }
 
     @GetMapping("/session")

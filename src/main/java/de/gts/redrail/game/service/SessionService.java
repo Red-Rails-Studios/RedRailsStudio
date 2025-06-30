@@ -1,5 +1,6 @@
 package de.gts.redrail.game.service;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -7,7 +8,6 @@ import java.util.UUID;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
-import java.time.Duration;
 
 import de.gts.redrail.game.component.GameClock;
 import de.gts.redrail.game.component.PlayComponentsStore;
@@ -79,9 +79,6 @@ public class SessionService {
     }
 
     public long endSession() {
-    if (gameState.equals(NOT_CREATED) || gameState.equals(NOT_STARTED)) {
-            throw new IllegalStateException("end session failed - session is not running");
-        }
         gameState = FINISHED;
         sessionClock.endClock();
     return Duration.between(sessionClock.getStarted(), sessionClock.getEnded()).toMinutes();
