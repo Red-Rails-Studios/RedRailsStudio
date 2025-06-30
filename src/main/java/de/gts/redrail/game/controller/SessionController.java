@@ -87,7 +87,7 @@ public class SessionController {
             return ResponseEntity.noContent().build();
         }
 
-        sessionService.endSession();
+        long gameDuration = sessionService.endSession();
 
         return ResponseEntity.ok(END_SESSION);
     }

@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
+import java.time.Duration;
 
 import de.gts.redrail.game.component.GameClock;
 import de.gts.redrail.game.component.PlayComponentsStore;
@@ -18,7 +19,6 @@ import static de.gts.redrail.game.constants.GameStateEnum.NOT_STARTED;
 import static de.gts.redrail.game.constants.GameStateEnum.RUNNING;
 import static de.gts.redrail.game.constants.ResponseText.ACTION_FAILED_NO_MATCH_PLAYER;
 import static de.gts.redrail.game.constants.ResponseText.ACTION_FAILED_NO_TRAIN_CAPACITY_LEFT;
-
 import de.gts.redrail.game.mappers.dtos.PlayerDtoMapper;
 import de.gts.redrail.game.mappers.dtos.PlayerOverviewDtoMapper;
 import de.gts.redrail.game.mappers.entities.PlayerMapper;
@@ -78,9 +78,13 @@ public class SessionService {
         return true;
     }
 
-    public void endSession() {
+    public long endSession() {
+    if (gameState.equals(NOT_CREATED) || gameState.equals(NOT_STARTED)) {
+            throw new IllegalStateException("end session failed - session is not running");
+        }
         gameState = FINISHED;
         sessionClock.endClock();
+    return Duration.between(sessionClock.getStarted(), sessionClock.getEnded()).toMinutes();
     }
 
     public SessionOverviewDto createCurrentSessionOverview() {
