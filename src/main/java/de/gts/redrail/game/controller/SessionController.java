@@ -37,7 +37,7 @@ public class SessionController {
     public final SessionService sessionService;
     public final GameClock gameClock;
 
-    @PostMapping("/session/player/{playerUid}/resource")
+    @PostMapping("/session/{sessionName}/player/{playerUid}/resource")
     public ResponseEntity<String> getResource(@PathVariable(name = "playerUid")  String playerUid) {
         if (!sessionService.getGameState().equals(GameStateEnum.RUNNING)) {
             return ResponseEntity.badRequest().body(GET_RESOURCE_FAILED_SESSION_IS_NOT_RUNNING);
