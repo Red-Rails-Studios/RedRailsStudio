@@ -28,7 +28,7 @@ import de.gts.redrail.game.models.dtos.SessionOverviewDto;
 import de.gts.redrail.game.models.entities.ActionResult;
 import de.gts.redrail.game.service.SessionService;
 import lombok.RequiredArgsConstructor;
-
+import de.gts.redrail.game.models.dtos.SessionEndResponseDto;
 @RestController
 @RequiredArgsConstructor
 public class SessionController {
@@ -87,9 +87,13 @@ public class SessionController {
             return ResponseEntity.noContent().build();
         }
 
-        long gameDuration = sessionService.endSession();
+        if (!sessionService.getGameState().equals(GameStateEnum.RUNNING)) {
+            return ResponseEntity.badRequest().body("Session is not running");
+        }
 
-        return ResponseEntity.ok(END_SESSION);
+        List<PlayerOverviewDto> players = sessionService.getPlayers();
+
+        return ResponseEntity.ok(new SessionEndResponseDto(players).toString());
     }
 
     @GetMapping("/session")

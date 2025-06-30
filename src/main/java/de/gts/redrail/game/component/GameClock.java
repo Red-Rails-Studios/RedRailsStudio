@@ -33,4 +33,16 @@ public class GameClock {
         clock = null;
         ended = OffsetDateTime.now();
     }
+
+    /**
+     * Returns the duration in minutes between started and ended.
+     * If either is null, returns 0.
+     */
+    public long getSessionDurationInMinutes() {
+        if (started != null && ended != null) {
+            return java.time.Duration.between(started, ended).toMinutes();
+        }
+        return 0;
+    }
+
 }
