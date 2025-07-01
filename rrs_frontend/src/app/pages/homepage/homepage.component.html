@@ -1,1 +1,26 @@
-<p>homepage works!</p>
+<img
+    src="assets/tmp_b4313719-be33-4e90-b882-c2a8b4925a9a.jpeg"
+    class="main-menu-img"
+/>
+
+<div class="menu-overlay">
+    <div *ngIf="!showOptions">
+        <input
+            type="text"
+            class="menu-input"
+            [(ngModel)]="inputValue"
+            placeholder="Nickname" />
+        <button
+            class="menu-button"
+            [disabled]="inputValue.length < 3"
+            (click)="showOptions = true"
+        >
+            Start Game
+        </button>
+    </div>
+    <div *ngIf="showOptions">
+        <button class="menu-button" (click)="startMultiplayer()">Start Multiplayer</button>
+        <button class="menu-button" (click)="joinMultiplayer()">Join Multiplayer</button>
+        <button class="menu-button" (click)="startSingleplayer()">Start Singleplayer</button>
+    </div>
+</div>
