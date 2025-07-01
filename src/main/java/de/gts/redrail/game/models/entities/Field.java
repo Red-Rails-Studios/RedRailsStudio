@@ -13,4 +13,6 @@ public class Field {
     private Integer x;
     private Integer y;
     private boolean isOccupied = false;
+
+    
 }

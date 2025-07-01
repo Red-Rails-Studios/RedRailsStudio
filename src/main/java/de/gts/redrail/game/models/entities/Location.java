@@ -9,6 +9,6 @@ import lombok.Data;
 public class Location {
     private LocationEnum type;  
     private String name;
-    private Integer population;
+    private Integer customers;
     private Station station;
 }
