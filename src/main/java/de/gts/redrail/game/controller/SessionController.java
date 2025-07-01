@@ -93,7 +93,7 @@ public class SessionController {
             return ResponseEntity.badRequest().body("Session is not running");
         }
         // Get players BEFORE ending the session
-        List<PlayerDto> players = sessionService.getPlayers2();
+        List<PlayerDto> players = sessionService.getAllPlayer();
         sessionService.endSession();
         long duration = gameClock.getSessionDurationInMinutes();
 
@@ -149,7 +149,7 @@ public class SessionController {
             return ResponseEntity.badRequest().build();
         }
 
-        List<PlayerOverviewDto> players = sessionService.getPlayers();
+        List<PlayerOverviewDto> players = sessionService.getAllPlayerOverview();
 
         if (players != null && !players.isEmpty()) {
             return ResponseEntity.ok(players);

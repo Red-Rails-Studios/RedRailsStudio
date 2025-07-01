@@ -59,22 +59,24 @@ public class SessionService {
         gameState = NOT_CREATED;
         sessionClock.endClock();
     }
-    public List<PlayerOverviewDto> getPlayers() {
+    public List<PlayerOverviewDto> getAllPlayerOverview() {
         if (!gameState.equals(RUNNING)) {
             throw new IllegalStateException("get players failed - session is not running");
         }
 
         return playerOverviewDtoMapper.map(sessionPlayers);
     }
-    public List<PlayerDto> getPlayers2() {
+    public List<PlayerDto> getAllPlayer() {
         if (!gameState.equals(RUNNING)) {
             throw new IllegalStateException("get players failed - session is not running");
         }
 
         List<PlayerDto> playerDtos = new ArrayList<>();
+
         for (Player player : sessionPlayers) {
             playerDtos.add(playerDtoMapper.map(player));
         }
+
         return playerDtos;
     }
 
