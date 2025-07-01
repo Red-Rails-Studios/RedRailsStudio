@@ -53,10 +53,13 @@ public class PlayComponentsStore {
         if (railOptional.isEmpty()) {
             return new ActionResult(false, ACTION_FAILED_NO_MATCH_PLAY_COMPONENT);
         }
-
         Rail rail = railOptional.get();
+        if(rail.getLevel() >= 5) {
+            return new ActionResult(false, ACTION_FAILED_MAX_LEVEL_REACHED);
+        }   
+
+        
         Integer level = rail.getLevel() + 1;
-        rail.setRequiredTime(rail.getRequiredTime() - 1); 
         rail.setLevel(level);
 
         Integer dbCoin = player.getResourceRack().getDbCoin();
@@ -151,6 +154,9 @@ public class PlayComponentsStore {
         
 
         Train train = trainOptional.get();
+        if(train.getLevel() >= 10) {
+            return new ActionResult(false, ACTION_FAILED_MAX_LEVEL_REACHED);
+        }
         Integer level = train.getLevel() + 1;
         Integer capacity = train.getCapacity() + 2; 
         train.setLevel(level);
