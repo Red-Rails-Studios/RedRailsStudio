@@ -1,12 +1,14 @@
 package de.gts.redrail.game.service;
 
-import org.springframework.stereotype.Service;
-import lombok.RequiredArgsConstructor;
 import java.util.Random;
-import de.gts.redrail.game.models.entities.Map;
-import de.gts.redrail.game.models.entities.Location;
-import de.gts.redrail.game.constants.LocationEnum;
 
+import org.springframework.stereotype.Service;
+
+import de.gts.redrail.game.constants.LocationEnum;
+import de.gts.redrail.game.models.entities.Location;
+import de.gts.redrail.game.models.entities.Map;
+import lombok.RequiredArgsConstructor;
+import de.gts.redrail.game.models.entities.Station;
 @Service
 @RequiredArgsConstructor
 
@@ -41,9 +43,7 @@ public class MapGenerationService {
             return null;
         }
 
-        LocationEnum[] locationTypes = LocationEnum.values();
-        int randomIndex = random.nextInt(locationTypes.length);
-        LocationEnum randomType = locationTypes[randomIndex];
+        LocationEnum randomType = getRandomLocationType();
 
         Integer customers = 0;
         
@@ -64,7 +64,15 @@ public class MapGenerationService {
         
         String name = getRandomGermanCityName();
 
-        return new Location(randomType, name, customers, null);
+        Station pingpong = new Station(); 
+
+        return new Location(randomType, name, customers, pingpong);
+    }
+
+    private LocationEnum getRandomLocationType() {
+        LocationEnum[] locationTypes = LocationEnum.values();
+        int idx = random.nextInt(locationTypes.length);
+        return locationTypes[idx];
     }
 
     private String getRandomGermanCityName() {
