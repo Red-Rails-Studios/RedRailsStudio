@@ -1,6 +1,6 @@
 package de.gts.redrail.game.models.entities;
 
-import de.gts.redrail.game.models.entities.player;redrail.game.models.entities.player;
+import de.gts.redrail.game.models.entities.Player;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
