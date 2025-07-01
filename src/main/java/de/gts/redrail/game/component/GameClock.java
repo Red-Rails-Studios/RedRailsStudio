@@ -42,6 +42,7 @@ public class GameClock {
         if (started != null && ended != null) {
             return java.time.Duration.between(started, ended).toMinutes();
         }
+        
         return 0;
     }
 
