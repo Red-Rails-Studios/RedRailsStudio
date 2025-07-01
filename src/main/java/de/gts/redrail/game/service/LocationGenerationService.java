@@ -6,14 +6,12 @@ import org.springframework.stereotype.Service;
 
 import de.gts.redrail.game.constants.LocationEnum;
 import de.gts.redrail.game.models.entities.Location;
-import de.gts.redrail.game.models.entities.Map;
-import lombok.RequiredArgsConstructor;
 import de.gts.redrail.game.models.entities.Station;
+import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 
-public class MapGenerationService {
-    Map map = new Map();
+public class LocationGenerationService {
     Random random = new Random();
 
    private static final String[] GERMAN_CITIES = {
@@ -48,18 +46,10 @@ public class MapGenerationService {
         Integer customers = 0;
         
         switch (randomType) {
-            case VILLAGE:
-                customers = random.nextInt(100) + 50; // 50 to 150 customers
-                break;
-            case TOWN:
-                customers = random.nextInt(300) + 200; // 200 to 500 customers
-                break;
-            case CITY:
-                customers = random.nextInt(300) + 600; // 600 to 900 customers
-                break;
-            case METROPOLIS:
-                customers = random.nextInt(4000) + 1000; // 1000 to 5000 customers
-                break;
+            case VILLAGE -> customers = random.nextInt(100) + 50; // 50 to 150 customers
+            case TOWN -> customers = random.nextInt(300) + 200; // 200 to 500 customers
+            case CITY -> customers = random.nextInt(300) + 600; // 600 to 900 customers
+            case METROPOLIS -> customers = random.nextInt(4000) + 1000; // 1000 to 5000 customers
         }
         
         String name = getRandomGermanCityName();
