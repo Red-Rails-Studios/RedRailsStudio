@@ -41,7 +41,6 @@ public class PlayComponentsStore {
         player.getResourceRack().setDbCoin(dbCoin - (player.getRails().size()*NEW_RAIL)); 
 
         return new ActionResult(true, BOUGHT_NEW_PLAY_COMPONENT);
-        // The method returns an ActionResult indicating success and the message for a new rail purchase
     }
 
     public ActionResult upgradeRail(Player player, String railUid) {
