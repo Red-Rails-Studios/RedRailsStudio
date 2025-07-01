@@ -43,8 +43,6 @@ public class ResourceCalculator {
         player.getResourceRack().setDbCoin(dbCoins);
     }
 
-    
-
     private Integer calculateTrains(List<Train> trainList,List<Rail> railList, Long seconds) {
         Integer profit = 0;
 

@@ -24,6 +24,7 @@ public class GameClock {
         clock = started;
         nextInterval = clock.plusSeconds(RESOURCE_GENERATION_INTERVAL_IN_SECONDS);
     }
+    
     public void updateClock() {
         clock = OffsetDateTime.now();
         nextInterval = clock.plusSeconds(RESOURCE_GENERATION_INTERVAL_IN_SECONDS);

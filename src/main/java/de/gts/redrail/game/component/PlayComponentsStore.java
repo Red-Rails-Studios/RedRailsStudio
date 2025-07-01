@@ -119,7 +119,6 @@ public class PlayComponentsStore {
         return new ActionResult(true, BOUGHT_UPGRADE);
     }
 
-
     public ActionResult buyTrain(Player player) {
         if (!resourceValidator.canBuyNewTrain(player)) {
             return new ActionResult(false, CANT_AFFORD_NEW_PLAY_COMPONENT);

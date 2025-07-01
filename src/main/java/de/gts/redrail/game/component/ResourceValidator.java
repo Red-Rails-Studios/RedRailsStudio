@@ -56,6 +56,7 @@ public class ResourceValidator {
     public boolean canBuyNewTrain(Player player) {
         return player.getResourceRack().getDbCoin() >= NEW_TRAIN;
     }
+
     public Integer getFreeEmployees(Player player) {
         Integer freeEmployees = player.getResourceRack().getEmployees();
         for (Train train : player.getTrains()) {
@@ -94,6 +95,5 @@ public class ResourceValidator {
 
         return player.getResourceRack().getDbCoin() >= (stationOptional.get().getLevel() + 1) * UPGRADE_STATION_FACTOR;
     }
-    //TODO: In zukunft kann man die requiered Employees und Power von train und station nach Upgrade erhöhen, und in canUpgradeStation und canUpgradeTrain die neuen Werte abfragen, ob sie noch erfüllt sind.
     
 }
