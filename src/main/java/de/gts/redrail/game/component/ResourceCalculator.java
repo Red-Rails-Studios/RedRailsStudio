@@ -49,7 +49,7 @@ public class ResourceCalculator {
         Integer profit = 0;
 
         for (Train train : trainList) {
-            profit +=  (seconds.intValue() * (TRAIN_RESOURCE_GENERATION_FACTOR* train.getCapacity()));
+            profit +=  (seconds.intValue() * (TRAIN_RESOURCE_GENERATION_FACTOR * train.getCapacity()));
         }
         for(Rail rail: railList){
             profit += seconds.intValue() * (rail.getLevel()*rail.getLevel());
