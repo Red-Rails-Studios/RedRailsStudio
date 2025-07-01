@@ -1,0 +1,24 @@
+package de.gts.redrail.game.models.dtos;
+
+
+import java.util.List;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class SessionEndResponseDto {
+    private long duration;
+   
+    private List<PlayerDto> players;
+
+
+    public SessionEndResponseDto(List<PlayerDto> players, long duration) {
+            this.players = players;
+            this.duration = duration;
+    }
+
+    
+}

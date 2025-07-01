@@ -39,27 +39,20 @@ public class ResourceCalculator {
         Integer dbCoins = player.getResourceRack().getDbCoin();
 
         dbCoins += calculateStation(player.getStations(), seconds);
-        dbCoins += calculateTrains(player.getTrains(), seconds);
-        dbCoins += calculateRails(player.getRails(), seconds);
-
+        dbCoins += calculateTrains(player.getTrains(),player.getRails(), seconds);
         player.getResourceRack().setDbCoin(dbCoins);
     }
 
-    private Integer calculateRails(List<Rail> railList, Long seconds) {
-        Integer profit = 0;
+    
 
-        for (Rail rail : railList) {
-            profit += rail.getLevel() * seconds.intValue() * RAIL_RESOURCE_GENERATION_FACTOR;
-        }
-
-        return profit;
-    }
-
-    private Integer calculateTrains(List<Train> trainList, Long seconds) {
+    private Integer calculateTrains(List<Train> trainList,List<Rail> railList, Long seconds) {
         Integer profit = 0;
 
         for (Train train : trainList) {
-            profit += train.getLevel() * seconds.intValue() * TRAIN_RESOURCE_GENERATION_FACTOR;
+            profit +=  (seconds.intValue() * (TRAIN_RESOURCE_GENERATION_FACTOR * train.getCapacity()));
+        }
+        for(Rail rail: railList){
+            profit += seconds.intValue() * (rail.getLevel()*rail.getLevel());
         }
 
         return profit;
@@ -69,7 +62,7 @@ public class ResourceCalculator {
         Integer profit = 0;
 
         for (Station station : stationList) {
-            profit += station.getLevel() * seconds.intValue() * STATION_RESOURCE_GENERATION_FACTOR;
+            profit +=  seconds.intValue() * (STATION_RESOURCE_GENERATION_FACTOR*station.getLevel());
         }
 
         return profit;

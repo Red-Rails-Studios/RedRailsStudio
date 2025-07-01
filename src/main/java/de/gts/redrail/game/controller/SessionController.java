@@ -28,14 +28,16 @@ import de.gts.redrail.game.models.dtos.SessionOverviewDto;
 import de.gts.redrail.game.models.entities.ActionResult;
 import de.gts.redrail.game.service.SessionService;
 import lombok.RequiredArgsConstructor;
-
+import de.gts.redrail.game.models.dtos.SessionEndResponseDto;
+import de.gts.redrail.game.component.GameClock;
 @RestController
 @RequiredArgsConstructor
 public class SessionController {
 
     public final SessionService sessionService;
+    public final GameClock gameClock;
 
-    @PostMapping("/session/player/{playerUid}/resource")
+    @PostMapping("/session/{sessionName}/player/{playerUid}/resource")
     public ResponseEntity<String> getResource(@PathVariable(name = "playerUid")  String playerUid) {
         if (!sessionService.getGameState().equals(GameStateEnum.RUNNING)) {
             return ResponseEntity.badRequest().body(GET_RESOURCE_FAILED_SESSION_IS_NOT_RUNNING);
@@ -87,11 +89,26 @@ public class SessionController {
             return ResponseEntity.noContent().build();
         }
 
+        if (!sessionService.getGameState().equals(GameStateEnum.RUNNING)) {
+            return ResponseEntity.badRequest().body("Session is not running");
+        }
+        // Get players BEFORE ending the session
+        List<PlayerDto> players = sessionService.getAllPlayer();
         sessionService.endSession();
+        long duration = gameClock.getSessionDurationInMinutes();
 
-        return ResponseEntity.ok(END_SESSION);
+        return ResponseEntity.ok(new SessionEndResponseDto(players, duration).toString());
     }
+     @PatchMapping("/session/{sessionName}/kill")
+    public ResponseEntity<String> killSession(@PathVariable(name = "sessionName")  String sessionName) {
+        if (!sessionService.isSessionNameMatching(sessionName)) {
+            return ResponseEntity.noContent().build();
+        }
 
+        sessionService.killSession();
+
+        return ResponseEntity.ok("Session killed successfully");
+    }
     @GetMapping("/session")
     public ResponseEntity<SessionOverviewDto> getSessionOverview() {
         return ResponseEntity.ok(sessionService.createCurrentSessionOverview());
@@ -132,7 +149,7 @@ public class SessionController {
             return ResponseEntity.badRequest().build();
         }
 
-        List<PlayerOverviewDto> players = sessionService.getPlayers();
+        List<PlayerOverviewDto> players = sessionService.getAllPlayerOverview();
 
         if (players != null && !players.isEmpty()) {
             return ResponseEntity.ok(players);
@@ -177,16 +194,7 @@ public class SessionController {
         return handleActionResult(actionResult);
         //TODO: Es sollte die UID der gekauften Schiene zurückgegeben werden.
     }
-    @PatchMapping("/session/{sessionName}/kill")
-    public ResponseEntity<String> killSession(@PathVariable(name = "sessionName")  String sessionName) {
-        if (!sessionService.isSessionNameMatching(sessionName)) {
-            return ResponseEntity.noContent().build();
-        }
-
-        sessionService.killSession();
-
-        return ResponseEntity.ok("Session killed successfully");
-    }
+   
 
     @PatchMapping("/session/{sessionName}/player/{playerUid}/rail/{railUid}/upgrade")
     public ResponseEntity<String> upgradeRail(@PathVariable(name = "sessionName")  String sessionName, @PathVariable(name = "playerUid")  String playerUid, @PathVariable(name = "railUid")  String railUid) {

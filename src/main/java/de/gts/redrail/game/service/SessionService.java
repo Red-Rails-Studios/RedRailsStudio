@@ -1,5 +1,6 @@
 package de.gts.redrail.game.service;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -18,7 +19,6 @@ import static de.gts.redrail.game.constants.GameStateEnum.NOT_STARTED;
 import static de.gts.redrail.game.constants.GameStateEnum.RUNNING;
 import static de.gts.redrail.game.constants.ResponseText.ACTION_FAILED_NO_MATCH_PLAYER;
 import static de.gts.redrail.game.constants.ResponseText.ACTION_FAILED_NO_TRAIN_CAPACITY_LEFT;
-
 import de.gts.redrail.game.mappers.dtos.PlayerDtoMapper;
 import de.gts.redrail.game.mappers.dtos.PlayerOverviewDtoMapper;
 import de.gts.redrail.game.mappers.entities.PlayerMapper;
@@ -59,12 +59,25 @@ public class SessionService {
         gameState = NOT_CREATED;
         sessionClock.endClock();
     }
-    public List<PlayerOverviewDto> getPlayers() {
+    public List<PlayerOverviewDto> getAllPlayerOverview() {
         if (!gameState.equals(RUNNING)) {
             throw new IllegalStateException("get players failed - session is not running");
         }
 
         return playerOverviewDtoMapper.map(sessionPlayers);
+    }
+    public List<PlayerDto> getAllPlayer() {
+        if (!gameState.equals(RUNNING)) {
+            throw new IllegalStateException("get players failed - session is not running");
+        }
+
+        List<PlayerDto> playerDtos = new ArrayList<>();
+
+        for (Player player : sessionPlayers) {
+            playerDtos.add(playerDtoMapper.map(player));
+        }
+
+        return playerDtos;
     }
 
     public boolean startSession() {
@@ -78,9 +91,10 @@ public class SessionService {
         return true;
     }
 
-    public void endSession() {
+    public long endSession() {
         gameState = FINISHED;
         sessionClock.endClock();
+    return Duration.between(sessionClock.getStarted(), sessionClock.getEnded()).toMinutes();
     }
 
     public SessionOverviewDto createCurrentSessionOverview() {
@@ -228,6 +242,7 @@ public class SessionService {
         if (playerOptional.isEmpty()) {
             return new ActionResult(false, ACTION_FAILED_NO_MATCH_PLAYER);
         }
+        
 
         resourceCalculator.calculateResource(List.of(playerOptional.get()));
 
