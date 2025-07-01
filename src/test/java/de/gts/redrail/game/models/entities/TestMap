@@ -1,0 +1,12 @@
+package de.gts.redrail;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+
+@SpringBootTest
+public class TestMap {
+ @Test
+ public void test() {
+  Map map = new Map();  
+ }   
+}
