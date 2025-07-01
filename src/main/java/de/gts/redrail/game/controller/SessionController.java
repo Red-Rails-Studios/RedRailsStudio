@@ -31,6 +31,7 @@ import lombok.RequiredArgsConstructor;
 import de.gts.redrail.game.models.dtos.SessionEndResponseDto;
 import de.gts.redrail.game.component.GameClock;
 import org.springframework.web.bind.annotation.RequestParam;
+import de.gts.redrail.game.models.entities.Player;
 
 @RestController
 @RequiredArgsConstructor
@@ -267,6 +268,7 @@ public class SessionController {
         if (!sessionService.getGameState().equals(GameStateEnum.RUNNING)) {
             return ResponseEntity.badRequest().build();
         }
+
         if (stationUid == null || stationUid.isEmpty()) {
             return ResponseEntity.badRequest().body("Station UID must not be null or empty");
         }
@@ -286,9 +288,19 @@ public class SessionController {
     }
 
     @GetMapping("/session/{sessionName}/players/rainking")
-    public String getMethodName(@RequestParam String param) {
+    public ResponseEntity<List<Player>> rankingEntity(@PathVariable(name = "sessionName")  String sessionName) {
+        if (!sessionService.isSessionNameMatching(sessionName)) {
+            return ResponseEntity.noContent().build();
+        }
+
+        if (!sessionService.getGameState().equals(GameStateEnum.RUNNING)) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        List<Player> ranking = sessionService.getRanking();
+       
         
-        return new String();
+        return ResponseEntity.ok(ranking);
     }
     
 }
