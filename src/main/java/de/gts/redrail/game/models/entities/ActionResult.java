@@ -8,4 +8,10 @@ import lombok.Data;
 public class ActionResult {
     boolean successful = false;
     String message;
+    String uid; 
+
+    public ActionResult(boolean successful, String message) {
+        this.successful = successful;
+        this.message = message;
+    }
 }

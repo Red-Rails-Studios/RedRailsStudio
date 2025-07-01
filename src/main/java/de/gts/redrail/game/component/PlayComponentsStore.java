@@ -27,20 +27,18 @@ public class PlayComponentsStore {
 
     public ActionResult buyRail(Player player) {
         if (!resourceValidator.canBuyNewRail(player)) {
-            return new ActionResult(false, CANT_AFFORD_NEW_PLAY_COMPONENT);
+            return new ActionResult(false, CANT_AFFORD_NEW_PLAY_COMPONENT, null);
         }
 
         Rail rail = new Rail();
-
         rail.setUId(UUID.randomUUID().toString());
         rail.setLevel(1);
-
         player.getRails().add(rail);
 
         Integer dbCoin = player.getResourceRack().getDbCoin();
         player.getResourceRack().setDbCoin(dbCoin - (player.getRails().size() * NEW_RAIL)); 
 
-        return new ActionResult(true, BOUGHT_NEW_PLAY_COMPONENT);
+        return new ActionResult(true, BOUGHT_NEW_PLAY_COMPONENT, rail.getUId());
     }
 
     public ActionResult upgradeRail(Player player, String railUid) {
@@ -70,20 +68,18 @@ public class PlayComponentsStore {
 
     public ActionResult buyStation (Player player) {
         if (!resourceValidator.canBuyNewStation(player)) {
-            return new ActionResult(false, CANT_AFFORD_NEW_PLAY_COMPONENT);
+            return new ActionResult(false, CANT_AFFORD_NEW_PLAY_COMPONENT, null);
         }
 
         Station station = new Station();
-
         station.setUId(UUID.randomUUID().toString());
         station.setLevel(1);
-
         player.getStations().add(station);
 
         Integer dbCoin = player.getResourceRack().getDbCoin();
         player.getResourceRack().setDbCoin(dbCoin - NEW_RAIL);
 
-        return new ActionResult(true, BOUGHT_NEW_PLAY_COMPONENT);
+        return new ActionResult(true, BOUGHT_NEW_PLAY_COMPONENT, station.getUId());
     }
 
     public ActionResult upgradeStation(Player player, String stationUid) {
@@ -122,24 +118,22 @@ public class PlayComponentsStore {
 
     public ActionResult buyTrain(Player player) {
         if (!resourceValidator.canBuyNewTrain(player)) {
-            return new ActionResult(false, CANT_AFFORD_NEW_PLAY_COMPONENT);
+            return new ActionResult(false, CANT_AFFORD_NEW_PLAY_COMPONENT, null);
         }
 
         if (!resourceValidator.requirmentsForTrain(player)) {
-            return new ActionResult(false, REQIUERMENT_NOT_MET);
+            return new ActionResult(false, REQIUERMENT_NOT_MET, null);
         }
 
         Train train = new Train();
-
         train.setUId(UUID.randomUUID().toString());
         train.setLevel(1);
-
         player.getTrains().add(train);
 
         Integer dbCoin = player.getResourceRack().getDbCoin();
         player.getResourceRack().setDbCoin(dbCoin - NEW_RAIL);
 
-        return new ActionResult(true, BOUGHT_NEW_PLAY_COMPONENT);
+        return new ActionResult(true, BOUGHT_NEW_PLAY_COMPONENT, train.getUId());
     }
 
 
