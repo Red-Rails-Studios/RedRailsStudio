@@ -45,8 +45,14 @@ public class ResourceValidator {
                 return false;
               }
         }
-        if(player.getResourceRack().getEmployees() < player.getTrains().size() * train.getRequiredEmployees() + player.getStations().size()* station.getRequierdEmployes() || player.getResourceRack().getPower() < player.getStations().size() * station.getRequiredPower()+ player.getTrains().size() * train.getRequiredPower()) {
-            return false;
+
+       if (getFreeEmployees(player) < train.getRequiredEmployees()) {
+            return false; // Not enough free employees to buy a new train
+        }
+
+        if (getFreePower(player) < train.getRequiredPower()) {
+            return false; // Not enough free power to buy a new train
+            
         }
        
 
@@ -54,17 +60,38 @@ public class ResourceValidator {
     }
 
     public boolean canBuyNewTrain(Player player) {
+        if (!requirmentsForTrain(player)) {
+            return false;
+        }
         return player.getResourceRack().getDbCoin() >= NEW_TRAIN;
     }
+
     public Integer getFreeEmployees(Player player) {
         Integer freeEmployees = player.getResourceRack().getEmployees();
+
         for (Train train : player.getTrains()) {
             freeEmployees -= train.getRequiredEmployees();
         }
+
         for (Station station : player.getStations()) {
             freeEmployees -= station.getRequierdEmployes();
         }
+
         return freeEmployees;
+    }
+
+    public Integer getFreePower(Player player) {
+        Integer freePower = player.getResourceRack().getPower();
+
+        for (Train train : player.getTrains()) {
+            freePower -= train.getRequiredPower();
+        }
+
+        for (Station station : player.getStations()) {
+            freePower -= station.getRequiredPower();
+        }
+
+        return freePower;
     }
 
     public boolean canUpgradeTrain(Player player, String trainUid) {
@@ -72,8 +99,17 @@ public class ResourceValidator {
         if (trainOptional.isEmpty()) {
             return false;
         }
-        if(train.getLevel() >= 10) {
+
+        if (train.getLevel() >= 10) {
             return false; // Assuming level 5 is the max level for a train
+        }
+
+        if (getFreeEmployees(player) < trainOptional.get().getRequiredEmployees() + 1) {
+            return false; // Not enough free employees to upgrade the train
+        }
+
+        if (getFreePower(player) < trainOptional.get().getRequiredPower() + 1) {
+            return false; // Not enough free power to upgrade the train
         }
 
         return player.getResourceRack().getDbCoin() >= (trainOptional.get().getLevel() + 1) * UPGRADE_TRAIN_FACTOR;
@@ -83,6 +119,16 @@ public class ResourceValidator {
         if(player.getResourceRack().getEmployees() < player.getTrains().size() * train.getRequiredEmployees() + player.getStations().size()* station.getRequierdEmployes() || player.getResourceRack().getPower() < player.getStations().size() * station.getRequiredPower()+ player.getTrains().size() * train.getRequiredPower()) {
             return false;
         }
+
+        if (getFreeEmployees(player) < station.getRequierdEmployes()) {
+            return false; // Not enough free employees to buy a new station
+            
+        }
+
+        if (getFreePower(player) < station.getRequiredPower()) {
+            return false; // Not enough free power to buy a new station
+        }
+
         return player.getResourceRack().getDbCoin() >= NEW_STATION;
     }
 
@@ -92,8 +138,12 @@ public class ResourceValidator {
             return false;
         }
 
+        if (getFreeEmployees(player) < stationOptional.get().getRequierdEmployes() + 1) {
+            return false; // Not enough free employees to upgrade the train
+        }
+
+
         return player.getResourceRack().getDbCoin() >= (stationOptional.get().getLevel() + 1) * UPGRADE_STATION_FACTOR;
     }
-    //TODO: In zukunft kann man die requiered Employees und Power von train und station nach Upgrade erhöhen, und in canUpgradeStation und canUpgradeTrain die neuen Werte abfragen, ob sie noch erfüllt sind.
     
 }

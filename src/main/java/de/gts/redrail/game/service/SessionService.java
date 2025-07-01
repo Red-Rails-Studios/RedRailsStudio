@@ -223,10 +223,13 @@ public class SessionService {
        
 
         resourceCalculator.calculateResource(List.of(playerOptional.get()));
+
         for(Station station : playerOptional.get().getStations()) {
+            
             if (station.getTrainCapacity() == 0) {
                 return new ActionResult(false, ACTION_FAILED_NO_TRAIN_CAPACITY_LEFT);
             }
+
             else {
                 station.setTrainCapacity(station.getTrainCapacity() - 1);
             }
