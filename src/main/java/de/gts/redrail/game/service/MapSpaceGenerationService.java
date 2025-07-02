@@ -10,20 +10,12 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class MapSpaceGenerationService {
 
-    private final SessionService sessionService;
     private final LocationGenerationService locationGenerationService;
     private final Map map;
 
-    private final int borderWidth = 6;
-    private final int borderHeight = 6;
-    private final int borderMaxLocation = 3;
-
-    private final int sidesWidthHeight = 18;
-    private final int sidesHeightWidth = 6;
-    private final int sidesMaxLocation = 36;
-
-    private final int middleWidthHeight = 18;
-    private final int middleMaxLocation = 108;
+    private final int borderMaxLocations = 3;
+    private final int sidesMaxLocations = 36;
+    private final int middleMaxLocations = 108;
     
 
     /**
@@ -56,20 +48,20 @@ public class MapSpaceGenerationService {
     }
 
     private void fillBorders() {
-        fillSpace(0, borderWidth, 0, borderHeight, borderMaxLocation);
-        fillSpace(map.getMap().size() - borderWidth, map.getMap().size(), 0, borderHeight, borderMaxLocation);
-        fillSpace(0, borderWidth, map.getMap().get(0).size() - borderHeight, map.getMap().get(0).size(), borderMaxLocation);
-        fillSpace(map.getMap().size() - borderWidth, map.getMap().size(), map.getMap().get(0).size() - borderHeight, map.getMap().get(0).size(), borderMaxLocation);
+        fillSpace(0, 6, 0, 6, borderMaxLocations); // Bottom left corner
+        fillSpace(24, 30, 0, 6, borderMaxLocations); // Bottom right corner
+        fillSpace(0, 6, 24, 30, borderMaxLocations); // Top left corner
+        fillSpace(24, 30, 24, 30, borderMaxLocations); // Top right corner
     }
 
     private void fillSides() {
-        fillSpace(6, 24, 0, 6, sidesMaxLocation); // Under side
-        fillSpace(6,24, 24, 30, sidesMaxLocation); // Upper side
-        fillSpace(0, 6, 6, 24, sidesMaxLocation); // Left side
-        fillSpace(24, 30, 6, 24, sidesMaxLocation); // Right side
+        fillSpace(6, 24, 0, 6, sidesMaxLocations); // Under side
+        fillSpace(6,24, 24, 30, sidesMaxLocations); // Upper side
+        fillSpace(0, 6, 6, 24, sidesMaxLocations); // Left side
+        fillSpace(24, 30, 6, 24, sidesMaxLocations); // Right side
     }
 
     private void fillMiddle() {
-        fillSpace(6, 24, 6, 24, middleMaxLocation); // Middle area
+        fillSpace(6, 24, 6, 24, middleMaxLocations); // Middle area
     }
 }
