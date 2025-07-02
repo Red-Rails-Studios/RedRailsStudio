@@ -29,7 +29,6 @@ import de.gts.redrail.game.service.SessionService;
 import lombok.RequiredArgsConstructor;
 import de.gts.redrail.game.models.dtos.SessionEndResponseDto;
 import de.gts.redrail.game.component.GameClock;
-import org.springframework.web.bind.annotation.RequestParam;
 import de.gts.redrail.game.models.entities.Player;
 
 @RestController
