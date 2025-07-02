@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 
 public class LocationGenerationService {
     Random random = new Random();
+    List<String> usedCityNames = new ArrayList<>();
 
    private static final String[] GERMAN_CITIES = {
     "Aach", "Aachen", "Aalen", "Abenberg", "Abensberg", "Achern", "Achim", "Adelsheim", "Adorf/Vogtl.", 
@@ -53,6 +54,11 @@ public class LocationGenerationService {
         }
         
         String name = getRandomGermanCityName();
+        for (String usedName : usedCityNames) {
+            if (usedName.equals(name)) {
+                name = getRandomGermanCityName(); // Ensure unique city name
+            }
+        }
 
         Station pingpong = new Station(); 
 
