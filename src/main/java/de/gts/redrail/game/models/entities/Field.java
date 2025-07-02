@@ -9,7 +9,4 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class Field {
     private Location location;
-    private Integer x;
-    private Integer y;
-    private boolean isOccupied = false;
 }

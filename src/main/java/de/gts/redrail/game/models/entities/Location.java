@@ -11,4 +11,6 @@ public class Location {
     private String name;
     private Integer customers;
     private Station station;
+    private Integer x;
+    private Integer y;
 }

@@ -1,7 +1,6 @@
 package de.gts.redrail.game.service;
 
 import org.springframework.stereotype.Service;
-
 import de.gts.redrail.game.constants.MaxLocation;
 import de.gts.redrail.game.models.entities.Location;
 import de.gts.redrail.game.models.entities.Map;
@@ -11,7 +10,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class MapSpaceGenerationService {
 
-    private final LocationGenerationService locationGenerationService;
+    private final LocationGenerationService lGS;
+    private final RandomPointGenerationService rPGS;
     private final Map map;
 
     public void generateBordersForPlayers() {
@@ -26,12 +26,13 @@ public class MapSpaceGenerationService {
         for (int x = xStart; x < xEnd && x < map.getMap().size(); x++) {
             for (int y = yStart; y < yEnd && y < map.getMap().get(x).size(); y++) {
 
-                if (locationsPlaced >= maxLocations) return;
+                if (locationsPlaced >= maxLocations) {
+                    return ; // Stop if max locations reached
+                }
 
-                Location location = locationGenerationService.generateRandomLocation();
+                Location location = lGS.generateRandomLocation(rPGS.generateRandomPointX(xStart, xEnd), rPGS.generateRandomPointY(yStart, yEnd));
 
                 if (location != null) {
-                    map.getMap().get(x).get(y).setLocation(location);
                     locationsPlaced++;
                 }
             }

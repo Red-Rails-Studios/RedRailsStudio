@@ -19,8 +19,6 @@ public class Map {
 
     for (int y = 0; y < 30; y++) {
       Field field = new Field();
-      field.setX(x);
-      field.setY(y);
       row.add(field);
     }
     
