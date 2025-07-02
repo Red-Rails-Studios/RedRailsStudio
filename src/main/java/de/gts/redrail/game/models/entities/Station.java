@@ -11,7 +11,7 @@ public class Station {
     Integer level;
     Integer requierdEmployes = 3;
     Integer requiredPower = 4;
-    Integer trainCapacity = 10; // Default capacity
+    Integer trainCapacity = 10; 
     Integer railCapacity = 5;
-    Player owner;
+    String masterUID;
 }
