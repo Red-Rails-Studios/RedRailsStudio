@@ -190,17 +190,16 @@ public class SessionController {
         if (!sessionService.isSessionNameMatching(sessionName)) {
             return ResponseEntity.noContent().build();
         }
-
         if (!sessionService.getGameState().equals(GameStateEnum.RUNNING)) {
             return ResponseEntity.badRequest().build();
         }
-
         ActionResult actionResult = sessionService.buyRail(playerUid);
-
-        return handleActionResult(actionResult);
-        //TODO: Es sollte die UID der gekauften Schiene zurückgegeben werden.
+        if (actionResult.isSuccessful()) {
+            return ResponseEntity.ok(actionResult.getUid());
+        } else {
+            return ResponseEntity.badRequest().body(actionResult.getMessage());
+        }
     }
-   
     @PatchMapping("/session/{sessionName}/player/{playerUid}/rail/{railUid}/upgrade")
     public ResponseEntity<String> upgradeRail(@PathVariable(name = "sessionName")  String sessionName, @PathVariable(name = "playerUid")  String playerUid, @PathVariable(name = "railUid")  String railUid) {
         if (!sessionService.isSessionNameMatching(sessionName)) {
@@ -246,27 +245,27 @@ public class SessionController {
         }
 
         ActionResult actionResult = sessionService.buyTrain(playerUid);
-
-        return handleActionResult(actionResult);
-        //TODO: Es sollte die UID des gekauften Zuges zurückgegeben werden.
+        if (actionResult.isSuccessful()) {
+            return ResponseEntity.ok(actionResult.getUid());
+        } else {
+            return ResponseEntity.badRequest().body(actionResult.getMessage());
+        }
     }
-
     @PostMapping("/session/{sessionName}/player/{playerUid}/station")
     public ResponseEntity<String> buyStation(@PathVariable(name = "sessionName")  String sessionName, @PathVariable(name = "playerUid")  String playerUid) {
         if (!sessionService.isSessionNameMatching(sessionName)) {
             return ResponseEntity.noContent().build();
         }
-
         if (!sessionService.getGameState().equals(GameStateEnum.RUNNING)) {
             return ResponseEntity.badRequest().build();
         }
-
         ActionResult actionResult = sessionService.buyStation(playerUid);
-
-        return handleActionResult(actionResult);
-        //TODO: Es sollte die UID der gekauften Station zurückgegeben werden.
+        if (actionResult.isSuccessful()) {
+            return ResponseEntity.ok(actionResult.getUid());
+        } else {
+            return ResponseEntity.badRequest().body(actionResult.getMessage());
+        }
     }
-
     @GetMapping("/session/{sessionName}/player/{playerUid}/station/{stationUid}")
     public ResponseEntity<String> upgradeStation(@PathVariable(name = "sessionName")  String sessionName, @PathVariable(name = "playerUid")  String playerUid, @PathVariable(name = "stationUid")  String stationUid) {
         if (!sessionService.isSessionNameMatching(sessionName)) {
