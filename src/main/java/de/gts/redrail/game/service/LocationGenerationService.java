@@ -43,7 +43,7 @@ public class LocationGenerationService {
     "Betzenstein", "Beverungen", "Bexbach", "Biberach an der Riß", "Biedenkopf", "Bielefeld",
     "Biesenthal", "Bietigheim-Bissingen", "Billerbeck", "Bingen am Rhein", "Birkenfeld",
     "Bischofsheim in der Rhön", "Bischofswerda", "Bismark", "Bitburg", "Bitterfeld-Wolfen",
-    "Blankenburg", "Blankenhain"
+    "Blankenburg", "Blankenhain",
    
 };
 

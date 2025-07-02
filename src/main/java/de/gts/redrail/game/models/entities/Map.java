@@ -14,9 +14,9 @@ public class Map {
   map = new ArrayList<>();
   locationGenerationService = new LocationGenerationService();
 
-  for (int x = 0; x < 40; x++) {
+  for (int x = 0; x < 30; x++) {
     List<Field> row = new ArrayList<>();
-    for (int y = 0; y < 40; y++) {
+    for (int y = 0; y < 30; y++) {
       Field field = new Field();
       field.setX(x);
       field.setY(y);
@@ -24,8 +24,8 @@ public class Map {
     }
     map.add(row);
   }
-  for (int x = 0; x < 40; x++) {
-    for (int y = 0; y < 40; y++) {
+  for (int x = 0; x < 30; x++) {
+    for (int y = 0; y < 30; y++) {
       if (map.get(x).get(y).getLocation() == null) {
         // Generate a random location for the field
       map.get(x).get(y).setLocation(locationGenerationService.generateRandomLocation());    
