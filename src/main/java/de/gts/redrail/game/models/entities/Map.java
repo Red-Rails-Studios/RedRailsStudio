@@ -24,14 +24,7 @@ public class Map {
     }
     map.add(row);
   }
-  for (int x = 0; x < 30; x++) {
-    for (int y = 0; y < 30; y++) {
-      if (map.get(x).get(y).getLocation() == null) {
-        // Generate a random location for the field
-      map.get(x).get(y).setLocation(locationGenerationService.generateRandomLocation());    
-      }
-    }
-  }
+  
  }
 }   
  
