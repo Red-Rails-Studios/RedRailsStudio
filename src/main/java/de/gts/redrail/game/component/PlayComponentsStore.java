@@ -51,8 +51,10 @@ public class PlayComponentsStore {
         if (railOptional.isEmpty()) {
             return new ActionResult(false, ACTION_FAILED_NO_MATCH_PLAY_COMPONENT);
         }
+
         Rail rail = railOptional.get();
-        if(rail.getLevel() >= 5) {
+
+        if (rail.getLevel() >= 5) {
             return new ActionResult(false, ACTION_FAILED_MAX_LEVEL_REACHED);
         }   
 

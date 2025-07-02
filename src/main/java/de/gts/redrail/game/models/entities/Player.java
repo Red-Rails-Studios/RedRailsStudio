@@ -12,6 +12,7 @@ import java.util.List;
 public class Player {
     String uId;
     String name;
+    Integer points = 0;
 
     ResourceRack resourceRack = new ResourceRack();
 

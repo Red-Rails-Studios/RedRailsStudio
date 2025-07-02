@@ -30,6 +30,9 @@ import de.gts.redrail.game.service.SessionService;
 import lombok.RequiredArgsConstructor;
 import de.gts.redrail.game.models.dtos.SessionEndResponseDto;
 import de.gts.redrail.game.component.GameClock;
+import org.springframework.web.bind.annotation.RequestParam;
+import de.gts.redrail.game.models.entities.Player;
+
 @RestController
 @RequiredArgsConstructor
 public class SessionController {
@@ -287,10 +290,27 @@ public class SessionController {
     private ResponseEntity<String> handleActionResult(ActionResult actionResult) {
         if (actionResult.isSuccessful()) {
             return ResponseEntity.ok(actionResult.getMessage());
-        } 
-
+        }
+        
         else {
             return ResponseEntity.badRequest().body(actionResult.getMessage());
         }
     }
+
+    @GetMapping("/session/{sessionName}/players/rainking")
+    public ResponseEntity<List<Player>> rankingEntity(@PathVariable(name = "sessionName")  String sessionName) {
+        if (!sessionService.isSessionNameMatching(sessionName)) {
+            return ResponseEntity.noContent().build();
+        }
+
+        if (!sessionService.getGameState().equals(GameStateEnum.RUNNING)) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        List<Player> ranking = sessionService.getRanking();
+       
+        
+        return ResponseEntity.ok(ranking);
+    }
+    
 }

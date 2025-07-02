@@ -32,6 +32,7 @@ import de.gts.redrail.game.models.entities.Station;
 import de.gts.redrail.game.models.entities.Train;
 import de.gts.redrail.game.utils.PlayerUtil;
 import lombok.RequiredArgsConstructor;
+import de.gts.redrail.game.models.entities.*;
 
 @Service
 @RequiredArgsConstructor
@@ -223,10 +224,13 @@ public class SessionService {
        
 
         resourceCalculator.calculateResource(List.of(playerOptional.get()));
+
         for(Station station : playerOptional.get().getStations()) {
+
             if (station.getTrainCapacity() == 0) {
                 return new ActionResult(false, ACTION_FAILED_NO_TRAIN_CAPACITY_LEFT);
             }
+
             else {
                 station.setTrainCapacity(station.getTrainCapacity() - 1);
             }
@@ -259,5 +263,51 @@ public class SessionService {
 
     public GameStateEnum getGameState() {
         return gameState;
+    } 
+
+    public List<Player> getRanking() {
+        
+        if (gameState.equals(NOT_CREATED) || gameState.equals(NOT_STARTED)) {
+            throw new IllegalStateException("get ranking failed - session is not created or not started");
+        }
+
+        
+        List<Player> playerDtos = new ArrayList<>(sessionPlayers);
+        List<Player> sortedPlayers = new ArrayList<>();
+        
+        for(Player p : playerDtos)
+        {
+            for (Station s : p.getStations())
+            {
+                p.setPoints(p.getPoints() + (3 + (2 * s.getLevel())));
+            }
+
+            for (Train t : p.getTrains())
+            {
+                p.setPoints(p.getPoints() + (int) (2 + (1.5 * t.getLevel())));
+            }
+
+            for (Rail r : p.getRails())
+            {
+                p.setPoints(p.getPoints() + (int) (1 +  r.getLevel()));
+            }
+
+            p.setPoints(p.getPoints() + (int) (p.getResourceRack().getEmployees() / 2));
+            p.setPoints(p.getPoints() + (int) (p.getResourceRack().getPower() / 2));
+
+        }
+
+        for (Player p : playerDtos) {
+            for (int i = 0; i < sortedPlayers.size(); i++) {
+                if (p.getPoints() > sortedPlayers.get(i).getPoints()) {
+                    sortedPlayers.add(i, p);
+                    break;
+                }
+            }
+        }
+
+
+
+        return sortedPlayers;
     }
 }
