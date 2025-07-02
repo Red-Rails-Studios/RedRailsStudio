@@ -111,7 +111,7 @@ public class SessionService {
     }
 
     public boolean joinSession(PlayerOverviewDto playerWantToJoin) {
-        for (Player player : sessionPlayers) {
+        for (Player player : sessionPlayers) { 
             if (PlayerUtil.isPlayerMatching(player, playerWantToJoin)) {
                 return false;
             }
@@ -305,9 +305,6 @@ public class SessionService {
                 }
             }
         }
-
-
-
         return sortedPlayers;
     }
 }

@@ -48,7 +48,9 @@ public class SessionController {
 
         if (playerDto != null) {
             return ResponseEntity.ok(playerDto.toString());
-        } else {
+        } 
+        
+        else {
             return ResponseEntity.badRequest().body("Player not found");
         }
     }
@@ -94,7 +96,7 @@ public class SessionController {
         if (!sessionService.getGameState().equals(GameStateEnum.RUNNING)) {
             return ResponseEntity.badRequest().body("Session is not running");
         }
-        // Get players BEFORE ending the session
+        
         List<PlayerDto> players = sessionService.getAllPlayer();
         sessionService.endSession();
         long duration = gameClock.getSessionDurationInMinutes();
@@ -181,7 +183,9 @@ public class SessionController {
 
         if (playerDto != null) {
             return ResponseEntity.ok(playerDto);
-        } else {
+        } 
+        
+        else {
             return ResponseEntity.noContent().build();
         }
     }
@@ -194,13 +198,18 @@ public class SessionController {
         if (!sessionService.getGameState().equals(GameStateEnum.RUNNING)) {
             return ResponseEntity.badRequest().build();
         }
+
         ActionResult actionResult = sessionService.buyRail(playerUid);
+
         if (actionResult.isSuccessful()) {
             return ResponseEntity.ok(actionResult.getUid());
-        } else {
+        }
+
+        else {
             return ResponseEntity.badRequest().body(actionResult.getMessage());
         }
     }
+
     @PatchMapping("/session/{sessionName}/player/{playerUid}/rail/{railUid}/upgrade")
     public ResponseEntity<String> upgradeRail(@PathVariable(name = "sessionName")  String sessionName, @PathVariable(name = "playerUid")  String playerUid, @PathVariable(name = "railUid")  String railUid) {
         if (!sessionService.isSessionNameMatching(sessionName)) {
@@ -252,6 +261,7 @@ public class SessionController {
             return ResponseEntity.badRequest().body(actionResult.getMessage());
         }
     }
+
     @PostMapping("/session/{sessionName}/player/{playerUid}/station")
     public ResponseEntity<String> buyStation(@PathVariable(name = "sessionName")  String sessionName, @PathVariable(name = "playerUid")  String playerUid) {
         if (!sessionService.isSessionNameMatching(sessionName)) {
@@ -267,6 +277,7 @@ public class SessionController {
             return ResponseEntity.badRequest().body(actionResult.getMessage());
         }
     }
+
     @GetMapping("/session/{sessionName}/player/{playerUid}/station/{stationUid}")
     public ResponseEntity<String> upgradeStation(@PathVariable(name = "sessionName")  String sessionName, @PathVariable(name = "playerUid")  String playerUid, @PathVariable(name = "stationUid")  String stationUid) {
         if (!sessionService.isSessionNameMatching(sessionName)) {
@@ -305,10 +316,7 @@ public class SessionController {
             return ResponseEntity.badRequest().build();
         }
 
-        List<Player> ranking = sessionService.getRanking();
-       
-        
+        List<Player> ranking = sessionService.getRanking();   
         return ResponseEntity.ok(ranking);
-    }
-    
+    }   
 }

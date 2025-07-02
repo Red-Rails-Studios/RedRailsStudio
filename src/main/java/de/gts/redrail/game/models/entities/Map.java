@@ -24,7 +24,6 @@ public class Map {
     }
     map.add(row);
   }
-  
  }
 }   
  

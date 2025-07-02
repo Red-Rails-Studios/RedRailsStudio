@@ -40,8 +40,7 @@ public class ResourceValidator {
     public boolean requirmentsForTrain(Player player) {
         
         for(Station station : player.getStations()) {
-            if (station.getTrainCapacity() == 0)
-              {      
+            if (station.getTrainCapacity() == 0) {      
                 return false;
               }
         }

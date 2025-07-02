@@ -49,9 +49,9 @@ public class LocationGenerationService {
 
 
     public Location generateRandomLocation() {
-        int yesorno = random.nextInt(2);
+        int yesOrNo = random.nextInt(2);
 
-        if(yesorno == 0)
+        if (yesOrNo == 0)
         {
             return null;
         }
@@ -68,6 +68,7 @@ public class LocationGenerationService {
         }
         
         String name = getRandomGermanCityName();
+        
         for (String usedName : usedCityNames) {
             if (usedName.equals(name)) {
                 name = getRandomGermanCityName(); // Ensure unique city name

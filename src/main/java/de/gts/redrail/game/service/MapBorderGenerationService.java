@@ -50,8 +50,11 @@ public class MapBorderGenerationService {
         int locationsPlaced = 0;
         for (int x = xStart; x < xEnd && x < map.getMap().size(); x++) {
             for (int y = yStart; y < yEnd && y < map.getMap().get(x).size(); y++) {
+
                 if (locationsPlaced >= maxLocations) return;
+
                 Location location = locationGenerationService.generateRandomLocation();
+
                 if (location != null) {
                     map.getMap().get(x).get(y).setLocation(location);
                     locationsPlaced++;
