@@ -16,12 +16,14 @@ public class Map {
 
   for (int x = 0; x < 30; x++) {
     List<Field> row = new ArrayList<>();
+
     for (int y = 0; y < 30; y++) {
       Field field = new Field();
       field.setX(x);
       field.setY(y);
       row.add(field);
     }
+    
     map.add(row);
   }
  }
