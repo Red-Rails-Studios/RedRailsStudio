@@ -16,21 +16,33 @@ public class LocationGenerationService {
     List<String> usedCityNames = new ArrayList<>();
 
    private static final String[] GERMAN_CITIES = {
-    "Aach", "Aachen", "Aalen", "Abenberg", "Abensberg", "Achern", "Achim", "Adelsheim", "Adorf/Vogtl.", 
+    "Aach", "Aachen", "Aalen", "Abenberg", "Abensberg", "Achern", "Achim", "Adelsheim", "Adorf/Vogtl.",
     "Ahaus", "Ahlen", "Ahrensburg", "Aichach", "Aken", "Albstadt", "Alfeld", "Allendorf", "Allersberg",
-    "Alsdorf", "Alsfeld", "Altena", "Altenberg", "Altenburg", "Altentreptow", "Altlandsberg", 
-    "Altdorf bei Nürnberg", "Altensteig", "Altötting", "Alzenau", "Amberg", "Amorbach", "Andernach", 
+    "Alsdorf", "Alsfeld", "Altena", "Altenberg", "Altenburg", "Altentreptow", "Altlandsberg",
+    "Altdorf bei Nürnberg", "Altensteig", "Altötting", "Alzenau", "Amberg", "Amorbach", "Andernach",
     "Angermünde", "Anklam", "Annaberg-Buchholz", "Annweiler", "Ansbach", "Apolda", "Arnsberg", "Arnstadt",
-    "Aschaffenburg", "Aschersleben", "Asperg", "Attendorn", "Aub", "Aue-Bad Schlema", "Auerbach", 
+    "Aschaffenburg", "Aschersleben", "Asperg", "Attendorn", "Aub", "Aue-Bad Schlema", "Auerbach",
     "Augsburg", "Augustusburg", "Aurich", "Babenhausen", "Backnang", "Bad Aibling", "Bad Berleburg",
-    "Bad Dürkheim", "Bad Essen", "Bad Fallingbostel", "Bad Gandersheim", "Bad Harzburg", 
+    "Bad Dürkheim", "Bad Essen", "Bad Fallingbostel", "Bad Gandersheim", "Bad Harzburg",
     "Bad Homburg vor der Höhe", "Bad Honnef", "Bad Kissingen", "Bad Kreuznach", "Bad Langensalza",
-    "Bad Lauchstädt", "Bad Liebenwerda", "Bad Mergentheim", "Bad Münder", "Bad Nauheim", 
+    "Bad Lauchstädt", "Bad Liebenwerda", "Bad Mergentheim", "Bad Münder", "Bad Nauheim",
     "Bad Nenndorf", "Bad Neustadt an der Saale", "Bad Oldesloe", "Bad Pyrmont", "Bad Rappenau",
-    "Bad Reichenhall", "Bad Salzdetfurth", "Bad Salzuflen", "Bad Säckingen", "Bad Saulgau", 
-    "Bad Schandau", "Bad Schwartau", "Bad Segeberg", "Bad Soden am Taunus", "Bad Soden-Salmünster", 
+    "Bad Reichenhall", "Bad Salzdetfurth", "Bad Salzuflen", "Bad Säckingen", "Bad Saulgau",
+    "Bad Schandau", "Bad Schwartau", "Bad Segeberg", "Bad Soden am Taunus", "Bad Soden-Salmünster",
     "Bad Staffelstein", "Bad Tölz", "Bad Vilbel", "Bad Waldsee", "Bad Wildbad", "Bad Wildungen",
-    
+    "Bad Wilsnack", "Bad Wimpfen", "Bad Windsheim", "Bad Wörishofen", "Bad Wünnenberg",
+    "Bad Wurzach", "Baden-Baden", "Baesweiler", "Baiersdorf", "Balingen", "Ballenstedt", "Balve",
+    "Bamberg", "Barby", "Bargteheide", "Barmstedt", "Bärnau", "Barntrup", "Barsinghausen", "Barth",
+    "Baruth/Mark", "Bassum", "Battenberg", "Baumholder", "Baunach", "Baunatal", "Bautzen", "Bayreuth",
+    "Bebra", "Beckum", "Bedburg", "Beelitz", "Beeskow", "Beilngries", "Beilstein", "Belgern-Schildau",
+    "Bendorf", "Bensheim", "Berching", "Berga-Wünschendorf", "Bergen", "Bergen auf Rügen", "Bergheim",
+    "Bergisch Gladbach", "Bergkamen", "Bergneustadt", "Berlin", "Bernau bei Berlin", "Bernburg",
+    "Bernkastel-Kues", "Bernsdorf", "Bernstadt a. d. Eigen", "Bersenbrück", "Besigheim", "Betzdorf",
+    "Betzenstein", "Beverungen", "Bexbach", "Biberach an der Riß", "Biedenkopf", "Bielefeld",
+    "Biesenthal", "Bietigheim-Bissingen", "Billerbeck", "Bingen am Rhein", "Birkenfeld",
+    "Bischofsheim in der Rhön", "Bischofswerda", "Bismark", "Bitburg", "Bitterfeld-Wolfen",
+    "Blankenburg", "Blankenhain"
+   
 };
 
 
