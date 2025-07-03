@@ -38,18 +38,18 @@ public class SessionController {
     public final SessionService sessionService;
     public final GameClock gameClock;
 
-    @PostMapping("/session/{sessionName}/player/{playerUid}/resource")
-    public ResponseEntity<String> getResource(@PathVariable(name = "playerUid")  String playerUid) {
+    @GetMapping("/session/{sessionName}/player/{playerUid}/resource")
+    public ResponseEntity<PlayerDto> getResource(@PathVariable(name = "playerUid")  String playerUid) {
         if (!sessionService.getGameState().equals(GameStateEnum.RUNNING)) {
-            return ResponseEntity.badRequest().body(GET_RESOURCE_FAILED_SESSION_IS_NOT_RUNNING);
+            return ResponseEntity.badRequest().body(null);
         }
 
         PlayerDto playerDto = sessionService.getPlayerStatus(playerUid);
 
         if (playerDto != null) {
-            return ResponseEntity.ok(playerDto.toString());
+            return ResponseEntity.ok(playerDto);
         } else {
-            return ResponseEntity.badRequest().body("Player not found");
+            return ResponseEntity.badRequest().body(null);
         }
     }
 
@@ -78,28 +78,26 @@ public class SessionController {
 
         if (result) {
             return ResponseEntity.ok(STARTED_SESSION);
-        } 
-        
-        else {
+        } else {
             return ResponseEntity.badRequest().body(START_SESSION_FAILED_NO_PLAYER);
         }
     }
 
     @PatchMapping("/session/{sessionName}/end")
-    public ResponseEntity<String> endSession(@PathVariable(name = "sessionName")  String sessionName) {
+    public ResponseEntity<SessionEndResponseDto> endSession(@PathVariable(name = "sessionName")  String sessionName) {
         if (!sessionService.isSessionNameMatching(sessionName)) {
             return ResponseEntity.noContent().build();
         }
 
         if (!sessionService.getGameState().equals(GameStateEnum.RUNNING)) {
-            return ResponseEntity.badRequest().body("Session is not running");
+            return ResponseEntity.badRequest().body(null);
         }
         // Get players BEFORE ending the session
         List<PlayerDto> players = sessionService.getAllPlayer();
         sessionService.endSession();
         long duration = gameClock.getSessionDurationInMinutes();
 
-        return ResponseEntity.ok(new SessionEndResponseDto(players, duration).toString());
+        return ResponseEntity.ok(new SessionEndResponseDto(players, duration));
     }
 
      @PatchMapping("/session/{sessionName}/kill")
@@ -139,9 +137,7 @@ public class SessionController {
 
         if (result) {
             return ResponseEntity.ok(new JoinSessionResponseDto(true, playerOverviewDto.getUId(), PLAYER_JOINED_SESSION));
-        } 
-        
-        else {
+        }else {
             return ResponseEntity.ok(new JoinSessionResponseDto(false, null, PLAYER_JOIN_SESSION_FAILED));
         }
     }
@@ -160,9 +156,7 @@ public class SessionController {
 
         if (players != null && !players.isEmpty()) {
             return ResponseEntity.ok(players);
-        } 
-        
-        else {
+        }else {
             return ResponseEntity.noContent().build();
         }
     }
