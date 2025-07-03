@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RestController;
 import de.gts.redrail.game.constants.GameStateEnum;
 import static de.gts.redrail.game.constants.ResponseText.CREATED_SESSION;
 import static de.gts.redrail.game.constants.ResponseText.CREATE_SESSION_FAILED_SESSION_IS_ALREADY_CREATED;
-import static de.gts.redrail.game.constants.ResponseText.END_SESSION;
 import static de.gts.redrail.game.constants.ResponseText.GET_RESOURCE_FAILED_SESSION_IS_NOT_RUNNING;
 import static de.gts.redrail.game.constants.ResponseText.PLAYER_JOINED_SESSION;
 import static de.gts.redrail.game.constants.ResponseText.PLAYER_JOIN_SESSION_FAILED;
@@ -30,7 +29,6 @@ import de.gts.redrail.game.service.SessionService;
 import lombok.RequiredArgsConstructor;
 import de.gts.redrail.game.models.dtos.SessionEndResponseDto;
 import de.gts.redrail.game.component.GameClock;
-import org.springframework.web.bind.annotation.RequestParam;
 import de.gts.redrail.game.models.entities.Player;
 
 @RestController
