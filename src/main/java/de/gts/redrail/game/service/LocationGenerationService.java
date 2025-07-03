@@ -14,12 +14,12 @@ import java.util.List;
 @RequiredArgsConstructor
 public class LocationGenerationService {
     Random random = new Random();
-    List<String> usedCityNames = new ArrayList<>();
 
-
+    // should generate 1 Random Location using the other services that generate the needed data
+    // like random name, random point, etc.
     public Location generateRandomLocation(int x, int y, LocationEnum type) {
         
-        return new Location();
+        return new Location(); 
     }
 
 }
