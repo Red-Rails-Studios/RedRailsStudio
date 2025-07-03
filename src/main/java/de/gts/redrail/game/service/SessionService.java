@@ -59,6 +59,8 @@ public class SessionService {
         sessionPlayers = null;
         gameState = NOT_CREATED;
         sessionClock.endClock();
+        sessionClock.setStarted(null);
+        sessionClock.setEnded(null);
     }
     public List<PlayerOverviewDto> getAllPlayerOverview() {
         if (!gameState.equals(RUNNING)) {
