@@ -49,11 +49,14 @@ public class SessionService {
     private final PlayerMapper playerMapper;
     private final PlayerOverviewDtoMapper playerOverviewDtoMapper;
 
-    public void createSession(String name) {
+    public SessionOverviewDto createSession(String name) {
         sessionName = name;
         sessionPlayers = new ArrayList<>();
         gameState = NOT_STARTED;
+
+        return createCurrentSessionOverview();
     }
+
     public void killSession() {
         sessionName = null;
         sessionPlayers = null;
@@ -62,6 +65,7 @@ public class SessionService {
         sessionClock.setStarted(null);
         sessionClock.setEnded(null);
     }
+
     public List<PlayerOverviewDto> getAllPlayerOverview() {
         if (!gameState.equals(RUNNING)) {
             throw new IllegalStateException("get players failed - session is not running");
@@ -69,6 +73,7 @@ public class SessionService {
 
         return playerOverviewDtoMapper.map(sessionPlayers);
     }
+
     public List<PlayerDto> getAllPlayer() {
         if (!gameState.equals(RUNNING)) {
             throw new IllegalStateException("get players failed - session is not running");

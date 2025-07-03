@@ -54,14 +54,12 @@ public class SessionController {
     }
 
     @PostMapping("/session/{sessionName}")
-    public ResponseEntity<String> createSession(@PathVariable(name = "sessionName")  String sessionName) {
+    public ResponseEntity<SessionOverviewDto> createSession(@PathVariable(name = "sessionName")  String sessionName) {
         if (!sessionService.getGameState().equals(GameStateEnum.NOT_CREATED)) {
-            return ResponseEntity.badRequest().body(CREATE_SESSION_FAILED_SESSION_IS_ALREADY_CREATED);
+            return ResponseEntity.badRequest().body(null);
         }
 
-        sessionService.createSession(sessionName);
-
-        return ResponseEntity.ok(CREATED_SESSION);
+        return ResponseEntity.ok(sessionService.createSession(sessionName));
     }
 
     @PatchMapping("/session/{sessionName}/start")
