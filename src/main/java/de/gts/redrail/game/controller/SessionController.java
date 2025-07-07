@@ -120,11 +120,11 @@ public class SessionController {
             @PathVariable(name = "playerName")  String playerName
             ) {
         if (!sessionService.isSessionNameMatching(sessionName)) {
-            return ResponseEntity.ok(null);
+            return ResponseEntity.ok(sessionService.createCurrentSessionOverview());
         }
 
         if (!sessionService.getGameState().equals(GameStateEnum.NOT_STARTED)) {
-            return ResponseEntity.ok(null);
+            return ResponseEntity.ok(sessionService.createCurrentSessionOverview());
         }
 
         PlayerOverviewDto playerOverviewDto = new PlayerOverviewDto();
@@ -134,7 +134,7 @@ public class SessionController {
         boolean result = sessionService.joinSession(playerOverviewDto);
 
         if (result) {
-            return ResponseEntity.ok(null);
+            return ResponseEntity.ok(sessionService.createCurrentSessionOverview());
         } else {
             return ResponseEntity.ok(sessionService.createCurrentSessionOverview());
         }
