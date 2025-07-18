@@ -28,6 +28,7 @@ import de.gts.redrail.game.models.dtos.SessionOverviewDto;
 import de.gts.redrail.game.models.entities.ActionResult;
 import de.gts.redrail.game.models.entities.Player;
 import de.gts.redrail.game.models.entities.Rail;
+import de.gts.redrail.game.models.entities.SessionData;
 import de.gts.redrail.game.models.entities.Station;
 import de.gts.redrail.game.models.entities.Train;
 import de.gts.redrail.game.utils.PlayerUtil;
@@ -48,13 +49,22 @@ public class SessionService {
     private final PlayerDtoMapper playerDtoMapper;
     private final PlayerMapper playerMapper;
     private final PlayerOverviewDtoMapper playerOverviewDtoMapper;
+    private final List<SessionData> sessions = new ArrayList<>();
 
-    public SessionOverviewDto createSession(String name) {
-        sessionName = name;
-        sessionPlayers = new ArrayList<>();
-        gameState = NOT_STARTED;
+    public SessionOverviewDto createSession(String name) { 
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("Session name cannot be null or blank");
+        }
 
-        return createCurrentSessionOverview();
+        if (findSessionByName(name) != null) {
+            throw new IllegalArgumentException("Session with this name already exists");
+        }
+
+        SessionData sessionData = new SessionData();
+        sessionData.setSessionName(name);
+        sessionData.setGameState(GameStateEnum.NOT_STARTED);
+        sessions.add(sessionData);
+        return createSessionOverview(sessionData.getSessionName());
     }
 
     public void killSession() {
@@ -102,7 +112,7 @@ public class SessionService {
     public long endSession() {
         gameState = FINISHED;
         sessionClock.endClock();
-    return Duration.between(sessionClock.getStarted(), sessionClock.getEnded()).toMinutes();
+        return Duration.between(sessionClock.getStarted(), sessionClock.getEnded()).toMinutes();
     }
 
     public SessionOverviewDto createCurrentSessionOverview() {
@@ -313,5 +323,42 @@ public class SessionService {
         }
 
         return sortedPlayers;
+    }
+
+    public List<SessionOverviewDto> getAllSessionsOverview() {
+        List<SessionOverviewDto> overviewList = new ArrayList<>();
+        for (SessionData sessionData : sessions) {
+            overviewList.add(createSessionOverview(sessionData.getSessionName()));
+        }
+
+        return overviewList;
+    }
+
+    public SessionOverviewDto createSessionOverview(String sessionName) {
+        SessionData sessionData = findSessionByName(sessionName);
+        if (sessionData == null) {
+            throw new IllegalArgumentException("Session with name " + sessionName + " does not exist");
+        }
+
+        SessionOverviewDto dto = new SessionOverviewDto();
+        dto.setSessionName(sessionData.getSessionName());
+        if (playerOverviewDtoMapper != null) {
+            dto.setPlayers(playerOverviewDtoMapper.map(sessionData.getSessionPlayers()));
+        } else {
+            dto.setPlayers(new ArrayList<>());
+        }
+        dto.setGameState(sessionData.getGameState());
+        dto.setSessionStarted(sessionData.getSessionClock().getStarted());
+        dto.setSessionEnded(sessionData.getSessionClock().getEnded());
+        return dto;
+    }
+
+    private SessionData findSessionByName(String name) {
+        for (SessionData session : sessions) {
+            if (session.getSessionName().equals(name)) {
+                return session;
+            }
+        }
+        return null;
     }
 }

@@ -10,26 +10,19 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import de.gts.redrail.game.component.GameClock;
 import de.gts.redrail.game.constants.GameStateEnum;
-import static de.gts.redrail.game.constants.ResponseText.CREATED_SESSION;
-import static de.gts.redrail.game.constants.ResponseText.CREATE_SESSION_FAILED_SESSION_IS_ALREADY_CREATED;
-import static de.gts.redrail.game.constants.ResponseText.GET_RESOURCE_FAILED_SESSION_IS_NOT_RUNNING;
-import static de.gts.redrail.game.constants.ResponseText.PLAYER_JOINED_SESSION;
-import static de.gts.redrail.game.constants.ResponseText.PLAYER_JOIN_SESSION_FAILED;
-import static de.gts.redrail.game.constants.ResponseText.PLAYER_JOIN_SESSION_FAILED_SESSION_IS_RUNNING_OR_FINISHED;
 import static de.gts.redrail.game.constants.ResponseText.STARTED_SESSION;
 import static de.gts.redrail.game.constants.ResponseText.START_SESSION_FAILED_NO_PLAYER;
 import static de.gts.redrail.game.constants.ResponseText.START_SESSION_FAILED_SESSION_IS_NOT_CREATED_IS_RUNNING_OR_FINISHED;
-import de.gts.redrail.game.models.dtos.JoinSessionResponseDto;
 import de.gts.redrail.game.models.dtos.PlayerDto;
 import de.gts.redrail.game.models.dtos.PlayerOverviewDto;
+import de.gts.redrail.game.models.dtos.SessionEndResponseDto;
 import de.gts.redrail.game.models.dtos.SessionOverviewDto;
 import de.gts.redrail.game.models.entities.ActionResult;
+import de.gts.redrail.game.models.entities.Player;
 import de.gts.redrail.game.service.SessionService;
 import lombok.RequiredArgsConstructor;
-import de.gts.redrail.game.models.dtos.SessionEndResponseDto;
-import de.gts.redrail.game.component.GameClock;
-import de.gts.redrail.game.models.entities.Player;
 
 @RestController
 @RequiredArgsConstructor
@@ -37,6 +30,16 @@ public class SessionController {
 
     public final SessionService sessionService;
     public final GameClock gameClock;
+
+    @GetMapping("/sessions")
+    public ResponseEntity<List<SessionOverviewDto>> getSessionOverview() {
+        return ResponseEntity.ok(sessionService.getAllSessionsOverview());
+    }
+
+    @GetMapping("/session/{sessionName}/info")
+    public ResponseEntity<SessionOverviewDto> getSessionInfo(@PathVariable(name = "sessionName") String sessionName) {
+        return ResponseEntity.ok(sessionService.createSessionOverview(sessionName));
+    }
 
     @GetMapping("/session/{sessionName}/player/{playerUid}/resource")
     public ResponseEntity<PlayerDto> getResource(@PathVariable(name = "playerUid")  String playerUid) {
@@ -55,9 +58,7 @@ public class SessionController {
 
     @PostMapping("/session/{sessionName}")
     public ResponseEntity<SessionOverviewDto> createSession(@PathVariable(name = "sessionName")  String sessionName) {
-        if (!sessionService.getGameState().equals(GameStateEnum.NOT_CREATED)) {
-            return ResponseEntity.badRequest().body(null);
-        }
+       
 
         return ResponseEntity.ok(sessionService.createSession(sessionName));
     }
@@ -109,10 +110,7 @@ public class SessionController {
         return ResponseEntity.ok("Session killed successfully");
     }
 
-    @GetMapping("/session")
-    public ResponseEntity<SessionOverviewDto> getSessionOverview() {
-        return ResponseEntity.ok(sessionService.createCurrentSessionOverview());
-    }
+   
 
     @PostMapping("/session/{sessionName}/{playerName}")
     public ResponseEntity<SessionOverviewDto> joinSession(
