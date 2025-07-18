@@ -14,5 +14,6 @@ public class SessionData {
     private String sessionName;
     private List<Player> sessionPlayers = new ArrayList<>();
     private GameStateEnum gameState = GameStateEnum.NOT_CREATED;
-    private GameClock sessionClock = new GameClock();
+    private GameClock sessionClock;
+    
 }

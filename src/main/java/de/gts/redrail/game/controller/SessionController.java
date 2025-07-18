@@ -73,7 +73,7 @@ public class SessionController {
             return ResponseEntity.badRequest().body(START_SESSION_FAILED_SESSION_IS_NOT_CREATED_IS_RUNNING_OR_FINISHED);
         }
 
-        boolean result = sessionService.startSession();
+        boolean result = sessionService.startSession(sessionName);
 
         if (result) {
             return ResponseEntity.ok(STARTED_SESSION);
@@ -91,7 +91,7 @@ public class SessionController {
         if (!sessionService.getGameState().equals(GameStateEnum.RUNNING)) {
             return ResponseEntity.badRequest().body(null);
         }
-        // Get players BEFORE ending the session
+        
         List<PlayerDto> players = sessionService.getAllPlayer();
         sessionService.endSession();
         long duration = gameClock.getSessionDurationInMinutes();
@@ -129,7 +129,7 @@ public class SessionController {
         playerOverviewDto.setUId(UUID.randomUUID().toString());
         playerOverviewDto.setName(playerName);
 
-        boolean result = sessionService.joinSession(playerOverviewDto);
+        boolean result = sessionService.joinSession(playerOverviewDto, sessionName);
 
         if (result) {
             return ResponseEntity.ok(sessionService.createCurrentSessionOverview());

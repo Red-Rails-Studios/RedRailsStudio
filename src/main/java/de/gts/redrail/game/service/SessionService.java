@@ -40,7 +40,6 @@ import lombok.RequiredArgsConstructor;
 public class SessionService {
 
     private String sessionName;
-    private final GameClock sessionClock;
     private List<Player> sessionPlayers;
     private GameStateEnum gameState = NOT_CREATED;
     private final ResourceCalculator resourceCalculator;
@@ -63,6 +62,7 @@ public class SessionService {
         SessionData sessionData = new SessionData();
         sessionData.setSessionName(name);
         sessionData.setGameState(GameStateEnum.NOT_STARTED);
+        sessionData.setSessionClock(new GameClock()); // <-- create and set clock
         sessions.add(sessionData);
         return createSessionOverview(sessionData.getSessionName());
     }
@@ -71,9 +71,12 @@ public class SessionService {
         sessionName = null;
         sessionPlayers = null;
         gameState = NOT_CREATED;
-        sessionClock.endClock();
-        sessionClock.setStarted(null);
-        sessionClock.setEnded(null);
+        SessionData sessionData = findSessionByName(sessionName);
+        if (sessionData != null && sessionData.getSessionClock() != null) {
+            sessionData.getSessionClock().endClock();
+            sessionData.getSessionClock().setStarted(null);
+            sessionData.getSessionClock().setEnded(null);
+        }
     }
 
     public List<PlayerOverviewDto> getAllPlayerOverview() {
@@ -98,41 +101,62 @@ public class SessionService {
         return playerDtos;
     }
 
-    public boolean startSession() {
-        if (CollectionUtils.isEmpty(sessionPlayers)) {
+    public boolean startSession(String sessionName) {
+        SessionData sessionData = findSessionByName(sessionName);
+        if (sessionData == null || CollectionUtils.isEmpty(sessionData.getSessionPlayers())) {
             return false;
         }
 
-        gameState = RUNNING;
-        sessionClock.startClock();
+        sessionData.setGameState(GameStateEnum.RUNNING);
 
+        if (sessionData.getSessionClock() == null) {
+            sessionData.setSessionClock(new GameClock());
+        }
+        
+        sessionData.getSessionClock().startClock(); // <-- start clock for this session
         return true;
     }
 
     public long endSession() {
-        gameState = FINISHED;
-        sessionClock.endClock();
-        return Duration.between(sessionClock.getStarted(), sessionClock.getEnded()).toMinutes();
+        SessionData sessionData = findSessionByName(sessionName);
+        if (sessionData == null || sessionData.getSessionClock() == null) {
+            return 0;
+        }
+        sessionData.setGameState(FINISHED);
+        sessionData.getSessionClock().endClock(); // <-- end clock for this session
+        return Duration.between(sessionData.getSessionClock().getStarted(), sessionData.getSessionClock().getEnded()).toMinutes();
     }
 
     public SessionOverviewDto createCurrentSessionOverview() {
         SessionOverviewDto sessionOverviewDto = new SessionOverviewDto();
-
         sessionOverviewDto.setSessionName(sessionName);
         sessionOverviewDto.setPlayers(playerOverviewDtoMapper.map(sessionPlayers));
         sessionOverviewDto.setGameState(gameState);
-        sessionOverviewDto.setSessionStarted(sessionClock.getStarted());
-        sessionOverviewDto.setSessionEnded(sessionClock.getEnded());
-
+        SessionData sessionData = findSessionByName(sessionName);
+        if (sessionData != null && sessionData.getSessionClock() != null) {
+            sessionOverviewDto.setSessionStarted(sessionData.getSessionClock().getStarted());
+            sessionOverviewDto.setSessionEnded(sessionData.getSessionClock().getEnded());
+        } else {
+            sessionOverviewDto.setSessionStarted(null);
+            sessionOverviewDto.setSessionEnded(null);
+        }
         return sessionOverviewDto;
     }
 
-    public boolean joinSession(PlayerOverviewDto playerWantToJoin) {
+    public boolean joinSession(PlayerOverviewDto playerWantToJoin, String sessionName) {
         for (Player player : sessionPlayers) {
             if (PlayerUtil.isPlayerMatching(player, playerWantToJoin)) {
                 return false;
             }
         }
+        SessionData sessionData = findSessionByName(sessionName);
+        if (sessionData == null) {
+            return false;
+        }
+
+        if (sessionData.getGameState() != NOT_CREATED) {
+            return false;
+        }   
 
         Player newPlayer = playerMapper.map(playerWantToJoin);
 
