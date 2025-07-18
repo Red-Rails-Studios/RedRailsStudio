@@ -79,25 +79,32 @@ public class SessionService {
         }
     }
 
-    public List<PlayerOverviewDto> getAllPlayerOverview() {
-        if (!gameState.equals(RUNNING)) {
-            throw new IllegalStateException("get players failed - session is not running");
-        }
-
-        return playerOverviewDtoMapper.map(sessionPlayers);
+    public boolean isSessionNameMatching(String name) {
+        return findSessionByName(name) != null;
     }
 
-    public List<PlayerDto> getAllPlayer() {
-        if (!gameState.equals(RUNNING)) {
+    public GameStateEnum getGameState(String sessionName) {
+        SessionData sessionData = findSessionByName(sessionName);
+        return sessionData != null ? sessionData.getGameState() : NOT_CREATED;
+    }
+
+    public List<PlayerOverviewDto> getAllPlayerOverview(String sessionName) {
+        SessionData sessionData = findSessionByName(sessionName);
+        if (sessionData == null || !sessionData.getGameState().equals(RUNNING)) {
             throw new IllegalStateException("get players failed - session is not running");
         }
+        return playerOverviewDtoMapper.map(sessionData.getSessionPlayers());
+    }
 
+    public List<PlayerDto> getAllPlayer(String sessionName) {
+        SessionData sessionData = findSessionByName(sessionName);
+        if (sessionData == null || !sessionData.getGameState().equals(RUNNING)) {
+            throw new IllegalStateException("get players failed - session is not running");
+        }
         List<PlayerDto> playerDtos = new ArrayList<>();
-
-        for (Player player : sessionPlayers) {
+        for (Player player : sessionData.getSessionPlayers()) {
             playerDtos.add(playerDtoMapper.map(player));
         }
-
         return playerDtos;
     }
 
@@ -106,24 +113,21 @@ public class SessionService {
         if (sessionData == null || CollectionUtils.isEmpty(sessionData.getSessionPlayers())) {
             return false;
         }
-
-        sessionData.setGameState(GameStateEnum.RUNNING);
-
+        sessionData.setGameState(RUNNING);
         if (sessionData.getSessionClock() == null) {
             sessionData.setSessionClock(new GameClock());
         }
-        
-        sessionData.getSessionClock().startClock(); // <-- start clock for this session
+        sessionData.getSessionClock().startClock();
         return true;
     }
 
-    public long endSession() {
+    public long endSession(String sessionName) {
         SessionData sessionData = findSessionByName(sessionName);
         if (sessionData == null || sessionData.getSessionClock() == null) {
             return 0;
         }
         sessionData.setGameState(FINISHED);
-        sessionData.getSessionClock().endClock(); // <-- end clock for this session
+        sessionData.getSessionClock().endClock();
         return Duration.between(sessionData.getSessionClock().getStarted(), sessionData.getSessionClock().getEnded()).toMinutes();
     }
 
@@ -144,54 +148,41 @@ public class SessionService {
     }
 
     public boolean joinSession(PlayerOverviewDto playerWantToJoin, String sessionName) {
-        for (Player player : sessionPlayers) {
-            if (PlayerUtil.isPlayerMatching(player, playerWantToJoin)) {
-                return false;
-            }
-        }
         SessionData sessionData = findSessionByName(sessionName);
         if (sessionData == null) {
             return false;
         }
-
-        if (sessionData.getGameState() != NOT_CREATED) {
-            return false;
-        }   
-
-        Player newPlayer = playerMapper.map(playerWantToJoin);
-
-        if (newPlayer == null) {
+        for (Player player : sessionData.getSessionPlayers()) {
+            if (PlayerUtil.isPlayerMatching(player, playerWantToJoin)) {
+                return false;
+            }
+        }
+        if (sessionData.getGameState() != NOT_STARTED) {
             return false;
         }
-
+        Player newPlayer = playerMapper.map(playerWantToJoin);
+        // ...initialize player...
         Rail rail = new Rail();
         Station station1 = new Station();
         Station station2 = new Station();
         Train train = new Train();
         rail.setUId(UUID.randomUUID().toString());
         rail.setLevel(1);
-
         station1.setUId(UUID.randomUUID().toString());
         station1.setLevel(1);
         station2.setUId(UUID.randomUUID().toString());
         station2.setLevel(1);
-        
         train.setUId(UUID.randomUUID().toString());
         train.setLevel(1);
         station1.setTrainCapacity(station1.getTrainCapacity() - 1);
-       
         newPlayer.setRails(new ArrayList<>());
         newPlayer.getRails().add(rail);
-
         newPlayer.setStations(new ArrayList<>());
         newPlayer.getStations().add(station1);
         newPlayer.getStations().add(station2);
-
         newPlayer.setTrains(new ArrayList<>());
         newPlayer.getTrains().add(train);
-
-        sessionPlayers.add(newPlayer);
-
+        sessionData.getSessionPlayers().add(newPlayer);
         return true;
     }
 
@@ -293,18 +284,6 @@ public class SessionService {
 
         return playComponentsStore.upgradeTrain(playerOptional.get(), trainUid);
     }
-
-    public boolean isSessionNameMatching(String name) {
-        if (name == null || sessionName == null) {
-            return false;
-        }
-
-        return sessionName.equals(name);
-    }
-
-    public GameStateEnum getGameState() {
-        return gameState;
-    } 
 
     public List<Player> getRanking() {
         

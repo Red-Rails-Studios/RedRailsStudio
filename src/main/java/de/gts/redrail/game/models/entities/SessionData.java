@@ -12,7 +12,7 @@ import java.util.List;
 @Data
 public class SessionData {
     private String sessionName;
-    private List<Player> sessionPlayers = new ArrayList<>();
+    private List<Player> sessionPlayers;
     private GameStateEnum gameState = GameStateEnum.NOT_CREATED;
     private GameClock sessionClock;
     
