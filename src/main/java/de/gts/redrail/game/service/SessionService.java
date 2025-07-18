@@ -117,6 +117,18 @@ public class SessionService {
         return sessionOverviewDto;
     }
 
+    public PlayerOverviewDto createPlayerOverview(String uId, String name) {
+        PlayerOverviewDto playerOverviewDto = new PlayerOverviewDto();
+
+        playerOverviewDto.setUId(uId);
+        playerOverviewDto.setName(name);
+       
+        
+
+        return playerOverviewDto;
+    }
+
+
     public boolean joinSession(PlayerOverviewDto playerWantToJoin) {
         for (Player player : sessionPlayers) {
             if (PlayerUtil.isPlayerMatching(player, playerWantToJoin)) {
