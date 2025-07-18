@@ -62,7 +62,8 @@ public class SessionService {
         SessionData sessionData = new SessionData();
         sessionData.setSessionName(name);
         sessionData.setGameState(GameStateEnum.NOT_STARTED);
-        sessionData.setSessionClock(new GameClock()); // <-- create and set clock
+        sessionData.setSessionClock(new GameClock());
+        sessionData.setSessionPlayers(new ArrayList<>()); // <-- FIX: initialize player list
         sessions.add(sessionData);
         return createSessionOverview(sessionData.getSessionName());
     }
