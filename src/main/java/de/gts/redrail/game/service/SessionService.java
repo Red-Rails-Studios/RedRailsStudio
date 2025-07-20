@@ -63,12 +63,13 @@ public class SessionService {
         sessionData.setSessionName(name);
         sessionData.setGameState(GameStateEnum.NOT_STARTED);
         sessionData.setSessionClock(new GameClock());
-        sessionData.setSessionPlayers(new ArrayList<>()); // <-- FIX: initialize player list
+        sessionData.setSessionPlayers(new ArrayList<>()); 
         sessions.add(sessionData);
+        
         return createSessionOverview(sessionData.getSessionName());
     }
 
-    public void killSession() {
+    public void killSession(String sessionName) {
         sessionName = null;
         sessionPlayers = null;
         gameState = NOT_CREATED;
@@ -77,6 +78,13 @@ public class SessionService {
             sessionData.getSessionClock().endClock();
             sessionData.getSessionClock().setStarted(null);
             sessionData.getSessionClock().setEnded(null);
+        }
+
+        for (SessionData session : sessions) {
+            if (session.getSessionName().equals(sessionName)) {
+                sessions.remove(session);
+                break;
+            }
         }
     }
 
@@ -127,8 +135,17 @@ public class SessionService {
         if (sessionData == null || sessionData.getSessionClock() == null) {
             return 0;
         }
+
         sessionData.setGameState(FINISHED);
         sessionData.getSessionClock().endClock();
+
+        for (SessionData session : sessions) {
+            if (session.getSessionName().equals(sessionName)) {
+                sessions.remove(session);
+                break;
+            }
+        }
+
         return Duration.between(sessionData.getSessionClock().getStarted(), sessionData.getSessionClock().getEnded()).toMinutes();
     }
 
@@ -153,16 +170,18 @@ public class SessionService {
         if (sessionData == null) {
             return false;
         }
+
         for (Player player : sessionData.getSessionPlayers()) {
             if (PlayerUtil.isPlayerMatching(player, playerWantToJoin)) {
                 return false;
             }
         }
+
         if (sessionData.getGameState() != NOT_STARTED) {
             return false;
         }
+
         Player newPlayer = playerMapper.map(playerWantToJoin);
-        // ...initialize player...
         Rail rail = new Rail();
         Station station1 = new Station();
         Station station2 = new Station();

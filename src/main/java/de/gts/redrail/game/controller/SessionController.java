@@ -97,13 +97,13 @@ public class SessionController {
         return ResponseEntity.ok(new SessionEndResponseDto(players, duration));
     }
 
-     @PatchMapping("/session/{sessionName}/kill")
+    @PatchMapping("/session/{sessionName}/kill")
     public ResponseEntity<String> killSession(@PathVariable(name = "sessionName")  String sessionName) {
         if (!sessionService.isSessionNameMatching(sessionName)) {
             return ResponseEntity.noContent().build();
         }
 
-        sessionService.killSession();
+        sessionService.killSession(sessionName);
 
         return ResponseEntity.ok("Session killed successfully");
     }
@@ -120,10 +120,16 @@ public class SessionController {
         if (!sessionService.getGameState(sessionName).equals(GameStateEnum.NOT_STARTED)) {
             return ResponseEntity.ok(sessionService.createSessionOverview(sessionName));
         }
+
         PlayerOverviewDto playerOverviewDto = new PlayerOverviewDto();
         playerOverviewDto.setUId(UUID.randomUUID().toString());
         playerOverviewDto.setName(playerName);
         boolean result = sessionService.joinSession(playerOverviewDto, sessionName);
+
+        if (!result) {
+            return ResponseEntity.badRequest().body(null);
+        }
+
         return ResponseEntity.ok(sessionService.createSessionOverview(sessionName));
     }
 
