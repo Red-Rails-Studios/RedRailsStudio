@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import de.gts.redrail.game.component.GameClock;
+import de.gts.redrail.game.models.entities.SessionData;
 import de.gts.redrail.game.constants.GameStateEnum;
 import static de.gts.redrail.game.constants.ResponseText.STARTED_SESSION;
 import static de.gts.redrail.game.constants.ResponseText.START_SESSION_FAILED_NO_PLAYER;
@@ -110,6 +111,10 @@ public class SessionController {
 
     @PatchMapping("/sessions/killall")
     public ResponseEntity<String> killAllSessions() {
+        List<SessionData> sessions = sessionService.getAllSessions();
+        if (sessions.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
         sessionService.killAllSessions();
         return ResponseEntity.ok("All sessions killed successfully");
     }

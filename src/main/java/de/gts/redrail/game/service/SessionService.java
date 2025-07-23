@@ -45,6 +45,10 @@ public class SessionService {
     private final PlayerOverviewDtoMapper playerOverviewDtoMapper;
     private final List<SessionData> sessions = new ArrayList<>();
 
+    public List<SessionData> getAllSessions() {
+        return sessions;
+    }
+    
     public SessionOverviewDto createSession(String name) { 
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("Session name cannot be null or blank");
