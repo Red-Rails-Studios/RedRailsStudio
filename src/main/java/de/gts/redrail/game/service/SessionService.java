@@ -40,7 +40,6 @@ import lombok.RequiredArgsConstructor;
 public class SessionService {
 
     private String sessionName;
-    private List<Player> sessionPlayers;
     private GameStateEnum gameState = NOT_CREATED;
     private final ResourceCalculator resourceCalculator;
     private final PlayComponentsStore playComponentsStore;
@@ -83,9 +82,10 @@ public class SessionService {
                 break;
             }
         }
-        sessionName = null;
-        sessionPlayers = null;
-        gameState = NOT_CREATED;
+        sessionData.setSessionName(null);
+        sessionData.setSessionClock(null);
+        sessionData.setSessionPlayers(new ArrayList<>());   
+        sessionData.setGameState(GameStateEnum.NOT_CREATED);
     }
 
     public void killAllSessions() {
@@ -156,12 +156,12 @@ public class SessionService {
         return Duration.between(sessionData.getSessionClock().getStarted(), sessionData.getSessionClock().getEnded()).toMinutes();
     }
 
-    public SessionOverviewDto createCurrentSessionOverview() {
+    public SessionOverviewDto createCurrentSessionOverview(String sessionName) {
+        SessionData sessionData = findSessionByName(sessionName);
         SessionOverviewDto sessionOverviewDto = new SessionOverviewDto();
         sessionOverviewDto.setSessionName(sessionName);
-        sessionOverviewDto.setPlayers(playerOverviewDtoMapper.map(sessionPlayers));
+        sessionOverviewDto.setPlayers(playerOverviewDtoMapper.map(sessionData.getSessionPlayers()));
         sessionOverviewDto.setGameState(gameState);
-        SessionData sessionData = findSessionByName(sessionName);
         if (sessionData != null && sessionData.getSessionClock() != null) {
             sessionOverviewDto.setSessionStarted(sessionData.getSessionClock().getStarted());
             sessionOverviewDto.setSessionEnded(sessionData.getSessionClock().getEnded());
@@ -213,10 +213,10 @@ public class SessionService {
         return true;
     }
 
-    public PlayerDto getPlayerStatus(String uId) {
-        resourceCalculator.calculateResource(sessionPlayers);
-
-        Optional<Player> playerOptional = PlayerUtil.getPlayerByUid(sessionPlayers, uId);
+    public PlayerDto getPlayerStatus(String uId, String sessionName) {
+        SessionData sessionData = findSessionByName(sessionName);
+        resourceCalculator.calculateResource(sessionData.getSessionPlayers());
+        Optional<Player> playerOptional = PlayerUtil.getPlayerByUid(sessionData.getSessionPlayers(), uId);
 
         if (playerOptional.isEmpty()) {
             return null;
@@ -225,8 +225,9 @@ public class SessionService {
         return playerDtoMapper.map(playerOptional.get());
     }
 
-    public ActionResult buyRail(String playerUid) {
-        Optional<Player> playerOptional = PlayerUtil.getPlayerByUid(sessionPlayers, playerUid);
+    public ActionResult buyRail(String playerUid, String sessionName) {
+        SessionData sessionData = findSessionByName(sessionName);
+        Optional<Player> playerOptional = PlayerUtil.getPlayerByUid(sessionData.getSessionPlayers(), playerUid);
 
         if (playerOptional.isEmpty()) {
             return new ActionResult(false, ACTION_FAILED_NO_MATCH_PLAYER);
@@ -238,9 +239,9 @@ public class SessionService {
         
     }
 
-    public ActionResult upgradeRail(String playerUid, String railUid) {
-        Optional<Player> playerOptional = PlayerUtil.getPlayerByUid(sessionPlayers, playerUid);
-
+    public ActionResult upgradeRail(String sessionName,String playerUid, String railUid) {
+        SessionData sessionData = findSessionByName(sessionName);
+        Optional<Player> playerOptional = PlayerUtil.getPlayerByUid(sessionData.getSessionPlayers(), playerUid);
         if (playerOptional.isEmpty()) {
             return new ActionResult(false, ACTION_FAILED_NO_MATCH_PLAYER);
         }
@@ -250,8 +251,9 @@ public class SessionService {
         return playComponentsStore.upgradeRail(playerOptional.get(), railUid);
     }
     
-    public ActionResult buyStation(String playerUid) {
-        Optional<Player> playerOptional = PlayerUtil.getPlayerByUid(sessionPlayers, playerUid);
+    public ActionResult buyStation(String playerUid, String sessionName) {
+        SessionData sessionData = findSessionByName(sessionName);
+        Optional<Player> playerOptional = PlayerUtil.getPlayerByUid(sessionData.getSessionPlayers(), playerUid);
 
         if (playerOptional.isEmpty()) {
             return new ActionResult(false, ACTION_FAILED_NO_MATCH_PLAYER);
@@ -262,8 +264,9 @@ public class SessionService {
         return playComponentsStore.buyStation(playerOptional.get());
     }
 
-    public ActionResult upgradeStation(String playerUid, String stationUid) {
-        Optional<Player> playerOptional = PlayerUtil.getPlayerByUid(sessionPlayers, playerUid);
+    public ActionResult upgradeStation(String playerUid, String stationUid, String sessionName) {
+        SessionData sessionData = findSessionByName(sessionName);
+        Optional<Player> playerOptional = PlayerUtil.getPlayerByUid(sessionData.getSessionPlayers(), playerUid);
 
         if (playerOptional.isEmpty()) {
             return new ActionResult(false, ACTION_FAILED_NO_MATCH_PLAYER);
@@ -274,8 +277,9 @@ public class SessionService {
         return playComponentsStore.upgradeStation(playerOptional.get(), stationUid);
     }
 
-    public ActionResult buyTrain(String playerUid) {
-        Optional<Player> playerOptional = PlayerUtil.getPlayerByUid(sessionPlayers, playerUid);
+    public ActionResult buyTrain(String playerUid, String sessionName) {
+        SessionData sessionData = findSessionByName(sessionName);
+        Optional<Player> playerOptional = PlayerUtil.getPlayerByUid(sessionData.getSessionPlayers(), playerUid);
 
         if (playerOptional.isEmpty()) {
             return new ActionResult(false, ACTION_FAILED_NO_MATCH_PLAYER);
@@ -299,8 +303,9 @@ public class SessionService {
         return playComponentsStore.buyTrain(playerOptional.get());
     }
 
-    public ActionResult upgradeTrain(String playerUid, String trainUid) {
-        Optional<Player> playerOptional = PlayerUtil.getPlayerByUid(sessionPlayers, playerUid);
+    public ActionResult upgradeTrain(String playerUid, String trainUid, String sessionName) {
+        SessionData sessionData = findSessionByName(sessionName);
+        Optional<Player> playerOptional = PlayerUtil.getPlayerByUid(sessionData.getSessionPlayers(), playerUid);
 
         if (playerOptional.isEmpty()) {
             return new ActionResult(false, ACTION_FAILED_NO_MATCH_PLAYER);
@@ -312,13 +317,13 @@ public class SessionService {
         return playComponentsStore.upgradeTrain(playerOptional.get(), trainUid);
     }
 
-    public List<Player> getRanking() {
-        
-        if (gameState.equals(NOT_CREATED) || gameState.equals(NOT_STARTED)) {
+    public List<Player> getRanking(String sessionName) {
+        SessionData sessionData = findSessionByName(sessionName);
+        if (sessionData.getGameState().equals(NOT_CREATED) || sessionData.getGameState().equals(NOT_STARTED)) {
             throw new IllegalStateException("get ranking failed - session is not created or not started");
         }
-
-        List<Player> playerDtos = new ArrayList<>(sessionPlayers);
+        
+        List<Player> playerDtos = new ArrayList<>(sessionData.getSessionPlayers());
         List<Player> sortedPlayers = new ArrayList<>();
         
         for(Player p : playerDtos)
