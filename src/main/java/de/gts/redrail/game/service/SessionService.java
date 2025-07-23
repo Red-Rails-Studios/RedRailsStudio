@@ -90,16 +90,8 @@ public class SessionService {
 
     public void killAllSessions() {
     for (SessionData session : sessions) {
-        sessionName = null;
-        sessionPlayers = null;
-        gameState = NOT_CREATED;
-        SessionData sessionData = findSessionByName(sessionName);
-        if (sessionData != null && sessionData.getSessionClock() != null) {
-            sessionData.getSessionClock().endClock();
-            sessionData.getSessionClock().setStarted(null);
-            sessionData.getSessionClock().setEnded(null);
-            }
-            sessions.remove(session);    
+        String name = session.getSessionName();
+        killSession(name);
     }
 }
 
