@@ -1,13 +1,11 @@
 package de.gts.redrail.game.models.entities;
 
 
+import java.util.List;
+
 import de.gts.redrail.game.component.GameClock;
 import de.gts.redrail.game.constants.GameStateEnum;
-import de.gts.redrail.game.models.entities.Player;
 import lombok.Data;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Data
 public class SessionData {

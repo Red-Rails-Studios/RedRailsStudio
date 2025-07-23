@@ -89,10 +89,11 @@ public class SessionService {
     }
 
     public void killAllSessions() {
-    for (SessionData session : sessions) {
-        killSession(session.getSessionName());
+        List<SessionData> sessionsCopy = new ArrayList<>(sessions);
+        for (SessionData session : sessionsCopy) {
+            killSession(session.getSessionName());
+        }
     }
-}
 
     public boolean isSessionNameMatching(String name) {
         return findSessionByName(name) != null;
