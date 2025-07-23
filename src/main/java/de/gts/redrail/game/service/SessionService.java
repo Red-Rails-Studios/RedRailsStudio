@@ -70,9 +70,6 @@ public class SessionService {
     }
 
     public void killSession(String sessionName) {
-        sessionName = null;
-        sessionPlayers = null;
-        gameState = NOT_CREATED;
         SessionData sessionData = findSessionByName(sessionName);
         if (sessionData != null && sessionData.getSessionClock() != null) {
             sessionData.getSessionClock().endClock();
@@ -86,6 +83,9 @@ public class SessionService {
                 break;
             }
         }
+        sessionName = null;
+        sessionPlayers = null;
+        gameState = NOT_CREATED;
     }
 
     public void killAllSessions() {
