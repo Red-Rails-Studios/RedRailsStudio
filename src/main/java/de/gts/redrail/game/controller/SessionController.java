@@ -108,6 +108,12 @@ public class SessionController {
         return ResponseEntity.ok("Session killed successfully");
     }
 
+    @PatchMapping("/sessions/killall")
+    public ResponseEntity<String> killAllSessions() {
+        sessionService.killAllSessions();
+        return ResponseEntity.ok("All sessions killed successfully");
+    }
+
     @PostMapping("/session/{sessionName}/{playerName}")
     public ResponseEntity<SessionOverviewDto> joinSession(
             @PathVariable String sessionName,
