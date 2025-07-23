@@ -38,9 +38,6 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class SessionService {
-
-    private String sessionName;
-    private GameStateEnum gameState = NOT_CREATED;
     private final ResourceCalculator resourceCalculator;
     private final PlayComponentsStore playComponentsStore;
 
@@ -160,7 +157,7 @@ public class SessionService {
         SessionOverviewDto sessionOverviewDto = new SessionOverviewDto();
         sessionOverviewDto.setSessionName(sessionName);
         sessionOverviewDto.setPlayers(playerOverviewDtoMapper.map(sessionData.getSessionPlayers()));
-        sessionOverviewDto.setGameState(gameState);
+        sessionOverviewDto.setGameState(sessionData.getGameState());
         if (sessionData != null && sessionData.getSessionClock() != null) {
             sessionOverviewDto.setSessionStarted(sessionData.getSessionClock().getStarted());
             sessionOverviewDto.setSessionEnded(sessionData.getSessionClock().getEnded());
