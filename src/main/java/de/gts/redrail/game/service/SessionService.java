@@ -40,7 +40,6 @@ import lombok.RequiredArgsConstructor;
 public class SessionService {
     private final ResourceCalculator resourceCalculator;
     private final PlayComponentsStore playComponentsStore;
-
     private final PlayerDtoMapper playerDtoMapper;
     private final PlayerMapper playerMapper;
     private final PlayerOverviewDtoMapper playerOverviewDtoMapper;
