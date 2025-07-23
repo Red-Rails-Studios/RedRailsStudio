@@ -90,8 +90,7 @@ public class SessionService {
 
     public void killAllSessions() {
     for (SessionData session : sessions) {
-        String name = session.getSessionName();
-        killSession(name);
+        killSession(session.getSessionName());
     }
 }
 
@@ -322,7 +321,7 @@ public class SessionService {
         if (sessionData.getGameState().equals(NOT_CREATED) || sessionData.getGameState().equals(NOT_STARTED)) {
             throw new IllegalStateException("get ranking failed - session is not created or not started");
         }
-        
+
         List<Player> playerDtos = new ArrayList<>(sessionData.getSessionPlayers());
         List<Player> sortedPlayers = new ArrayList<>();
         
