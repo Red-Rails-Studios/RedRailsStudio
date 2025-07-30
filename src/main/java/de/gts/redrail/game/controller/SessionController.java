@@ -149,17 +149,16 @@ public class SessionController {
 
    @GetMapping("/session/{sessionName}/GetPlayers")
     public ResponseEntity<List<PlayerOverviewDto>> getPlayers(@PathVariable(name = "sessionName") String sessionName) {
-    if (!sessionService.isSessionNameMatching(sessionName)) {
-        return ResponseEntity.ok(Collections.emptyList());
-    }
+        if (!sessionService.isSessionNameMatching(sessionName)) {
+            return ResponseEntity.ok(Collections.emptyList());
+        }
 
-    if (sessionService.getGameState(sessionName).equals(GameStateEnum.NOT_CREATED)) {
-        return ResponseEntity.ok(Collections.emptyList());
-    }
-
-    List<PlayerOverviewDto> players = sessionService.getAllPlayerOverview(sessionName);
-
-    return ResponseEntity.ok(players != null ? players : Collections.emptyList());
+        try {
+            List<PlayerOverviewDto> players = sessionService.getAllPlayerOverview(sessionName);
+            return ResponseEntity.ok(players != null ? players : Collections.emptyList());
+        } catch (IllegalStateException e) {
+            return ResponseEntity.ok(Collections.emptyList());
+        }
     }
 
     @GetMapping("/session/{sessionName}/player/{playerUid}")

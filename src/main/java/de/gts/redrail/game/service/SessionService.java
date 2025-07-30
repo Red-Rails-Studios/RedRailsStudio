@@ -106,7 +106,7 @@ public class SessionService {
 
     public List<PlayerOverviewDto> getAllPlayerOverview(String sessionName) {
         SessionData sessionData = findSessionByName(sessionName);
-        if (sessionData == null || !sessionData.getGameState().equals(RUNNING)) {
+        if (sessionData == null ) {
             throw new IllegalStateException("get players failed - session is not running");
         }
         return playerOverviewDtoMapper.map(sessionData.getSessionPlayers());
