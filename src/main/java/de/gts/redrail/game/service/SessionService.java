@@ -213,10 +213,10 @@ public class SessionService {
         return true;
     }
 
-    public PlayerDto getPlayerStatus(String uId, String sessionName) {
+    public PlayerDto getPlayerStatus(String sessionName, String playerUid) {
         SessionData sessionData = findSessionByName(sessionName);
         resourceCalculator.calculateResource(sessionData.getSessionPlayers());
-        Optional<Player> playerOptional = PlayerUtil.getPlayerByUid(sessionData.getSessionPlayers(), uId);
+        Optional<Player> playerOptional = PlayerUtil.getPlayerByUid(sessionData.getSessionPlayers(), playerUid);
 
         if (playerOptional.isEmpty()) {
             return null;
@@ -225,7 +225,7 @@ public class SessionService {
         return playerDtoMapper.map(playerOptional.get());
     }
 
-    public ActionResult buyRail(String playerUid, String sessionName) {
+    public ActionResult buyRail(String sessionName, String playerUid) { 
         SessionData sessionData = findSessionByName(sessionName);
         Optional<Player> playerOptional = PlayerUtil.getPlayerByUid(sessionData.getSessionPlayers(), playerUid);
 
@@ -251,7 +251,7 @@ public class SessionService {
         return playComponentsStore.upgradeRail(playerOptional.get(), railUid);
     }
     
-    public ActionResult buyStation(String playerUid, String sessionName) {
+    public ActionResult buyStation(String sessionName, String playerUid) {
         SessionData sessionData = findSessionByName(sessionName);
         Optional<Player> playerOptional = PlayerUtil.getPlayerByUid(sessionData.getSessionPlayers(), playerUid);
 
@@ -264,7 +264,7 @@ public class SessionService {
         return playComponentsStore.buyStation(playerOptional.get());
     }
 
-    public ActionResult upgradeStation(String playerUid, String stationUid, String sessionName) {
+    public ActionResult upgradeStation(String sessionName, String playerUid, String stationUid) {
         SessionData sessionData = findSessionByName(sessionName);
         Optional<Player> playerOptional = PlayerUtil.getPlayerByUid(sessionData.getSessionPlayers(), playerUid);
 
@@ -277,7 +277,7 @@ public class SessionService {
         return playComponentsStore.upgradeStation(playerOptional.get(), stationUid);
     }
 
-    public ActionResult buyTrain(String playerUid, String sessionName) {
+    public ActionResult buyTrain(String sessionName, String playerUid) {
         SessionData sessionData = findSessionByName(sessionName);
         Optional<Player> playerOptional = PlayerUtil.getPlayerByUid(sessionData.getSessionPlayers(), playerUid);
 
@@ -303,7 +303,7 @@ public class SessionService {
         return playComponentsStore.buyTrain(playerOptional.get());
     }
 
-    public ActionResult upgradeTrain(String playerUid, String trainUid, String sessionName) {
+    public ActionResult upgradeTrain(String sessionName, String playerUid, String trainUid) {
         SessionData sessionData = findSessionByName(sessionName);
         Optional<Player> playerOptional = PlayerUtil.getPlayerByUid(sessionData.getSessionPlayers(), playerUid);
 
@@ -395,5 +395,12 @@ public class SessionService {
             }
         }
         return null;
+    }
+
+    public PlayerOverviewDto createPlayerOverview(String uid, String name) {
+        PlayerOverviewDto dto = new PlayerOverviewDto();
+        dto.setUId(uid);
+        dto.setName(name);
+        return dto;
     }
 }

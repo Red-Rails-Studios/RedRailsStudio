@@ -48,7 +48,8 @@ public class SessionController {
             return ResponseEntity.badRequest().body(null);
         }
 
-        PlayerDto playerDto = sessionService.getPlayerStatus(playerUid, sessionName);
+        // Fix: sessionName first, then playerUid
+        PlayerDto playerDto = sessionService.getPlayerStatus(sessionName, playerUid);
 
         if (playerDto != null) {
             return ResponseEntity.ok(playerDto);
@@ -128,7 +129,7 @@ public class SessionController {
             return ResponseEntity.ok(sessionService.createPlayerOverview(null, null));
         }
 
-        if (!sessionService.getGameState().equals(GameStateEnum.NOT_STARTED)) {
+        if (!sessionService.getGameState(sessionName).equals(GameStateEnum.NOT_STARTED)) {
             return ResponseEntity.ok(sessionService.createPlayerOverview(null, null));
         }
 
@@ -174,7 +175,8 @@ public class SessionController {
             return ResponseEntity.noContent().build();
         }
 
-        PlayerDto playerDto = sessionService.getPlayerStatus(playerUid, sessionName);
+        // Fix: sessionName first, then playerUid
+        PlayerDto playerDto = sessionService.getPlayerStatus(sessionName, playerUid);
 
         if (playerDto != null) {
             return ResponseEntity.ok(playerDto);
@@ -193,7 +195,7 @@ public class SessionController {
             return ResponseEntity.badRequest().build();
         }
 
-        ActionResult actionResult = sessionService.buyRail(playerUid, sessionName);
+        ActionResult actionResult = sessionService.buyRail(sessionName, playerUid);
         
         if (actionResult.isSuccessful()) {
             return ResponseEntity.ok(actionResult.getUid());
@@ -230,7 +232,7 @@ public class SessionController {
             return ResponseEntity.badRequest().build();
         }
 
-        ActionResult actionResult = sessionService.upgradeTrain(playerUid, trainUid, sessionName);
+        ActionResult actionResult = sessionService.upgradeTrain(sessionName, playerUid, trainUid);
         return handleActionResult(actionResult);
     }
 
@@ -244,7 +246,7 @@ public class SessionController {
             return ResponseEntity.badRequest().build();
         }
 
-        ActionResult actionResult = sessionService.buyTrain(playerUid,sessionName);
+        ActionResult actionResult = sessionService.buyTrain(sessionName, playerUid);
 
         if (actionResult.isSuccessful()) {
             return ResponseEntity.ok(actionResult.getUid());
@@ -263,7 +265,7 @@ public class SessionController {
             return ResponseEntity.badRequest().build();
         }
 
-        ActionResult actionResult = sessionService.buyStation(playerUid, sessionName);
+        ActionResult actionResult = sessionService.buyStation(sessionName, playerUid);
 
         if (actionResult.isSuccessful()) {
             return ResponseEntity.ok(actionResult.getUid());
@@ -285,7 +287,7 @@ public class SessionController {
         if (stationUid == null || stationUid.isEmpty()) {
             return ResponseEntity.badRequest().body("Station UID must not be null or empty");
         }
-        ActionResult actionResult = sessionService.upgradeStation(playerUid, stationUid, sessionName);
+        ActionResult actionResult = sessionService.upgradeStation(sessionName, playerUid, stationUid);
         return handleActionResult(actionResult);
     }
 
