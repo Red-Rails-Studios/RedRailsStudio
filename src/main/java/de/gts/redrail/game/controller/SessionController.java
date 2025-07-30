@@ -1,5 +1,6 @@
 package de.gts.redrail.game.controller;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -11,7 +12,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import de.gts.redrail.game.component.GameClock;
-import de.gts.redrail.game.models.entities.SessionData;
 import de.gts.redrail.game.constants.GameStateEnum;
 import static de.gts.redrail.game.constants.ResponseText.STARTED_SESSION;
 import static de.gts.redrail.game.constants.ResponseText.START_SESSION_FAILED_NO_PLAYER;
@@ -22,6 +22,7 @@ import de.gts.redrail.game.models.dtos.SessionEndResponseDto;
 import de.gts.redrail.game.models.dtos.SessionOverviewDto;
 import de.gts.redrail.game.models.entities.ActionResult;
 import de.gts.redrail.game.models.entities.Player;
+import de.gts.redrail.game.models.entities.SessionData;
 import de.gts.redrail.game.service.SessionService;
 import lombok.RequiredArgsConstructor;
 
@@ -146,23 +147,19 @@ public class SessionController {
         }
     }
 
-    @GetMapping("/session/{sessionName}/GetPlayers")
+   @GetMapping("/session/{sessionName}/GetPlayers")
     public ResponseEntity<List<PlayerOverviewDto>> getPlayers(@PathVariable(name = "sessionName") String sessionName) {
-        if (!sessionService.isSessionNameMatching(sessionName)) {
-            return ResponseEntity.noContent().build();
-        }
+    if (!sessionService.isSessionNameMatching(sessionName)) {
+        return ResponseEntity.ok(Collections.emptyList());
+    }
 
-        if (!sessionService.getGameState(sessionName).equals(GameStateEnum.RUNNING)) {
-            return ResponseEntity.badRequest().build();
-        }
+    if (sessionService.getGameState(sessionName).equals(GameStateEnum.NOT_CREATED)) {
+        return ResponseEntity.ok(Collections.emptyList());
+    }
 
-        List<PlayerOverviewDto> players = sessionService.getAllPlayerOverview(sessionName);
+    List<PlayerOverviewDto> players = sessionService.getAllPlayerOverview(sessionName);
 
-        if (players != null && !players.isEmpty()) {
-            return ResponseEntity.ok(players);
-        } else {
-            return ResponseEntity.noContent().build();
-        }
+    return ResponseEntity.ok(players != null ? players : Collections.emptyList());
     }
 
     @GetMapping("/session/{sessionName}/player/{playerUid}")
