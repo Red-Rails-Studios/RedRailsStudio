@@ -188,6 +188,10 @@ public class SessionService {
             return false;
         }
 
+        if(sessionData.getSessionPlayers().size() >= 4) {
+            return false; // Maximum of 4 players allowed
+        }
+
         Player newPlayer = playerMapper.map(playerWantToJoin);
         Rail rail = new Rail();
         Station station1 = new Station();
