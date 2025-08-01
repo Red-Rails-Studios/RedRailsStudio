@@ -217,8 +217,24 @@ public class SessionService {
         return true;
     }
 
-    public PlayerDto getPlayerStatus(String sessionName, String playerUid) {
+    public boolean leaveSession(PlayerOverviewDto playerWantToLeave, String sessionName) {
         SessionData sessionData = findSessionByName(sessionName);
+        if (sessionData == null) {
+            return false;
+        }
+
+        if (sessionData.getGameState() != NOT_STARTED) {
+            return false;
+        }
+
+        // Remove player matching the given PlayerOverviewDto
+        return sessionData.getSessionPlayers().removeIf(
+            player -> PlayerUtil.isPlayerMatching(player, playerWantToLeave)
+        );
+    }
+
+    public PlayerDto getPlayerStatus(String sessionName, String playerUid) {
+        SessionData sessionData = findSessionByName(sessionName); 
         resourceCalculator.calculateResource(sessionData.getSessionPlayers());
         Optional<Player> playerOptional = PlayerUtil.getPlayerByUid(sessionData.getSessionPlayers(), playerUid);
 

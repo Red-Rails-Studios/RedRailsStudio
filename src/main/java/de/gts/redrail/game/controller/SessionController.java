@@ -147,6 +147,39 @@ public class SessionController {
         }
     }
 
+    @PostMapping("/session/{sessionName}/{playername}/leave")
+    public ResponseEntity<PlayerOverviewDto> leaveSession(
+            @PathVariable(name = "sessionName") String sessionName,
+            @PathVariable(name = "playerName") String playerName
+    ) {
+        if (!sessionService.isSessionNameMatching(sessionName)) {
+            return ResponseEntity.ok(sessionService.createPlayerOverview(null, null));
+        }
+
+        if (!sessionService.getGameState(sessionName).equals(GameStateEnum.NOT_STARTED)) {
+            return ResponseEntity.ok(sessionService.createPlayerOverview(null, null));
+        }
+
+        // Find the player by name in the session
+        List<PlayerOverviewDto> players = sessionService.getAllPlayerOverview(sessionName);
+        PlayerOverviewDto playerToLeave = players.stream()
+            .filter(p -> p.getName().equals(playerName))
+            .findFirst()
+            .orElse(null);
+
+        if (playerToLeave == null) {
+            return ResponseEntity.ok(sessionService.createPlayerOverview(null, null));
+        }
+
+        boolean result = sessionService.leaveSession(playerToLeave, sessionName);
+
+        if (result) {
+            return ResponseEntity.ok(playerToLeave);
+        } else {
+            return ResponseEntity.ok(sessionService.createPlayerOverview(null, null));
+        }
+    }
+
    @GetMapping("/session/{sessionName}/GetPlayers")
     public ResponseEntity<List<PlayerOverviewDto>> getPlayers(@PathVariable(name = "sessionName") String sessionName) {
         if (!sessionService.isSessionNameMatching(sessionName)) {
