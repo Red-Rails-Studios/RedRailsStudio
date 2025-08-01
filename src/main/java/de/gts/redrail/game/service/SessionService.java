@@ -223,14 +223,30 @@ public class SessionService {
             return false;
         }
 
-        if (sessionData.getGameState() != NOT_STARTED) {
-            return false;
-        }
-
         // Remove player matching the given PlayerOverviewDto
         return sessionData.getSessionPlayers().removeIf(
             player -> PlayerUtil.isPlayerMatching(player, playerWantToLeave)
         );
+    }
+
+    public PlayerOverviewDto getPlayerOverview(String sessionName, String playerUid) {
+        SessionData sessionData = findSessionByName(sessionName);
+        if(sessionData == null){
+            return null;
+        }
+
+        List<PlayerOverviewDto> players = playerOverviewDtoMapper.map(sessionData.getSessionPlayers());
+        if (players.isEmpty()) {
+            return null;
+        }
+
+        for (PlayerOverviewDto player : players) {
+            if (player.getUId().equals(playerUid)) {
+                return player;
+            }
+        }
+
+        return null;
     }
 
     public PlayerDto getPlayerStatus(String sessionName, String playerUid) {
