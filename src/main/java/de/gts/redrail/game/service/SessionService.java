@@ -1,6 +1,5 @@
 package de.gts.redrail.game.service;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -153,11 +152,15 @@ public class SessionService {
             }
         }
 
-        return Duration.between(sessionData.getSessionClock().getStarted(), sessionData.getSessionClock().getEnded()).toMinutes();
+        return sessionData.getSessionClock().getSessionDurationInMinutes();
     }
 
     public SessionOverviewDto createCurrentSessionOverview(String sessionName) {
         SessionData sessionData = findSessionByName(sessionName);
+        if (sessionData == null) {
+            return null; // or throw exception
+        }
+        
         SessionOverviewDto sessionOverviewDto = new SessionOverviewDto();
         sessionOverviewDto.setSessionName(sessionName);
         sessionOverviewDto.setPlayers(playerOverviewDtoMapper.map(sessionData.getSessionPlayers()));
@@ -169,6 +172,7 @@ public class SessionService {
             sessionOverviewDto.setSessionStarted(null);
             sessionOverviewDto.setSessionEnded(null);
         }
+        
         return sessionOverviewDto;
     }
 
@@ -423,8 +427,16 @@ public class SessionService {
             dto.setPlayers(new ArrayList<>());
         }
         dto.setGameState(sessionData.getGameState());
-        dto.setSessionStarted(sessionData.getSessionClock().getStarted());
-        dto.setSessionEnded(sessionData.getSessionClock().getEnded());
+        
+        // Fix: Add null checks for sessionClock
+        if (sessionData.getSessionClock() != null) {
+            dto.setSessionStarted(sessionData.getSessionClock().getStarted());
+            dto.setSessionEnded(sessionData.getSessionClock().getEnded());
+        } else {
+            dto.setSessionStarted(null);
+            dto.setSessionEnded(null);
+        }
+        
         return dto;
     }
 
@@ -442,5 +454,14 @@ public class SessionService {
         dto.setUId(uid);
         dto.setName(name);
         return dto;
+    }
+
+    public long getRuntime(String sessionName) {
+        SessionData sessionData = findSessionByName(sessionName);
+        if (sessionData == null || sessionData.getSessionClock() == null) {
+            return 0;
+        }
+
+        return sessionData.getSessionClock().getSessionDurationInSeconds();
     }
 }

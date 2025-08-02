@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import de.gts.redrail.game.component.GameClock;
@@ -25,6 +26,7 @@ import de.gts.redrail.game.models.entities.Player;
 import de.gts.redrail.game.models.entities.SessionData;
 import de.gts.redrail.game.service.SessionService;
 import lombok.RequiredArgsConstructor;
+
 
 @RestController
 @RequiredArgsConstructor
@@ -333,5 +335,21 @@ public class SessionController {
         List<Player> ranking = sessionService.getRanking(sessionName);
         return ResponseEntity.ok(ranking);
     }
+
+    @GetMapping("/session/{sessionName}/getRuntime")
+    public long getRuntime(@PathVariable(name = "sessionName") String sessionName) {
+        if (!sessionService.isSessionNameMatching(sessionName)) {
+            return 0;
+        }
+
+        if (!sessionService.getGameState(sessionName).equals(GameStateEnum.RUNNING)) {
+            return 0;
+        }
+
+        return sessionService.getRuntime(sessionName);
+    }
+
+    
+    
     
 }
