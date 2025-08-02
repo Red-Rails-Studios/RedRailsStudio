@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.time.OffsetDateTime;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
@@ -463,5 +464,28 @@ public class SessionService {
         }
 
         return sessionData.getSessionClock().getSessionDurationInSeconds();
+    }
+
+    public ActionResult triggerRandomEvent(String sessionName) {
+        long EventInterval = 60 * 5; 
+        SessionData sessionData = findSessionByName(sessionName);
+        if (sessionData == null || sessionData.getGameState() != GameStateEnum.RUNNING) {
+            return new ActionResult(false, "Session is not running");
+        }
+
+        if (sessionData.getSessionClock().getEventClock() == null && sessionData.getSessionClock().getSessionDurationInSeconds() < EventInterval) {
+            return new ActionResult(false, "Session has not runned long enough for a random event");
+        }
+
+        if(sessionData.getSessionClock().getEventClock() != null &&
+           java.time.Duration.between(sessionData.getSessionClock().getEventClock(), OffsetDateTime.now()).toSeconds() < EventInterval) {
+            return new ActionResult(false, "Random event already triggered recently");
+        }
+        
+        sessionData.getSessionClock().setEventClock(OffsetDateTime.now());
+
+
+
+        return new ActionResult(true, "Random event triggered successfully");
     }
 }

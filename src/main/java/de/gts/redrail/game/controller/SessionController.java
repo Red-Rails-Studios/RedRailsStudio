@@ -4,12 +4,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+import org.apache.catalina.connector.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import de.gts.redrail.game.component.GameClock;
@@ -26,6 +27,7 @@ import de.gts.redrail.game.models.entities.Player;
 import de.gts.redrail.game.models.entities.SessionData;
 import de.gts.redrail.game.service.SessionService;
 import lombok.RequiredArgsConstructor;
+
 
 
 @RestController
@@ -349,6 +351,24 @@ public class SessionController {
         return sessionService.getRuntime(sessionName);
     }
 
+    @PostMapping("/session/{sessionName}/Event/RandomEvent")
+    public ResponseEntity<String> randomEvent(@PathVariable(name = "sessionName") String sessionName) {
+        if (!sessionService.isSessionNameMatching(sessionName)) {
+            return ResponseEntity.noContent().build();
+        }
+
+        if (!sessionService.getGameState(sessionName).equals(GameStateEnum.RUNNING)) {
+            return ResponseEntity.badRequest().body("Session is not running");
+        }
+
+        ActionResult actionResult = sessionService.triggerRandomEvent(sessionName);
+
+        if (actionResult.isSuccessful()) {
+            return ResponseEntity.ok(actionResult.getMessage());
+        } else {
+            return ResponseEntity.badRequest().body(actionResult.getMessage());
+        }
+    }
     
     
     

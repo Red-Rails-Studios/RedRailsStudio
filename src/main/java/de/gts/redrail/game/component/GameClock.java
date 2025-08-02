@@ -17,6 +17,7 @@ public class GameClock {
     private OffsetDateTime ended;
     private OffsetDateTime clock;
     private OffsetDateTime nextInterval;
+    private OffsetDateTime eventClock;
 
 
     public void startClock() {
@@ -24,6 +25,7 @@ public class GameClock {
         ended = null; // Reset ended when starting
         clock = started;
         nextInterval = clock.plusSeconds(RESOURCE_GENERATION_INTERVAL_IN_SECONDS);
+        eventClock = null;
     }
     
     public void updateClock() {
