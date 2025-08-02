@@ -1,10 +1,10 @@
 package de.gts.redrail.game.service;
 
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.time.OffsetDateTime;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
@@ -33,6 +33,7 @@ import de.gts.redrail.game.models.entities.Station;
 import de.gts.redrail.game.models.entities.Train;
 import de.gts.redrail.game.utils.PlayerUtil;
 import lombok.RequiredArgsConstructor;
+import de.gts.redrail.game.models.entities.GameEvent;
 
 
 @Service
@@ -44,6 +45,7 @@ public class SessionService {
     private final PlayerMapper playerMapper;
     private final PlayerOverviewDtoMapper playerOverviewDtoMapper;
     private final List<SessionData> sessions = new ArrayList<>();
+    private final EventService eventService;
 
     public List<SessionData> getAllSessions() {
         return sessions;
@@ -467,25 +469,30 @@ public class SessionService {
     }
 
     public ActionResult triggerRandomEvent(String sessionName) {
-        long EventInterval = 60 * 5; 
         SessionData sessionData = findSessionByName(sessionName);
         if (sessionData == null || sessionData.getGameState() != GameStateEnum.RUNNING) {
             return new ActionResult(false, "Session is not running");
         }
 
-        if (sessionData.getSessionClock().getEventClock() == null && sessionData.getSessionClock().getSessionDurationInSeconds() < EventInterval) {
-            return new ActionResult(false, "Session has not runned long enough for a random event");
-        }
-
-        if(sessionData.getSessionClock().getEventClock() != null &&
-           java.time.Duration.between(sessionData.getSessionClock().getEventClock(), OffsetDateTime.now()).toSeconds() < EventInterval) {
+        // Check timing constraints
+        long eventInterval = 60 * 5; // 5 minutes
+        if (sessionData.getSessionClock().getEventClock() != null &&
+            java.time.Duration.between(sessionData.getSessionClock().getEventClock(), OffsetDateTime.now()).toSeconds() < eventInterval) {
             return new ActionResult(false, "Random event already triggered recently");
         }
         
+        // Update event timing
         sessionData.getSessionClock().setEventClock(OffsetDateTime.now());
+        
+        // Use EventService to trigger the event
+        return eventService.triggerRandomEvent(sessionData);
+    }
 
-
-
-        return new ActionResult(true, "Random event triggered successfully");
+    // Add this method to SessionService.java
+    public void checkExpiredEvents(String sessionName) {
+        SessionData sessionData = findSessionByName(sessionName);
+        if (sessionData != null) {
+            eventService.checkAndReverseExpiredEvents(sessionData);
+        }
     }
 }
