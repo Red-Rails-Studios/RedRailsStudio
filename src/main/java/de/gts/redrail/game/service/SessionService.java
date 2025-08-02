@@ -182,7 +182,11 @@ public class SessionService {
             if (PlayerUtil.isPlayerMatching(player, playerWantToJoin)) {
                 return false;
             }
-        }
+            // Check if player name matches the one trying to join
+            if (player.getName().equalsIgnoreCase(playerWantToJoin.getName())) {
+                return false; 
+            }
+        } // Check if player already exists in the session
 
         if (sessionData.getGameState() != NOT_STARTED) {
             return false;
