@@ -144,7 +144,24 @@ public enum GameEvent {
                 restoreOriginalStationCapacity(player, station);
             }
         }
-    }; // COCONUT
+    },
+
+    CRACKHEADS_ON_STATION("Crackheads on Station", "Your station is overrun by crackheads, reducing capacity of trains", EventType.NEGATIVE) {
+        @Override
+        public void apply(Player player) {
+            for(Train train : player.getTrains()) {
+                storeOriginalCapacity(player, train);
+                train.setCapacity((int)(train.getCapacity() * 0.5)); // Reduce capacity by 50%
+            }
+        }
+        
+        @Override
+        public void reverse(Player player) {
+            for (Train train : player.getTrains()) {
+                restoreOriginalCapacity(player, train);
+            }
+        }
+    }; 
 
     private final String name;
     private final String description;
@@ -152,7 +169,7 @@ public enum GameEvent {
     
     // Storage for original values
     private static final Map<String, Map<String, Integer>> originalCapacities = new HashMap<>();
-    private static final Map<String, Map<String, Integer>> originalStationCapacities = new HashMap<>(); // Fix 3: Added station capacity storage
+    private static final Map<String, Map<String, Integer>> originalStationCapacities = new HashMap<>();
     private static final Map<String, Integer> originalEmployees = new HashMap<>();
     private static final Map<String, Integer> originalDbCoins = new HashMap<>();
 
