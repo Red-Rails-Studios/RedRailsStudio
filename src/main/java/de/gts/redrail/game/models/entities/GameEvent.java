@@ -9,7 +9,6 @@ public enum GameEvent {
     WINTER_STORM("Winter Storm", "Trains move slower due to snow", EventType.NEGATIVE) {
         @Override
         public void apply(Player player) {
-            // Store original capacities and reduce by 20%
             for (Train train : player.getTrains()) {
                 storeOriginalCapacity(player, train);
                 train.setCapacity((int)(train.getCapacity() * 0.8));
@@ -18,7 +17,6 @@ public enum GameEvent {
         
         @Override
         public void reverse(Player player) {
-            // Restore original capacities
             for (Train train : player.getTrains()) {
                 restoreOriginalCapacity(player, train);
             }
@@ -28,7 +26,6 @@ public enum GameEvent {
     HOLIDAY_RUSH("Holiday Rush", "Increased passenger demand!", EventType.POSITIVE) {
         @Override
         public void apply(Player player) {
-            // Store original amount and add 25%
             int original = player.getResourceRack().getDbCoin();
             storeOriginalDbCoin(player, original);
             int bonus = (int)(original * 0.25);
@@ -37,7 +34,6 @@ public enum GameEvent {
         
         @Override
         public void reverse(Player player) {
-            // Remove the bonus (keep coins earned during the event)
             restoreOriginalDbCoin(player);
         }
     },
@@ -45,7 +41,6 @@ public enum GameEvent {
     EMPLOYEE_STRIKE("Employee Strike", "Reduced workforce available", EventType.NEGATIVE) {
         @Override
         public void apply(Player player) {
-            // Store original and reduce by 5
             int original = player.getResourceRack().getEmployees();
             storeOriginalEmployees(player, original);
             player.getResourceRack().setEmployees(Math.max(1, original - 5));
@@ -53,7 +48,6 @@ public enum GameEvent {
         
         @Override
         public void reverse(Player player) {
-            // Restore original employees
             restoreOriginalEmployees(player);
         }
     },
@@ -61,7 +55,6 @@ public enum GameEvent {
     GOVERNMENT_SUBSIDY("Government Subsidy", "Receive funding for infrastructure", EventType.POSITIVE) {
         @Override
         public void apply(Player player) {
-            // This is a permanent bonus, no reversal needed
             player.getResourceRack().setDbCoin(player.getResourceRack().getDbCoin() + 500);
         }
         
@@ -74,7 +67,6 @@ public enum GameEvent {
     TECHNICAL_PROBLEMS("Technical Problems", "Trains experience delays due to technical issues", EventType.NEGATIVE) {
         @Override
         public void apply(Player player) {
-            // Store original capacities and reduce by 50%
             for (Train train : player.getTrains()) {
                 storeOriginalCapacity(player, train);
                 train.setCapacity((int)(train.getCapacity() * 0.5));
@@ -83,7 +75,6 @@ public enum GameEvent {
         
         @Override
         public void reverse(Player player) {
-            // Restore original capacities
             for (Train train : player.getTrains()) {
                 restoreOriginalCapacity(player, train);
             }
@@ -93,7 +84,6 @@ public enum GameEvent {
     RUSH_HOUR("Rush Hour", "Your Stations and Trains experience rush hour.", EventType.POSITIVE) {
         @Override
         public void apply(Player player) {
-            // Store original capacities and increase by 30%
             for (Train train : player.getTrains()) {
                 storeOriginalCapacity(player, train);
                 train.setCapacity((int)(train.getCapacity() * 1.3));
@@ -102,14 +92,13 @@ public enum GameEvent {
         
         @Override
         public void reverse(Player player) {
-            // Restore original capacities
             for (Train train : player.getTrains()) {
                 restoreOriginalCapacity(player, train);
             }
         }
     }, 
 
-    BONUS_STATION("Bonus Station", "A new station is added to your network", EventType.POSITIVE) { // Fix 2: Fixed typo BONUSE_STATION -> BONUS_STATION
+    BONUS_STATION("Bonus Station", "A new station is added to your network", EventType.POSITIVE) {
         @Override
         public void apply(Player player) {
             Station newStation = new Station();
@@ -121,12 +110,41 @@ public enum GameEvent {
         
         @Override
         public void reverse(Player player) {
-            
             if (!player.getStations().isEmpty()) {
                 player.getStations().remove(player.getStations().size() - 1);
             }
         }
-    }; 
+    }, 
+
+    POWER_OUTAGE("Power Outage", "Trains are unable to operate for a short period", EventType.NEGATIVE) {
+        @Override
+        public void apply(Player player) {
+            // Store original capacities and set to 0 for 50% of trains
+            for (int i = 0; i < player.getTrains().size() / 2; i++) {
+                Train train = player.getTrains().get(i);
+                storeOriginalCapacity(player, train);
+                train.setCapacity(0);
+            }
+            // Store original capacity and set to 0 for 50% of Stations
+            for (int i = 0; i < player.getStations().size() / 2; i++) {
+                Station station = player.getStations().get(i);
+                storeOriginalStationCapacity(player, station);
+                station.setTrainCapacity(0);
+            }
+        }
+        
+        @Override
+        public void reverse(Player player) {
+            // Restore original capacities
+            for (Train train : player.getTrains()) {
+                restoreOriginalCapacity(player, train);
+            }
+            // Restore original capacities for Stations
+            for (Station station : player.getStations()) {
+                restoreOriginalStationCapacity(player, station);
+            }
+        }
+    }; // COCONUT
 
     private final String name;
     private final String description;
@@ -134,6 +152,7 @@ public enum GameEvent {
     
     // Storage for original values
     private static final Map<String, Map<String, Integer>> originalCapacities = new HashMap<>();
+    private static final Map<String, Map<String, Integer>> originalStationCapacities = new HashMap<>(); // Fix 3: Added station capacity storage
     private static final Map<String, Integer> originalEmployees = new HashMap<>();
     private static final Map<String, Integer> originalDbCoins = new HashMap<>();
 
@@ -159,6 +178,19 @@ public enum GameEvent {
             playerCapacities.remove(train.getUId());
         }
     }
+   
+    protected void storeOriginalStationCapacity(Player player, Station station) {
+        originalStationCapacities.computeIfAbsent(player.getUId(), k -> new HashMap<>())
+                                .put(station.getUId(), station.getTrainCapacity());
+    }
+    
+    protected void restoreOriginalStationCapacity(Player player, Station station) {
+        Map<String, Integer> playerStationCapacities = originalStationCapacities.get(player.getUId());
+        if (playerStationCapacities != null && playerStationCapacities.containsKey(station.getUId())) {
+            station.setTrainCapacity(playerStationCapacities.get(station.getUId()));
+            playerStationCapacities.remove(station.getUId());
+        }
+    }
     
     protected void storeOriginalEmployees(Player player, int employees) {
         originalEmployees.put(player.getUId(), employees);
@@ -179,11 +211,9 @@ public enum GameEvent {
     protected void restoreOriginalDbCoin(Player player) {
         Integer original = originalDbCoins.get(player.getUId());
         if (original != null) {
-            // Calculate how much was earned during the event
             int current = player.getResourceRack().getDbCoin();
             int bonus = (int)(original * 0.25);
             int earnedDuringEvent = current - (original + bonus);
-            // Set to original + what was earned during event
             player.getResourceRack().setDbCoin(original + earnedDuringEvent);
             originalDbCoins.remove(player.getUId());
         }
