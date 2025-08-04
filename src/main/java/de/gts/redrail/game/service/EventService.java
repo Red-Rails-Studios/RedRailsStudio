@@ -1,6 +1,5 @@
 package de.gts.redrail.game.service;
 
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -17,17 +16,14 @@ import de.gts.redrail.game.models.entities.SessionData;
 public class EventService {
     
     public ActionResult triggerRandomEvent(SessionData sessionData) {
-        // Check for expired events first
         checkAndReverseExpiredEvents(sessionData);
         
         GameEvent randomEvent = GameEvent.getRandomEvent();
         
-        // Apply event to all players
         for (Player player : sessionData.getSessionPlayers()) {
             randomEvent.apply(player);
         }
-        
-        // Track the active event
+
         ActiveEvent activeEvent = new ActiveEvent(randomEvent);
         sessionData.addActiveEvent(activeEvent);
         
@@ -46,16 +42,12 @@ public class EventService {
             ActiveEvent activeEvent = iterator.next();
             
             if (activeEvent.hasExpired()) {
-                // Reverse the event effects for all players
                 for (Player player : sessionData.getSessionPlayers()) {
                     activeEvent.getEvent().reverse(player);
                 }
-                
-                // Mark as inactive and remove from active events
+          
                 activeEvent.setActive(false);
                 iterator.remove();
-                
-                // Add reversal to history
                 sessionData.addEventToHistory(activeEvent.getEvent().getName() + " has ended - effects reversed");
             }
         }

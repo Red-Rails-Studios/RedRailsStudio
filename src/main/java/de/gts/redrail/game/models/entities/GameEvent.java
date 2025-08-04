@@ -1,9 +1,9 @@
 package de.gts.redrail.game.models.entities;
 
-import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.UUID;
 
 public enum GameEvent {
     WINTER_STORM("Winter Storm", "Trains move slower due to snow", EventType.NEGATIVE) {
@@ -107,7 +107,26 @@ public enum GameEvent {
                 restoreOriginalCapacity(player, train);
             }
         }
-    };
+    }, 
+
+    BONUS_STATION("Bonus Station", "A new station is added to your network", EventType.POSITIVE) { // Fix 2: Fixed typo BONUSE_STATION -> BONUS_STATION
+        @Override
+        public void apply(Player player) {
+            Station newStation = new Station();
+            newStation.setUId(UUID.randomUUID().toString());
+            newStation.setLevel(1); 
+            newStation.setTrainCapacity(5); 
+            player.getStations().add(newStation);
+        }
+        
+        @Override
+        public void reverse(Player player) {
+            
+            if (!player.getStations().isEmpty()) {
+                player.getStations().remove(player.getStations().size() - 1);
+            }
+        }
+    }; 
 
     private final String name;
     private final String description;

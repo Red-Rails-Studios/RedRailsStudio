@@ -474,21 +474,21 @@ public class SessionService {
             return new ActionResult(false, "Session is not running");
         }
 
-        // Check timing constraints
+        
         long eventInterval = 60 * 5; // 5 minutes
         if (sessionData.getSessionClock().getEventClock() != null &&
             java.time.Duration.between(sessionData.getSessionClock().getEventClock(), OffsetDateTime.now()).toSeconds() < eventInterval) {
             return new ActionResult(false, "Random event already triggered recently");
         }
         
-        // Update event timing
+        
         sessionData.getSessionClock().setEventClock(OffsetDateTime.now());
         
-        // Use EventService to trigger the event
+        
         return eventService.triggerRandomEvent(sessionData);
     }
 
-    // Add this method to SessionService.java
+    
     public void checkExpiredEvents(String sessionName) {
         SessionData sessionData = findSessionByName(sessionName);
         if (sessionData != null) {
