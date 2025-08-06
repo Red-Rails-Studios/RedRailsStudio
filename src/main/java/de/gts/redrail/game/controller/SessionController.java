@@ -49,11 +49,15 @@ public class SessionController {
 
     @GetMapping("/session/{sessionName}/player/{playerUid}/resource")
     public ResponseEntity<PlayerDto> getResource(@PathVariable(name = "sessionName") String sessionName, @PathVariable(name = "playerUid")  String playerUid) {
-        if (!sessionService.getGameState(sessionName).equals(GameStateEnum.RUNNING)) {
+        if (!sessionService.isSessionNameMatching(sessionName)) {
             return ResponseEntity.badRequest().body(null);
         }
 
-        // Fix: sessionName first, then playerUid
+        GameStateEnum gameState = sessionService.getGameState(sessionName);
+        if (!gameState.equals(GameStateEnum.RUNNING) && !gameState.equals(GameStateEnum.NOT_STARTED)) {
+            return ResponseEntity.badRequest().body(null);
+        }
+
         PlayerDto playerDto = sessionService.getPlayerStatus(sessionName, playerUid);
 
         if (playerDto != null) {
