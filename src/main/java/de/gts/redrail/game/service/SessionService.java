@@ -1,6 +1,6 @@
 package de.gts.redrail.game.service;
 
-import java.time.Duration;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -44,6 +44,7 @@ public class SessionService {
     private final PlayerMapper playerMapper;
     private final PlayerOverviewDtoMapper playerOverviewDtoMapper;
     private final List<SessionData> sessions = new ArrayList<>();
+    private final EventService eventService;
 
     public List<SessionData> getAllSessions() {
         return sessions;
@@ -82,10 +83,12 @@ public class SessionService {
                 break;
             }
         }
-        sessionData.setSessionName(null);
-        sessionData.setSessionClock(null);
-        sessionData.setSessionPlayers(new ArrayList<>());   
-        sessionData.setGameState(GameStateEnum.NOT_CREATED);
+        if (sessionData != null) {
+            sessionData.setSessionName(null);
+            sessionData.setSessionClock(null);
+            sessionData.setSessionPlayers(new ArrayList<>());   
+            sessionData.setGameState(GameStateEnum.NOT_CREATED);
+        }
     }
 
     public void killAllSessions() {
@@ -153,22 +156,22 @@ public class SessionService {
             }
         }
 
-        return Duration.between(sessionData.getSessionClock().getStarted(), sessionData.getSessionClock().getEnded()).toMinutes();
+        return sessionData.getSessionClock().getSessionDurationInMinutes();
     }
 
     public SessionOverviewDto createCurrentSessionOverview(String sessionName) {
         SessionData sessionData = findSessionByName(sessionName);
+        if (sessionData == null) {
+            return null; // or throw exception
+        }
+        
         SessionOverviewDto sessionOverviewDto = new SessionOverviewDto();
         sessionOverviewDto.setSessionName(sessionName);
         sessionOverviewDto.setPlayers(playerOverviewDtoMapper.map(sessionData.getSessionPlayers()));
         sessionOverviewDto.setGameState(sessionData.getGameState());
-        if (sessionData != null && sessionData.getSessionClock() != null) {
-            sessionOverviewDto.setSessionStarted(sessionData.getSessionClock().getStarted());
-            sessionOverviewDto.setSessionEnded(sessionData.getSessionClock().getEnded());
-        } else {
-            sessionOverviewDto.setSessionStarted(null);
-            sessionOverviewDto.setSessionEnded(null);
-        }
+        sessionOverviewDto.setSessionStarted(sessionData.getSessionClock().getStarted());
+        sessionOverviewDto.setSessionEnded(sessionData.getSessionClock().getEnded());
+        
         return sessionOverviewDto;
     }
 
@@ -255,7 +258,7 @@ public class SessionService {
 
     public PlayerDto getPlayerStatus(String sessionName, String playerUid) {
         SessionData sessionData = findSessionByName(sessionName); 
-        resourceCalculator.calculateResource(sessionData.getSessionPlayers());
+        resourceCalculator.calculateResource(sessionData.getSessionPlayers(), sessionData.getSessionClock());
         Optional<Player> playerOptional = PlayerUtil.getPlayerByUid(sessionData.getSessionPlayers(), playerUid);
 
         if (playerOptional.isEmpty()) {
@@ -273,7 +276,7 @@ public class SessionService {
             return new ActionResult(false, ACTION_FAILED_NO_MATCH_PLAYER);
         }
 
-        resourceCalculator.calculateResource(List.of(playerOptional.get()));
+        resourceCalculator.calculateResource(List.of(playerOptional.get()), sessionData.getSessionClock());
 
         return playComponentsStore.buyRail(playerOptional.get());
         
@@ -286,7 +289,7 @@ public class SessionService {
             return new ActionResult(false, ACTION_FAILED_NO_MATCH_PLAYER);
         }
 
-        resourceCalculator.calculateResource(List.of(playerOptional.get()));
+        resourceCalculator.calculateResource(List.of(playerOptional.get()), sessionData.getSessionClock());
 
         return playComponentsStore.upgradeRail(playerOptional.get(), railUid);
     }
@@ -299,7 +302,7 @@ public class SessionService {
             return new ActionResult(false, ACTION_FAILED_NO_MATCH_PLAYER);
         }
 
-        resourceCalculator.calculateResource(List.of(playerOptional.get()));
+        resourceCalculator.calculateResource(List.of(playerOptional.get()), sessionData.getSessionClock());
 
         return playComponentsStore.buyStation(playerOptional.get());
     }
@@ -312,7 +315,7 @@ public class SessionService {
             return new ActionResult(false, ACTION_FAILED_NO_MATCH_PLAYER);
         }
 
-        resourceCalculator.calculateResource(List.of(playerOptional.get()));
+        resourceCalculator.calculateResource(List.of(playerOptional.get()), sessionData.getSessionClock());
 
         return playComponentsStore.upgradeStation(playerOptional.get(), stationUid);
     }
@@ -326,7 +329,7 @@ public class SessionService {
         }
        
 
-        resourceCalculator.calculateResource(List.of(playerOptional.get()));
+        resourceCalculator.calculateResource(List.of(playerOptional.get()), sessionData.getSessionClock());
 
         for(Station station : playerOptional.get().getStations()) {
 
@@ -352,7 +355,7 @@ public class SessionService {
         }
         
 
-        resourceCalculator.calculateResource(List.of(playerOptional.get()));
+        resourceCalculator.calculateResource(List.of(playerOptional.get()), sessionData.getSessionClock());
 
         return playComponentsStore.upgradeTrain(playerOptional.get(), trainUid);
     }
@@ -423,8 +426,16 @@ public class SessionService {
             dto.setPlayers(new ArrayList<>());
         }
         dto.setGameState(sessionData.getGameState());
-        dto.setSessionStarted(sessionData.getSessionClock().getStarted());
-        dto.setSessionEnded(sessionData.getSessionClock().getEnded());
+        
+        // Fix: Add null checks for sessionClock
+        if (sessionData.getSessionClock() != null) {
+            dto.setSessionStarted(sessionData.getSessionClock().getStarted());
+            dto.setSessionEnded(sessionData.getSessionClock().getEnded());
+        } else {
+            dto.setSessionStarted(null);
+            dto.setSessionEnded(null);
+        }
+        
         return dto;
     }
 
@@ -442,5 +453,42 @@ public class SessionService {
         dto.setUId(uid);
         dto.setName(name);
         return dto;
+    }
+
+    public long getRuntime(String sessionName) {
+        SessionData sessionData = findSessionByName(sessionName);
+        if (sessionData == null || sessionData.getSessionClock() == null) {
+            return 0;
+        }
+
+        return sessionData.getSessionClock().getSessionDurationInSeconds();
+    }
+
+    public ActionResult triggerRandomEvent(String sessionName) {
+        SessionData sessionData = findSessionByName(sessionName);
+        if (sessionData == null || sessionData.getGameState() != GameStateEnum.RUNNING) {
+            return new ActionResult(false, "Session is not running");
+        }
+
+        
+        long eventInterval = 60 * 5; // 5 minutes
+        if (sessionData.getSessionClock().getEventClock() != null &&
+            java.time.Duration.between(sessionData.getSessionClock().getEventClock(), OffsetDateTime.now()).toSeconds() < eventInterval) {
+            return new ActionResult(false, "Random event already triggered recently");
+        }
+        
+        
+        sessionData.getSessionClock().setEventClock(OffsetDateTime.now());
+        
+        
+        return eventService.triggerRandomEvent(sessionData);
+    }
+
+    
+    public void checkExpiredEvents(String sessionName) {
+        SessionData sessionData = findSessionByName(sessionName);
+        if (sessionData != null) {
+            eventService.checkAndReverseExpiredEvents(sessionData);
+        }
     }
 }

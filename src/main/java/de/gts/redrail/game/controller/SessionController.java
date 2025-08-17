@@ -4,11 +4,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+import org.apache.catalina.connector.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import de.gts.redrail.game.component.GameClock;
@@ -25,6 +27,8 @@ import de.gts.redrail.game.models.entities.Player;
 import de.gts.redrail.game.models.entities.SessionData;
 import de.gts.redrail.game.service.SessionService;
 import lombok.RequiredArgsConstructor;
+
+
 
 @RestController
 @RequiredArgsConstructor
@@ -45,11 +49,15 @@ public class SessionController {
 
     @GetMapping("/session/{sessionName}/player/{playerUid}/resource")
     public ResponseEntity<PlayerDto> getResource(@PathVariable(name = "sessionName") String sessionName, @PathVariable(name = "playerUid")  String playerUid) {
-        if (!sessionService.getGameState(sessionName).equals(GameStateEnum.RUNNING)) {
+        if (!sessionService.isSessionNameMatching(sessionName)) {
             return ResponseEntity.badRequest().body(null);
         }
 
-        // Fix: sessionName first, then playerUid
+        GameStateEnum gameState = sessionService.getGameState(sessionName);
+        if (!gameState.equals(GameStateEnum.RUNNING) && !gameState.equals(GameStateEnum.NOT_STARTED)) {
+            return ResponseEntity.badRequest().body(null);
+        }
+
         PlayerDto playerDto = sessionService.getPlayerStatus(sessionName, playerUid);
 
         if (playerDto != null) {
@@ -333,5 +341,39 @@ public class SessionController {
         List<Player> ranking = sessionService.getRanking(sessionName);
         return ResponseEntity.ok(ranking);
     }
+
+    @GetMapping("/session/{sessionName}/getRuntime")
+    public long getRuntime(@PathVariable(name = "sessionName") String sessionName) {
+        if (!sessionService.isSessionNameMatching(sessionName)) {
+            return 0;
+        }
+
+        if (!sessionService.getGameState(sessionName).equals(GameStateEnum.RUNNING)) {
+            return 0;
+        }
+
+        return sessionService.getRuntime(sessionName);
+    }
+
+    @PostMapping("/session/{sessionName}/Event/RandomEvent")
+    public ResponseEntity<String> randomEvent(@PathVariable(name = "sessionName") String sessionName) {
+        if (!sessionService.isSessionNameMatching(sessionName)) {
+            return ResponseEntity.noContent().build();
+        }
+
+        if (!sessionService.getGameState(sessionName).equals(GameStateEnum.RUNNING)) {
+            return ResponseEntity.badRequest().body("Session is not running");
+        }
+
+        ActionResult actionResult = sessionService.triggerRandomEvent(sessionName);
+
+        if (actionResult.isSuccessful()) {
+            return ResponseEntity.ok(actionResult.getMessage());
+        } else {
+            return ResponseEntity.badRequest().body(actionResult.getMessage());
+        }
+    }
+
+    
     
 }
