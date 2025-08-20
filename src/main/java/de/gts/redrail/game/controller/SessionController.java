@@ -4,7 +4,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
-import org.apache.catalina.connector.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -27,6 +26,8 @@ import de.gts.redrail.game.models.entities.Player;
 import de.gts.redrail.game.models.entities.SessionData;
 import de.gts.redrail.game.service.SessionService;
 import lombok.RequiredArgsConstructor;
+
+
 
 
 
@@ -373,6 +374,27 @@ public class SessionController {
             return ResponseEntity.badRequest().body(actionResult.getMessage());
         }
     }
+
+    @PostMapping("/session/{sessionName}/player/{playerUid}/power")
+    public ResponseEntity<String> buypower(@PathVariable(name = "sessionName") String sessionName, @PathVariable(name = "playerUid") String playerUid, @RequestBody String entity) {
+        if (!sessionService.isSessionNameMatching(sessionName)) {
+            return ResponseEntity.noContent().build();
+        }
+
+        if (!sessionService.getGameState(sessionName).equals(GameStateEnum.RUNNING)) {
+            return ResponseEntity.badRequest().body("Session is not running");
+        }
+
+        ActionResult actionResult = sessionService.buyPower(sessionName, playerUid);
+
+        if (actionResult.isSuccessful()) {
+            return ResponseEntity.ok(actionResult.getMessage());
+        } else {
+            return ResponseEntity.badRequest().body(actionResult.getMessage());
+        }
+    }
+    
+    
 
     
     

@@ -49,7 +49,37 @@ public class SessionService {
     public List<SessionData> getAllSessions() {
         return sessions;
     }
-    
+
+    public Player findPlayerByUid(SessionData sessionData, String playerUid) {
+        if (sessionData == null || playerUid == null) {
+            return null;
+        }
+
+        for (Player player : sessionData.getSessionPlayers()) {
+            if (player.getUId().equals(playerUid)) {
+                return player;
+            }
+        }
+
+        return null;
+    }
+
+    public ActionResult buyPower(String sessionName, String playerUid) {
+        SessionData sessionData = findSessionByName(sessionName);
+
+        if (sessionData == null || !sessionData.getGameState().equals(RUNNING)) {
+            return null;
+        }
+
+        Player player = findPlayerByUid(sessionData, playerUid);
+        if (player == null) {
+            return null;    
+        }
+
+        player.getResourceRack().setPower(player.getResourceRack().getPower() + 5);
+        return new ActionResult(true, "Power purchased successfully");
+    }
+
     public SessionOverviewDto createSession(String name) { 
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("Session name cannot be null or blank");
