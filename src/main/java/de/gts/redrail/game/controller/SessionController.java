@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import de.gts.redrail.game.component.GameClock;
@@ -376,7 +375,7 @@ public class SessionController {
     }
 
     @PostMapping("/session/{sessionName}/player/{playerUid}/power")
-    public ResponseEntity<String> buypower(@PathVariable(name = "sessionName") String sessionName, @PathVariable(name = "playerUid") String playerUid, @RequestBody String entity) {
+    public ResponseEntity<String> buypower(@PathVariable(name = "sessionName") String sessionName, @PathVariable(name = "playerUid") String playerUid) {
         if (!sessionService.isSessionNameMatching(sessionName)) {
             return ResponseEntity.noContent().build();
         }
@@ -386,6 +385,25 @@ public class SessionController {
         }
 
         ActionResult actionResult = sessionService.buyPower(sessionName, playerUid);
+
+        if (actionResult.isSuccessful()) {
+            return ResponseEntity.ok(actionResult.getMessage());
+        } else {
+            return ResponseEntity.badRequest().body(actionResult.getMessage());
+        }
+    }
+
+    @PostMapping("/session/{sessionName}/player/{playerUid}/employees")
+    public ResponseEntity<String> buyEmployees(@PathVariable(name = "sessionName") String sessionName, @PathVariable(name = "playerUid") String playerUid) {
+        if (!sessionService.isSessionNameMatching(sessionName)) {
+            return ResponseEntity.noContent().build();
+        }
+
+        if (!sessionService.getGameState(sessionName).equals(GameStateEnum.RUNNING)) {
+            return ResponseEntity.badRequest().body("Session is not running");
+        }
+
+        ActionResult actionResult = sessionService.buyEmployees(sessionName, playerUid);
 
         if (actionResult.isSuccessful()) {
             return ResponseEntity.ok(actionResult.getMessage());

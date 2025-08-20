@@ -33,6 +33,8 @@ import de.gts.redrail.game.models.entities.Station;
 import de.gts.redrail.game.models.entities.Train;
 import de.gts.redrail.game.utils.PlayerUtil;
 import lombok.RequiredArgsConstructor;
+import static de.gts.redrail.game.constants.ResourceCost.NEW_POWER;
+import static de.gts.redrail.game.constants.ResourceCost.NEW_EMPLOYEES;
 
 
 @Service
@@ -66,18 +68,48 @@ public class SessionService {
 
     public ActionResult buyPower(String sessionName, String playerUid) {
         SessionData sessionData = findSessionByName(sessionName);
+        Optional<Player> playerOptional = PlayerUtil.getPlayerByUid(sessionData.getSessionPlayers(), playerUid);
 
-        if (sessionData == null || !sessionData.getGameState().equals(RUNNING)) {
-            return null;
+        if (playerOptional.isEmpty()) {
+            return new ActionResult(false, ACTION_FAILED_NO_MATCH_PLAYER);
         }
 
-        Player player = findPlayerByUid(sessionData, playerUid);
-        if (player == null) {
-            return null;    
+        resourceCalculator.calculateResource(List.of(playerOptional.get()), sessionData.getSessionClock());
+
+        // Check if player has enough coins to buy power
+        if (playerOptional.get().getResourceRack().getDbCoin() < NEW_POWER) {
+            return new ActionResult(false, "Not enough coins to buy power");
         }
 
-        player.getResourceRack().setPower(player.getResourceRack().getPower() + 5);
+        // Deduct cost and add power
+        Integer dbCoin = playerOptional.get().getResourceRack().getDbCoin();
+        playerOptional.get().getResourceRack().setDbCoin(dbCoin - NEW_POWER);
+        playerOptional.get().getResourceRack().setPower(playerOptional.get().getResourceRack().getPower() + 5);
+        
         return new ActionResult(true, "Power purchased successfully");
+    }
+
+    public ActionResult buyEmployees(String sessionName, String playerUid) {
+        SessionData sessionData = findSessionByName(sessionName);
+        Optional<Player> playerOptional = PlayerUtil.getPlayerByUid(sessionData.getSessionPlayers(), playerUid);
+
+        if (playerOptional.isEmpty()) {
+            return new ActionResult(false, ACTION_FAILED_NO_MATCH_PLAYER);
+        }
+
+        resourceCalculator.calculateResource(List.of(playerOptional.get()), sessionData.getSessionClock());
+
+        // Check if player has enough coins to buy employees
+        if (playerOptional.get().getResourceRack().getDbCoin() < NEW_EMPLOYEES) {
+            return new ActionResult(false, "Not enough coins to buy employees");
+        }
+
+        // Deduct cost and add employees
+        Integer dbCoin = playerOptional.get().getResourceRack().getDbCoin();
+        playerOptional.get().getResourceRack().setDbCoin(dbCoin - NEW_EMPLOYEES);
+        playerOptional.get().getResourceRack().setEmployees(playerOptional.get().getResourceRack().getEmployees() + 3);
+        
+        return new ActionResult(true, "Employees hired successfully");
     }
 
     public SessionOverviewDto createSession(String name) { 
