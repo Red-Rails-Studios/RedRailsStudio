@@ -75,7 +75,7 @@ public class SessionController {
     }
 
     @PatchMapping("/session/{sessionName}/start")
-    public ResponseEntity<String> startSession(@PathVariable String sessionName) {
+    public ResponseEntity<String> startSession(@PathVariable(name = "sessionName") String sessionName) {
         if (!sessionService.isSessionNameMatching(sessionName)) {
             return ResponseEntity.noContent().build();
         }
@@ -94,7 +94,7 @@ public class SessionController {
     }
 
     @PatchMapping("/session/{sessionName}/end")
-    public ResponseEntity<SessionEndResponseDto> endSession(@PathVariable String sessionName) {
+    public ResponseEntity<SessionEndResponseDto> endSession(@PathVariable(name = "sessionName") String sessionName) {
         if (!sessionService.isSessionNameMatching(sessionName)) {
             return ResponseEntity.noContent().build();
         }
