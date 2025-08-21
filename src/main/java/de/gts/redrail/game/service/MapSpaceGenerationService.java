@@ -4,7 +4,9 @@ import org.springframework.stereotype.Service;
 import de.gts.redrail.game.constants.MaxLocation;
 import de.gts.redrail.game.models.entities.Location;
 import de.gts.redrail.game.models.entities.Map;
+import de.gts.redrail.game.constants.LocationEnum;
 import lombok.RequiredArgsConstructor;
+import java.util.ArrayList;
 
 @Service
 @RequiredArgsConstructor
@@ -12,7 +14,9 @@ public class MapSpaceGenerationService {
 
     private final LocationGenerationService lGS;
     private final RandomPointGenerationService rPGS;
+    private final RandomNameGenerationService rNGS;
     private final Map map;
+    private final ArrayList<String> usedNames = new ArrayList<>();
 
     public void generateBordersForPlayers() {
         fillCorners();
@@ -20,8 +24,9 @@ public class MapSpaceGenerationService {
         fillMiddle();
     }
 
-    private void fillSpace(int xStart, int xEnd, int yStart, int yEnd, int maxLocations) {
+    private void fillSpace(int xStart, int xEnd, int yStart, int yEnd, int maxLocations, LocationEnum type) {
         int locationsPlaced = 0;
+        String name = "";
 
         for (int x = xStart; x < xEnd && x < map.getMap().size(); x++) {
             for (int y = yStart; y < yEnd && y < map.getMap().get(x).size(); y++) {
@@ -30,7 +35,12 @@ public class MapSpaceGenerationService {
                     return ; // Stop if max locations reached
                 }
 
-                Location location = lGS.generateRandomLocation(rPGS.generateRandomPointX(xStart, xEnd), rPGS.generateRandomPointY(yStart, yEnd));
+                name = rNGS.generateRandomGermanCityName();
+                while (usedNames.contains(name)) {
+                    name = rNGS.generateRandomGermanCityName();
+                }
+
+                Location location = lGS.generateRandomLocation(rPGS.generateRandomPointX(xStart, xEnd), rPGS.generateRandomPointY(yStart, yEnd), type, name);
 
                 if (location != null) {
                     locationsPlaced++;
@@ -40,20 +50,80 @@ public class MapSpaceGenerationService {
     }
 
     private void fillCorners() {
-        fillSpace(0, 6, 0, 6, MaxLocation.cornerMaxLocations); // Bottom left corner
-        fillSpace(24, 30, 0, 6, MaxLocation.cornerMaxLocations); // Bottom right corner
-        fillSpace(0, 6, 24, 30, MaxLocation.cornerMaxLocations); // Top left corner
-        fillSpace(24, 30, 24, 30, MaxLocation.cornerMaxLocations); // Top right corner
+        fillCornersVillages();
+        fillCornersTowns();
     }
 
+    private void fillCornersVillages() {
+        fillSpace(0, 6, 0, 6, MaxLocation.cornerMaxVillages, LocationEnum.VILLAGE); // Bottom left corner
+        fillSpace(24, 30, 0, 6, MaxLocation.cornerMaxVillages, LocationEnum.VILLAGE); // Bottom right corner
+        fillSpace(0, 6, 24, 30, MaxLocation.cornerMaxVillages, LocationEnum.VILLAGE); // Top left corner
+        fillSpace(24, 30, 24, 30, MaxLocation.cornerMaxVillages, LocationEnum.VILLAGE); // Top right corner
+    }
+
+    private void fillCornersTowns() {
+        fillSpace(0, 6, 0, 6, MaxLocation.cornerMaxTowns, LocationEnum.TOWN); // Bottom left corner
+        fillSpace(24, 30, 0, 6, MaxLocation.cornerMaxTowns, LocationEnum.TOWN); // Bottom right corner
+        fillSpace(0, 6, 24, 30, MaxLocation.cornerMaxTowns, LocationEnum.TOWN); // Top left corner
+        fillSpace(24, 30, 24, 30, MaxLocation.cornerMaxTowns, LocationEnum.TOWN); // Top right corner
+    }
+
+
     private void fillSides() {
-        fillSpace(6, 24, 0, 6, MaxLocation.sidesMaxLocations); // Under side
-        fillSpace(6,24, 24, 30, MaxLocation.sidesMaxLocations); // Upper side
-        fillSpace(0, 6, 6, 24, MaxLocation.sidesMaxLocations); // Left side
-        fillSpace(24, 30, 6, 24, MaxLocation.sidesMaxLocations); // Right side
+        fillSidesVillages();
+        fillSidesTown();
+        fillSidesCities();
+        fillSidesMetropolises();
+    }
+
+    private void fillSidesVillages() {
+        fillSpace(6, 24, 0, 6, MaxLocation.sidesMaxVillages, LocationEnum.VILLAGE); // Under side
+        fillSpace(6,24, 24, 30, MaxLocation.sidesMaxVillages, LocationEnum.VILLAGE); // Upper side
+        fillSpace(0, 6, 6, 24, MaxLocation.sidesMaxVillages, LocationEnum.VILLAGE); // Left side
+        fillSpace(24, 30, 6, 24, MaxLocation.sidesMaxVillages, LocationEnum.VILLAGE); // Right side
+    }
+
+    private void fillSidesTown() {
+        fillSpace(6, 24, 0, 6, MaxLocation.sidesMaxTowns, LocationEnum.TOWN); // Under side
+        fillSpace(6,24, 24, 30, MaxLocation.sidesMaxTowns, LocationEnum.TOWN); // Upper side
+        fillSpace(0, 6, 6, 24, MaxLocation.sidesMaxTowns, LocationEnum.TOWN); // Left side
+        fillSpace(24, 30, 6, 24, MaxLocation.sidesMaxTowns, LocationEnum.TOWN); // Right side
+    }
+
+    private void fillSidesCities() {
+        fillSpace(6, 24, 0, 6, MaxLocation.sidesMaxCities, LocationEnum.CITY); // Under side
+        fillSpace(6,24, 24, 30, MaxLocation.sidesMaxCities, LocationEnum.CITY); // Upper side
+        fillSpace(0, 6, 6, 24, MaxLocation.sidesMaxCities, LocationEnum.CITY); // Left side
+        fillSpace(24, 30, 6, 24, MaxLocation.sidesMaxCities, LocationEnum.CITY); // Right side
+    }
+
+    private void fillSidesMetropolises() {
+        fillSpace(6, 24, 0, 6, MaxLocation.sidesMaxMetropolises, LocationEnum.METROPOLIS); // Under side
+        fillSpace(6,24, 24, 30,  MaxLocation.sidesMaxMetropolises, LocationEnum.METROPOLIS); // Upper side
+        fillSpace(0, 6, 6, 24,  MaxLocation.sidesMaxMetropolises, LocationEnum.METROPOLIS); // Left side
+        fillSpace(24, 30, 6, 24,  MaxLocation.sidesMaxMetropolises, LocationEnum.METROPOLIS); // Right side
     }
 
     private void fillMiddle() {
-        fillSpace(6, 24, 6, 24, MaxLocation.middleMaxLocations); // Middle area
+        fillMiddleVillages();
+        fillMiddleTown();
+        fillMiddleCities();
+        fillMiddleMetropolises();
+    }
+
+    private void fillMiddleVillages() {
+        fillSpace(6, 24, 6, 24, MaxLocation.middleMaxVillages, LocationEnum.VILLAGE); // Middle area
+    }
+
+    private void fillMiddleTown() {
+        fillSpace(6, 24, 6, 24, MaxLocation.middleMaxTowns, LocationEnum.TOWN); // Middle area
+    }
+
+    private void fillMiddleCities() {
+        fillSpace(6, 24, 6, 24, MaxLocation.middleMaxCities, LocationEnum.CITY); // Middle area
+    }
+
+    private void fillMiddleMetropolises() {
+        fillSpace(6, 24, 6, 24, MaxLocation.middleMaxMetropolises, LocationEnum.METROPOLIS); // Middle area
     }
 }
