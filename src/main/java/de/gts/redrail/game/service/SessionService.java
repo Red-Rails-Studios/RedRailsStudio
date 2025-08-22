@@ -319,8 +319,7 @@ public class SessionService {
         return null;
     }
 
-    public List<TrainDto> getTrainsInfo(String sessionName, String playerUid)
-    {
+    public List<TrainDto> getTrainsInfo(String sessionName, String playerUid) {
         SessionData sessionData = findSessionByName(sessionName); 
         if (playerOptional.isEmpty()) {
             return null;
