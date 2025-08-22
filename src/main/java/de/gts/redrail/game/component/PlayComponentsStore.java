@@ -77,7 +77,6 @@ public class PlayComponentsStore {
         station.setUId(UUID.randomUUID().toString());
         station.setLevel(1);
         player.getStations().add(station);
-        station.setMasterUID(player.getUId());
 
         Integer dbCoin = player.getResourceRack().getDbCoin();
         player.getResourceRack().setDbCoin(dbCoin - NEW_RAIL);

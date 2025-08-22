@@ -1,4 +1,7 @@
 package de.gts.redrail.game.constants;
+
+import de.gts.redrail.game.models.entities.Train;
+
 public interface ResourceGeneration {
 
     Integer STATION_RESOURCE_GENERATION_FACTOR = 2;
