@@ -25,6 +25,7 @@ import de.gts.redrail.game.models.entities.Player;
 import de.gts.redrail.game.models.entities.SessionData;
 import de.gts.redrail.game.service.SessionService;
 import lombok.RequiredArgsConstructor;
+import de.gts.redrail.game.models.dtos.TrainDto;
 
 
 
@@ -281,6 +282,27 @@ public class SessionController {
             return ResponseEntity.badRequest().body(actionResult.getMessage());
         }
     }
+
+    @GetMapping("/session/{sessionName}/player/{playerUid}/train/infos")
+    public ResponseEntity<List<TrainDto>> getTrainInfo(@PathVariable(name = "sessionName") String sessionName, @PathVariable(name = "playerUid")  String playerUid) {
+        if (!sessionService.isSessionNameMatching(sessionName)) {
+            return ResponseEntity.badRequest().body(null);
+        }
+
+        GameStateEnum gameState = sessionService.getGameState(sessionName);
+        if (!gameState.equals(GameStateEnum.RUNNING) && !gameState.equals(GameStateEnum.NOT_STARTED)) {
+            return ResponseEntity.badRequest().body(null);
+        }
+
+        List<TrainDto> trains = sessionService.getTrainInfo();
+
+        if (trains != null) {
+            return ResponseEntity.ok(trains);
+        } else {
+            return ResponseEntity.badRequest().body(null);
+        }
+    }
+
 
     @PostMapping("/session/{sessionName}/player/{playerUid}/station")
     public ResponseEntity<String> buyStation(@PathVariable(name = "sessionName") String sessionName, @PathVariable(name = "playerUid") String playerUid) {

@@ -318,6 +318,18 @@ public class SessionService {
         return null;
     }
 
+    public List<TrainDto> getTrainInfo(String sessionName, String playerUid)
+    {
+        SessionData sessionData = findSessionByName(sessionName); 
+        if (playerOptional.isEmpty()) {
+            return null;
+        }
+
+        Player player = findPlayerByUid(playerUid);
+
+        return player.trains;
+    }
+
     public PlayerDto getPlayerStatus(String sessionName, String playerUid) {
         SessionData sessionData = findSessionByName(sessionName); 
         resourceCalculator.calculateResource(sessionData.getSessionPlayers(), sessionData.getSessionClock());
