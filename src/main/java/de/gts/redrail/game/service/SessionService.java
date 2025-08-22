@@ -35,6 +35,7 @@ import de.gts.redrail.game.utils.PlayerUtil;
 import lombok.RequiredArgsConstructor;
 import static de.gts.redrail.game.constants.ResourceCost.NEW_POWER;
 import static de.gts.redrail.game.constants.ResourceCost.NEW_EMPLOYEES;
+import de.gts.redrail.game.models.dtos.TrainDto;
 
 
 @Service
@@ -318,7 +319,7 @@ public class SessionService {
         return null;
     }
 
-    public List<TrainDto> getTrainInfo(String sessionName, String playerUid)
+    public List<TrainDto> getTrainsInfo(String sessionName, String playerUid)
     {
         SessionData sessionData = findSessionByName(sessionName); 
         if (playerOptional.isEmpty()) {

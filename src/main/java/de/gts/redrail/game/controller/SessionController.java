@@ -294,7 +294,7 @@ public class SessionController {
             return ResponseEntity.badRequest().body(null);
         }
 
-        List<TrainDto> trains = sessionService.getTrainInfo();
+        List<TrainDto> trains = sessionService.getTrainsInfo();
 
         if (trains != null) {
             return ResponseEntity.ok(trains);
