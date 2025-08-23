@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import de.gts.redrail.game.component.GameClock;
 import de.gts.redrail.game.constants.GameStateEnum;
 import static de.gts.redrail.game.constants.ResponseText.CREATED_SESSION;
 import static de.gts.redrail.game.constants.ResponseText.CREATE_SESSION_FAILED_SESSION_IS_ALREADY_CREATED;
@@ -23,13 +24,13 @@ import static de.gts.redrail.game.constants.ResponseText.START_SESSION_FAILED_SE
 import de.gts.redrail.game.models.dtos.JoinSessionResponseDto;
 import de.gts.redrail.game.models.dtos.PlayerDto;
 import de.gts.redrail.game.models.dtos.PlayerOverviewDto;
+import de.gts.redrail.game.models.dtos.SessionEndResponseDto;
 import de.gts.redrail.game.models.dtos.SessionOverviewDto;
 import de.gts.redrail.game.models.entities.ActionResult;
-import de.gts.redrail.game.service.SessionService;
-import lombok.RequiredArgsConstructor;
-import de.gts.redrail.game.models.dtos.SessionEndResponseDto;
-import de.gts.redrail.game.component.GameClock;
 import de.gts.redrail.game.models.entities.Player;
+import de.gts.redrail.game.service.SessionService;
+import de.gts.redrail.game.models.entities.Map;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
@@ -319,4 +320,19 @@ public class SessionController {
         List<Player> ranking = sessionService.getRanking();   
         return ResponseEntity.ok(ranking);
     }   
+
+    @GetMapping("/session/{sessionName}/map")   
+    public ResponseEntity<Map> getMap(@PathVariable(name = "sessionName") String sessionName) {
+        if (!sessionService.isSessionNameMatching(sessionName)) {
+            return ResponseEntity.noContent().build();
+        }
+
+        if (!sessionService.getGameState().equals(GameStateEnum.RUNNING)) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        Map map = sessionService.getMap();
+        return ResponseEntity.ok(map);
+    }  
+
 }

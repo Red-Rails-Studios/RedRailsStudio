@@ -18,6 +18,10 @@ public class MapSpaceGenerationService {
     private final Map map;
     private final ArrayList<String> usedNames = new ArrayList<>();
 
+    public Map getMap() {
+        return this.map;
+    }
+
     public void generateBordersForPlayers() {
         fillCorners();
         fillSides();
@@ -45,6 +49,8 @@ public class MapSpaceGenerationService {
                 if (location != null) {
                     locationsPlaced++;
                 }
+
+                map.getMap().get(location.getX()).get(location.getY()).setLocation(location);
             }
         }
     }
