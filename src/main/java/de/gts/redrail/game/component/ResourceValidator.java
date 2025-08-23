@@ -17,13 +17,11 @@ import de.gts.redrail.game.models.entities.Train;
 import de.gts.redrail.game.utils.RailUtil;
 import de.gts.redrail.game.utils.StationUtil;
 import de.gts.redrail.game.utils.TrainUtil;
+import de.gts.redrail.game.models.entities.*;
 @Component
 public class ResourceValidator {
-    // Default values for new components
-    private static final Integer DEFAULT_TRAIN_REQUIRED_EMPLOYEES = 2;
-    private static final Integer DEFAULT_TRAIN_REQUIRED_POWER = 1;
-    private static final Integer DEFAULT_STATION_REQUIRED_EMPLOYEES = 1;
-    private static final Integer DEFAULT_STATION_REQUIRED_POWER = 4;
+    private Train train;
+    private Station station;
 
     public boolean canBuyNewRail(Player player) {
         return player.getResourceRack().getDbCoin() >= NEW_RAIL;
@@ -42,17 +40,16 @@ public class ResourceValidator {
     public boolean requirmentsForTrain(Player player) {
         
         for(Station station : player.getStations()) {
-            if (station.getTrainCapacity() == 0)
-              {      
+            if (station.getTrainCapacity() == 0) {      
                 return false;
               }
         }
 
-       if (getFreeEmployees(player) < DEFAULT_TRAIN_REQUIRED_EMPLOYEES) {
+       if (getFreeEmployees(player) < train.getRequiredEmployees()) {
             return false; // Not enough free employees to buy a new train
         }
 
-        if (getFreePower(player) < DEFAULT_TRAIN_REQUIRED_POWER) {
+        if (getFreePower(player) < train.getRequiredPower()) {
             return false; // Not enough free power to buy a new train
             
         }
@@ -102,8 +99,8 @@ public class ResourceValidator {
             return false;
         }
 
-        if (trainOptional.get().getLevel() >= 10) {
-            return false; // Assuming level 10 is the max level for a train
+        if (train.getLevel() >= 10) {
+            return false; // Assuming level 5 is the max level for a train
         }
 
         if (getFreeEmployees(player) < trainOptional.get().getRequiredEmployees() + 1) {
@@ -118,16 +115,16 @@ public class ResourceValidator {
     }
 
     public boolean canBuyNewStation(Player player) {
-        if(player.getResourceRack().getEmployees() < player.getTrains().size() * DEFAULT_TRAIN_REQUIRED_EMPLOYEES + player.getStations().size() * DEFAULT_STATION_REQUIRED_EMPLOYEES || player.getResourceRack().getPower() < player.getStations().size() * DEFAULT_STATION_REQUIRED_POWER + player.getTrains().size() * DEFAULT_TRAIN_REQUIRED_POWER) {
+        if(player.getResourceRack().getEmployees() < player.getTrains().size() * train.getRequiredEmployees() + player.getStations().size()* station.getRequierdEmployes() || player.getResourceRack().getPower() < player.getStations().size() * station.getRequiredPower()+ player.getTrains().size() * train.getRequiredPower()) {
             return false;
         }
 
-        if (getFreeEmployees(player) < DEFAULT_STATION_REQUIRED_EMPLOYEES) {
+        if (getFreeEmployees(player) < station.getRequierdEmployes()) {
             return false; // Not enough free employees to buy a new station
             
         }
 
-        if (getFreePower(player) < DEFAULT_STATION_REQUIRED_POWER) {
+        if (getFreePower(player) < station.getRequiredPower()) {
             return false; // Not enough free power to buy a new station
         }
 

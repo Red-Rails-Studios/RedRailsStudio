@@ -1,6 +1,6 @@
 package de.gts.redrail.game.service;
 
-import java.time.OffsetDateTime;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -28,300 +28,136 @@ import de.gts.redrail.game.models.dtos.SessionOverviewDto;
 import de.gts.redrail.game.models.entities.ActionResult;
 import de.gts.redrail.game.models.entities.Player;
 import de.gts.redrail.game.models.entities.Rail;
-import de.gts.redrail.game.models.entities.SessionData;
 import de.gts.redrail.game.models.entities.Station;
 import de.gts.redrail.game.models.entities.Train;
 import de.gts.redrail.game.utils.PlayerUtil;
 import lombok.RequiredArgsConstructor;
-import static de.gts.redrail.game.constants.ResourceCost.NEW_POWER;
-import static de.gts.redrail.game.constants.ResourceCost.NEW_EMPLOYEES;
-
+import de.gts.redrail.game.models.entities.*;
 
 @Service
 @RequiredArgsConstructor
 public class SessionService {
+
+    private String sessionName;
+    private final GameClock sessionClock;
+    private List<Player> sessionPlayers;
+    private GameStateEnum gameState = NOT_CREATED;
     private final ResourceCalculator resourceCalculator;
     private final PlayComponentsStore playComponentsStore;
+
     private final PlayerDtoMapper playerDtoMapper;
     private final PlayerMapper playerMapper;
     private final PlayerOverviewDtoMapper playerOverviewDtoMapper;
-    private final List<SessionData> sessions = new ArrayList<>();
-    private final EventService eventService;
 
-    public List<SessionData> getAllSessions() {
-        return sessions;
+    public void createSession(String name) {
+        sessionName = name;
+        sessionPlayers = new ArrayList<>();
+        gameState = NOT_STARTED;
     }
-
-    public Player findPlayerByUid(SessionData sessionData, String playerUid) {
-        if (sessionData == null || playerUid == null) {
-            return null;
-        }
-
-        for (Player player : sessionData.getSessionPlayers()) {
-            if (player.getUId().equals(playerUid)) {
-                return player;
-            }
-        }
-
-        return null;
+    public void killSession() {
+        sessionName = null;
+        sessionPlayers = null;
+        gameState = NOT_CREATED;
+        sessionClock.endClock();
     }
-
-    public ActionResult buyPower(String sessionName, String playerUid) {
-        SessionData sessionData = findSessionByName(sessionName);
-        Optional<Player> playerOptional = PlayerUtil.getPlayerByUid(sessionData.getSessionPlayers(), playerUid);
-
-        if (playerOptional.isEmpty()) {
-            return new ActionResult(false, ACTION_FAILED_NO_MATCH_PLAYER);
-        }
-
-        resourceCalculator.calculateResource(List.of(playerOptional.get()), sessionData.getSessionClock());
-
-        // Check if player has enough coins to buy power
-        if (playerOptional.get().getResourceRack().getDbCoin() < NEW_POWER) {
-            return new ActionResult(false, "Not enough coins to buy power");
-        }
-
-        // Deduct cost and add power
-        Integer dbCoin = playerOptional.get().getResourceRack().getDbCoin();
-        playerOptional.get().getResourceRack().setDbCoin(dbCoin - NEW_POWER);
-        playerOptional.get().getResourceRack().setPower(playerOptional.get().getResourceRack().getPower() + 5);
-        
-        return new ActionResult(true, "Power purchased successfully");
-    }
-
-    public ActionResult buyEmployees(String sessionName, String playerUid) {
-        SessionData sessionData = findSessionByName(sessionName);
-        Optional<Player> playerOptional = PlayerUtil.getPlayerByUid(sessionData.getSessionPlayers(), playerUid);
-
-        if (playerOptional.isEmpty()) {
-            return new ActionResult(false, ACTION_FAILED_NO_MATCH_PLAYER);
-        }
-
-        resourceCalculator.calculateResource(List.of(playerOptional.get()), sessionData.getSessionClock());
-
-        // Check if player has enough coins to buy employees
-        if (playerOptional.get().getResourceRack().getDbCoin() < NEW_EMPLOYEES) {
-            return new ActionResult(false, "Not enough coins to buy employees");
-        }
-
-        // Deduct cost and add employees
-        Integer dbCoin = playerOptional.get().getResourceRack().getDbCoin();
-        playerOptional.get().getResourceRack().setDbCoin(dbCoin - NEW_EMPLOYEES);
-        playerOptional.get().getResourceRack().setEmployees(playerOptional.get().getResourceRack().getEmployees() + 3);
-        
-        return new ActionResult(true, "Employees hired successfully");
-    }
-
-    public SessionOverviewDto createSession(String name) { 
-        if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("Session name cannot be null or blank");
-        }
-
-        if (findSessionByName(name) != null) {
-            throw new IllegalArgumentException("Session with this name already exists");
-        }
-
-        SessionData sessionData = new SessionData();
-        sessionData.setSessionName(name);
-        sessionData.setGameState(GameStateEnum.NOT_STARTED);
-        sessionData.setSessionClock(new GameClock());
-        sessionData.setSessionPlayers(new ArrayList<>()); 
-        sessions.add(sessionData);
-        
-        return createSessionOverview(sessionData.getSessionName());
-    }
-
-    public void killSession(String sessionName) {
-        SessionData sessionData = findSessionByName(sessionName);
-        if (sessionData != null && sessionData.getSessionClock() != null) {
-            sessionData.getSessionClock().endClock();
-            sessionData.getSessionClock().setStarted(null);
-            sessionData.getSessionClock().setEnded(null);
-        }
-
-        for (SessionData session : sessions) {
-            if (session.getSessionName().equals(sessionName)) {
-                sessions.remove(session);
-                break;
-            }
-        }
-        if (sessionData != null) {
-            sessionData.setSessionName(null);
-            sessionData.setSessionClock(null);
-            sessionData.setSessionPlayers(new ArrayList<>());   
-            sessionData.setGameState(GameStateEnum.NOT_CREATED);
-        }
-    }
-
-    public void killAllSessions() {
-        List<SessionData> sessionsCopy = new ArrayList<>(sessions);
-        for (SessionData session : sessionsCopy) {
-            killSession(session.getSessionName());
-        }
-    }
-
-    public boolean isSessionNameMatching(String name) {
-        return findSessionByName(name) != null;
-    }
-
-    public GameStateEnum getGameState(String sessionName) {
-        SessionData sessionData = findSessionByName(sessionName);
-        return sessionData != null ? sessionData.getGameState() : NOT_CREATED;
-    }
-
-    public List<PlayerOverviewDto> getAllPlayerOverview(String sessionName) {
-        SessionData sessionData = findSessionByName(sessionName);
-        if (sessionData == null ) {
+    public List<PlayerOverviewDto> getAllPlayerOverview() {
+        if (!gameState.equals(RUNNING)) {
             throw new IllegalStateException("get players failed - session is not running");
         }
-        return playerOverviewDtoMapper.map(sessionData.getSessionPlayers());
-    }
 
-    public List<PlayerDto> getAllPlayer(String sessionName) {
-        SessionData sessionData = findSessionByName(sessionName);
-        if (sessionData == null || !sessionData.getGameState().equals(RUNNING)) {
+        return playerOverviewDtoMapper.map(sessionPlayers);
+    }
+    public List<PlayerDto> getAllPlayer() {
+        if (!gameState.equals(RUNNING)) {
             throw new IllegalStateException("get players failed - session is not running");
         }
+
         List<PlayerDto> playerDtos = new ArrayList<>();
-        for (Player player : sessionData.getSessionPlayers()) {
+
+        for (Player player : sessionPlayers) {
             playerDtos.add(playerDtoMapper.map(player));
         }
+
         return playerDtos;
     }
 
-    public boolean startSession(String sessionName) {
-        SessionData sessionData = findSessionByName(sessionName);
-        if (sessionData == null || CollectionUtils.isEmpty(sessionData.getSessionPlayers())) {
+    public boolean startSession() {
+        if (CollectionUtils.isEmpty(sessionPlayers)) {
             return false;
         }
-        sessionData.setGameState(RUNNING);
-        if (sessionData.getSessionClock() == null) {
-            sessionData.setSessionClock(new GameClock());
-        }
-        sessionData.getSessionClock().startClock();
+
+        gameState = RUNNING;
+        sessionClock.startClock();
+
         return true;
     }
 
-    public long endSession(String sessionName) {
-        SessionData sessionData = findSessionByName(sessionName);
-        if (sessionData == null || sessionData.getSessionClock() == null) {
-            return 0;
-        }
-
-        sessionData.setGameState(FINISHED);
-        sessionData.getSessionClock().endClock();
-
-        for (SessionData session : sessions) {
-            if (session.getSessionName().equals(sessionName)) {
-                sessions.remove(session);
-                break;
-            }
-        }
-
-        return sessionData.getSessionClock().getSessionDurationInMinutes();
+    public long endSession() {
+        gameState = FINISHED;
+        sessionClock.endClock();
+    return Duration.between(sessionClock.getStarted(), sessionClock.getEnded()).toMinutes();
     }
 
-    public SessionOverviewDto createCurrentSessionOverview(String sessionName) {
-        SessionData sessionData = findSessionByName(sessionName);
-        if (sessionData == null) {
-            return null; // or throw exception
-        }
-        
+    public SessionOverviewDto createCurrentSessionOverview() {
         SessionOverviewDto sessionOverviewDto = new SessionOverviewDto();
+
         sessionOverviewDto.setSessionName(sessionName);
-        sessionOverviewDto.setPlayers(playerOverviewDtoMapper.map(sessionData.getSessionPlayers()));
-        sessionOverviewDto.setGameState(sessionData.getGameState());
-        sessionOverviewDto.setSessionStarted(sessionData.getSessionClock().getStarted());
-        sessionOverviewDto.setSessionEnded(sessionData.getSessionClock().getEnded());
-        
+        sessionOverviewDto.setPlayers(playerOverviewDtoMapper.map(sessionPlayers));
+        sessionOverviewDto.setGameState(gameState);
+        sessionOverviewDto.setSessionStarted(sessionClock.getStarted());
+        sessionOverviewDto.setSessionEnded(sessionClock.getEnded());
+
         return sessionOverviewDto;
     }
 
-    public boolean joinSession(PlayerOverviewDto playerWantToJoin, String sessionName) {
-        SessionData sessionData = findSessionByName(sessionName);
-        if (sessionData == null) {
-            return false;
-        }
-
-        for (Player player : sessionData.getSessionPlayers()) {
+    public boolean joinSession(PlayerOverviewDto playerWantToJoin) {
+        for (Player player : sessionPlayers) { 
             if (PlayerUtil.isPlayerMatching(player, playerWantToJoin)) {
                 return false;
             }
-            // Check if player name matches the one trying to join
-            if (player.getName().equalsIgnoreCase(playerWantToJoin.getName())) {
-                return false; 
-            }
-        } // Check if player already exists in the session
-
-        if (sessionData.getGameState() != NOT_STARTED) {
-            return false;
-        }
-
-        if(sessionData.getSessionPlayers().size() >= 4) {
-            return false; // Maximum of 4 players allowed
         }
 
         Player newPlayer = playerMapper.map(playerWantToJoin);
+
+        if (newPlayer == null) {
+            return false;
+        }
+
         Rail rail = new Rail();
         Station station1 = new Station();
         Station station2 = new Station();
         Train train = new Train();
         rail.setUId(UUID.randomUUID().toString());
         rail.setLevel(1);
+
         station1.setUId(UUID.randomUUID().toString());
         station1.setLevel(1);
         station2.setUId(UUID.randomUUID().toString());
         station2.setLevel(1);
+        
         train.setUId(UUID.randomUUID().toString());
         train.setLevel(1);
         station1.setTrainCapacity(station1.getTrainCapacity() - 1);
+       
         newPlayer.setRails(new ArrayList<>());
         newPlayer.getRails().add(rail);
+
         newPlayer.setStations(new ArrayList<>());
         newPlayer.getStations().add(station1);
         newPlayer.getStations().add(station2);
+
         newPlayer.setTrains(new ArrayList<>());
         newPlayer.getTrains().add(train);
-        sessionData.getSessionPlayers().add(newPlayer);
+
+        sessionPlayers.add(newPlayer);
+
         return true;
     }
 
-    public boolean leaveSession(PlayerOverviewDto playerWantToLeave, String sessionName) {
-        SessionData sessionData = findSessionByName(sessionName);
-        if (sessionData == null) {
-            return false;
-        }
+    public PlayerDto getPlayerStatus(String uId) {
+        resourceCalculator.calculateResource(sessionPlayers);
 
-        // Remove player matching the given PlayerOverviewDto
-        return sessionData.getSessionPlayers().removeIf(
-            player -> PlayerUtil.isPlayerMatching(player, playerWantToLeave)
-        );
-    }
-
-    public PlayerOverviewDto getPlayerOverview(String sessionName, String playerUid) {
-        SessionData sessionData = findSessionByName(sessionName);
-        if(sessionData == null){
-            return null;
-        }
-
-        List<PlayerOverviewDto> players = playerOverviewDtoMapper.map(sessionData.getSessionPlayers());
-        if (players.isEmpty()) {
-            return null;
-        }
-
-        for (PlayerOverviewDto player : players) {
-            if (player.getUId().equals(playerUid)) {
-                return player;
-            }
-        }
-
-        return null;
-    }
-
-    public PlayerDto getPlayerStatus(String sessionName, String playerUid) {
-        SessionData sessionData = findSessionByName(sessionName); 
-        resourceCalculator.calculateResource(sessionData.getSessionPlayers(), sessionData.getSessionClock());
-        Optional<Player> playerOptional = PlayerUtil.getPlayerByUid(sessionData.getSessionPlayers(), playerUid);
+        Optional<Player> playerOptional = PlayerUtil.getPlayerByUid(sessionPlayers, uId);
 
         if (playerOptional.isEmpty()) {
             return null;
@@ -330,68 +166,64 @@ public class SessionService {
         return playerDtoMapper.map(playerOptional.get());
     }
 
-    public ActionResult buyRail(String sessionName, String playerUid) { 
-        SessionData sessionData = findSessionByName(sessionName);
-        Optional<Player> playerOptional = PlayerUtil.getPlayerByUid(sessionData.getSessionPlayers(), playerUid);
+    public ActionResult buyRail(String playerUid) {
+        Optional<Player> playerOptional = PlayerUtil.getPlayerByUid(sessionPlayers, playerUid);
 
         if (playerOptional.isEmpty()) {
             return new ActionResult(false, ACTION_FAILED_NO_MATCH_PLAYER);
         }
 
-        resourceCalculator.calculateResource(List.of(playerOptional.get()), sessionData.getSessionClock());
+        resourceCalculator.calculateResource(List.of(playerOptional.get()));
 
         return playComponentsStore.buyRail(playerOptional.get());
         
     }
 
-    public ActionResult upgradeRail(String sessionName,String playerUid, String railUid) {
-        SessionData sessionData = findSessionByName(sessionName);
-        Optional<Player> playerOptional = PlayerUtil.getPlayerByUid(sessionData.getSessionPlayers(), playerUid);
+    public ActionResult upgradeRail(String playerUid, String railUid) {
+        Optional<Player> playerOptional = PlayerUtil.getPlayerByUid(sessionPlayers, playerUid);
+
         if (playerOptional.isEmpty()) {
             return new ActionResult(false, ACTION_FAILED_NO_MATCH_PLAYER);
         }
 
-        resourceCalculator.calculateResource(List.of(playerOptional.get()), sessionData.getSessionClock());
+        resourceCalculator.calculateResource(List.of(playerOptional.get()));
 
         return playComponentsStore.upgradeRail(playerOptional.get(), railUid);
     }
     
-    public ActionResult buyStation(String sessionName, String playerUid) {
-        SessionData sessionData = findSessionByName(sessionName);
-        Optional<Player> playerOptional = PlayerUtil.getPlayerByUid(sessionData.getSessionPlayers(), playerUid);
+    public ActionResult buyStation(String playerUid) {
+        Optional<Player> playerOptional = PlayerUtil.getPlayerByUid(sessionPlayers, playerUid);
 
         if (playerOptional.isEmpty()) {
             return new ActionResult(false, ACTION_FAILED_NO_MATCH_PLAYER);
         }
 
-        resourceCalculator.calculateResource(List.of(playerOptional.get()), sessionData.getSessionClock());
+        resourceCalculator.calculateResource(List.of(playerOptional.get()));
 
         return playComponentsStore.buyStation(playerOptional.get());
     }
 
-    public ActionResult upgradeStation(String sessionName, String playerUid, String stationUid) {
-        SessionData sessionData = findSessionByName(sessionName);
-        Optional<Player> playerOptional = PlayerUtil.getPlayerByUid(sessionData.getSessionPlayers(), playerUid);
+    public ActionResult upgradeStation(String playerUid, String stationUid) {
+        Optional<Player> playerOptional = PlayerUtil.getPlayerByUid(sessionPlayers, playerUid);
 
         if (playerOptional.isEmpty()) {
             return new ActionResult(false, ACTION_FAILED_NO_MATCH_PLAYER);
         }
 
-        resourceCalculator.calculateResource(List.of(playerOptional.get()), sessionData.getSessionClock());
+        resourceCalculator.calculateResource(List.of(playerOptional.get()));
 
         return playComponentsStore.upgradeStation(playerOptional.get(), stationUid);
     }
 
-    public ActionResult buyTrain(String sessionName, String playerUid) {
-        SessionData sessionData = findSessionByName(sessionName);
-        Optional<Player> playerOptional = PlayerUtil.getPlayerByUid(sessionData.getSessionPlayers(), playerUid);
+    public ActionResult buyTrain(String playerUid) {
+        Optional<Player> playerOptional = PlayerUtil.getPlayerByUid(sessionPlayers, playerUid);
 
         if (playerOptional.isEmpty()) {
             return new ActionResult(false, ACTION_FAILED_NO_MATCH_PLAYER);
         }
        
 
-        resourceCalculator.calculateResource(List.of(playerOptional.get()), sessionData.getSessionClock());
+        resourceCalculator.calculateResource(List.of(playerOptional.get()));
 
         for(Station station : playerOptional.get().getStations()) {
 
@@ -408,41 +240,55 @@ public class SessionService {
         return playComponentsStore.buyTrain(playerOptional.get());
     }
 
-    public ActionResult upgradeTrain(String sessionName, String playerUid, String trainUid) {
-        SessionData sessionData = findSessionByName(sessionName);
-        Optional<Player> playerOptional = PlayerUtil.getPlayerByUid(sessionData.getSessionPlayers(), playerUid);
+    public ActionResult upgradeTrain(String playerUid, String trainUid) {
+        Optional<Player> playerOptional = PlayerUtil.getPlayerByUid(sessionPlayers, playerUid);
 
         if (playerOptional.isEmpty()) {
             return new ActionResult(false, ACTION_FAILED_NO_MATCH_PLAYER);
         }
         
 
-        resourceCalculator.calculateResource(List.of(playerOptional.get()), sessionData.getSessionClock());
+        resourceCalculator.calculateResource(List.of(playerOptional.get()));
 
         return playComponentsStore.upgradeTrain(playerOptional.get(), trainUid);
     }
 
-    public List<Player> getRanking(String sessionName) {
-        SessionData sessionData = findSessionByName(sessionName);
-        if (sessionData.getGameState().equals(NOT_CREATED) || sessionData.getGameState().equals(NOT_STARTED)) {
+    public boolean isSessionNameMatching(String name) {
+        if (name == null || sessionName == null) {
+            return false;
+        }
+
+        return sessionName.equals(name);
+    }
+
+    public GameStateEnum getGameState() {
+        return gameState;
+    } 
+
+    public List<Player> getRanking() {
+        
+        if (gameState.equals(NOT_CREATED) || gameState.equals(NOT_STARTED)) {
             throw new IllegalStateException("get ranking failed - session is not created or not started");
         }
 
-        List<Player> playerDtos = new ArrayList<>(sessionData.getSessionPlayers());
+        
+        List<Player> playerDtos = new ArrayList<>(sessionPlayers);
         List<Player> sortedPlayers = new ArrayList<>();
         
         for(Player p : playerDtos)
         {
-
-            for (Station s : p.getStations()){
+            for (Station s : p.getStations())
+            {
                 p.setPoints(p.getPoints() + (3 + (2 * s.getLevel())));
             }
 
-            for (Train t : p.getTrains()){
+            for (Train t : p.getTrains())
+            {
                 p.setPoints(p.getPoints() + (int) (2 + (1.5 * t.getLevel())));
             }
 
-            for (Rail r : p.getRails()){
+            for (Rail r : p.getRails())
+            {
                 p.setPoints(p.getPoints() + (int) (1 +  r.getLevel()));
             }
 
@@ -452,105 +298,13 @@ public class SessionService {
         }
 
         for (Player p : playerDtos) {
-
             for (int i = 0; i < sortedPlayers.size(); i++) {
-
                 if (p.getPoints() > sortedPlayers.get(i).getPoints()) {
                     sortedPlayers.add(i, p);
                     break;
                 }
             }
         }
-
         return sortedPlayers;
-    }
-
-    public List<SessionOverviewDto> getAllSessionsOverview() {
-        List<SessionOverviewDto> overviewList = new ArrayList<>();
-        for (SessionData sessionData : sessions) {
-            overviewList.add(createSessionOverview(sessionData.getSessionName()));
-        }
-
-        return overviewList;
-    }
-
-    public SessionOverviewDto createSessionOverview(String sessionName) {
-        SessionData sessionData = findSessionByName(sessionName);
-        if (sessionData == null) {
-            throw new IllegalArgumentException("Session with name " + sessionName + " does not exist");
-        }
-
-        SessionOverviewDto dto = new SessionOverviewDto();
-        dto.setSessionName(sessionData.getSessionName());
-        if (playerOverviewDtoMapper != null) {
-            dto.setPlayers(playerOverviewDtoMapper.map(sessionData.getSessionPlayers()));
-        } else {
-            dto.setPlayers(new ArrayList<>());
-        }
-        dto.setGameState(sessionData.getGameState());
-        
-        // Fix: Add null checks for sessionClock
-        if (sessionData.getSessionClock() != null) {
-            dto.setSessionStarted(sessionData.getSessionClock().getStarted());
-            dto.setSessionEnded(sessionData.getSessionClock().getEnded());
-        } else {
-            dto.setSessionStarted(null);
-            dto.setSessionEnded(null);
-        }
-        
-        return dto;
-    }
-
-    private SessionData findSessionByName(String name) {
-        for (SessionData session : sessions) {
-            if (session.getSessionName().equals(name)) {
-                return session;
-            }
-        }
-        return null;
-    }
-
-    public PlayerOverviewDto createPlayerOverview(String uid, String name) {
-        PlayerOverviewDto dto = new PlayerOverviewDto();
-        dto.setUId(uid);
-        dto.setName(name);
-        return dto;
-    }
-
-    public long getRuntime(String sessionName) {
-        SessionData sessionData = findSessionByName(sessionName);
-        if (sessionData == null || sessionData.getSessionClock() == null) {
-            return 0;
-        }
-
-        return sessionData.getSessionClock().getSessionDurationInSeconds();
-    }
-
-    public ActionResult triggerRandomEvent(String sessionName) {
-        SessionData sessionData = findSessionByName(sessionName);
-        if (sessionData == null || sessionData.getGameState() != GameStateEnum.RUNNING) {
-            return new ActionResult(false, "Session is not running");
-        }
-
-        
-        long eventInterval = 60 * 5; // 5 minutes
-        if (sessionData.getSessionClock().getEventClock() != null &&
-            java.time.Duration.between(sessionData.getSessionClock().getEventClock(), OffsetDateTime.now()).toSeconds() < eventInterval) {
-            return new ActionResult(false, "Random event already triggered recently");
-        }
-        
-        
-        sessionData.getSessionClock().setEventClock(OffsetDateTime.now());
-        
-        
-        return eventService.triggerRandomEvent(sessionData);
-    }
-
-    
-    public void checkExpiredEvents(String sessionName) {
-        SessionData sessionData = findSessionByName(sessionName);
-        if (sessionData != null) {
-            eventService.checkAndReverseExpiredEvents(sessionData);
-        }
     }
 }
