@@ -16,7 +16,7 @@ public class Player {
 
     ResourceRack resourceRack = new ResourceRack();
 
-    List<Station> stations = new ArrayList<>();
-    List<Train> trains = new ArrayList<>();
-    List<Rail> rails = new ArrayList<>();
+    List<Station> stations;
+    List<Train> trains;
+    List<Rail> rails;
 }
