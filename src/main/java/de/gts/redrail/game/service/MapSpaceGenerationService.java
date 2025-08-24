@@ -1,12 +1,14 @@
 package de.gts.redrail.game.service;
 
+import java.util.ArrayList;
+
 import org.springframework.stereotype.Service;
+
+import de.gts.redrail.game.constants.LocationEnum;
 import de.gts.redrail.game.constants.MaxLocation;
 import de.gts.redrail.game.models.entities.Location;
 import de.gts.redrail.game.models.entities.Map;
-import de.gts.redrail.game.constants.LocationEnum;
 import lombok.RequiredArgsConstructor;
-import java.util.ArrayList;
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +32,7 @@ public class MapSpaceGenerationService {
 
     private void fillSpace(int xStart, int xEnd, int yStart, int yEnd, int maxLocations, LocationEnum type) {
         int locationsPlaced = 0;
-        String name = "";
+        String name;
 
         for (int x = xStart; x < xEnd && x < map.getMap().size(); x++) {
             for (int y = yStart; y < yEnd && y < map.getMap().get(x).size(); y++) {
@@ -40,17 +42,18 @@ public class MapSpaceGenerationService {
                 }
 
                 name = rNGS.generateRandomGermanCityName();
+
                 while (usedNames.contains(name)) {
                     name = rNGS.generateRandomGermanCityName();
                 }
 
+                usedNames.add(name);
                 Location location = lGS.generateRandomLocation(rPGS.generateRandomPointX(xStart, xEnd), rPGS.generateRandomPointY(yStart, yEnd), type, name);
 
                 if (location != null) {
                     locationsPlaced++;
+                    map.getMap().get(location.getX()).get(location.getY()).setLocation(location);
                 }
-
-                map.getMap().get(location.getX()).get(location.getY()).setLocation(location);
             }
         }
     }

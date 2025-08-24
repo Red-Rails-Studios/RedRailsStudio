@@ -17,7 +17,6 @@ import de.gts.redrail.game.models.entities.Train;
 import de.gts.redrail.game.utils.RailUtil;
 import de.gts.redrail.game.utils.StationUtil;
 import de.gts.redrail.game.utils.TrainUtil;
-import de.gts.redrail.game.models.entities.*;
 @Component
 public class ResourceValidator {
     private Train train;
@@ -73,7 +72,7 @@ public class ResourceValidator {
         }
 
         for (Station station : player.getStations()) {
-            freeEmployees -= station.getRequierdEmployes();
+            freeEmployees -= station.getRequiredEmployees();
         }
 
         return freeEmployees;
@@ -115,11 +114,11 @@ public class ResourceValidator {
     }
 
     public boolean canBuyNewStation(Player player) {
-        if(player.getResourceRack().getEmployees() < player.getTrains().size() * train.getRequiredEmployees() + player.getStations().size()* station.getRequierdEmployes() || player.getResourceRack().getPower() < player.getStations().size() * station.getRequiredPower()+ player.getTrains().size() * train.getRequiredPower()) {
+        if(player.getResourceRack().getEmployees() < player.getTrains().size() * train.getRequiredEmployees() + player.getStations().size()* station.getRequiredEmployees() || player.getResourceRack().getPower() < player.getStations().size() * station.getRequiredPower()+ player.getTrains().size() * train.getRequiredPower()) {
             return false;
         }
 
-        if (getFreeEmployees(player) < station.getRequierdEmployes()) {
+        if (getFreeEmployees(player) < station.getRequiredEmployees()) {
             return false; // Not enough free employees to buy a new station
             
         }
@@ -137,7 +136,7 @@ public class ResourceValidator {
             return false;
         }
 
-        if (getFreeEmployees(player) < stationOptional.get().getRequierdEmployes() + 1) {
+        if (getFreeEmployees(player) < stationOptional.get().getRequiredEmployees() + 1) {
             return false; // Not enough free employees to upgrade the train
         }
 

@@ -8,9 +8,9 @@ import lombok.NoArgsConstructor;
 public class Station {
     String uId;
     Integer level;
-    Integer requierdEmployes = 3;
+    Integer requiredEmployees = 3;
     Integer requiredPower = 4;
-    Integer trainCapacity = 10; 
+    Integer trainCapacity = 10;
     Integer railCapacity = 5;
     String masterUID;
 }
