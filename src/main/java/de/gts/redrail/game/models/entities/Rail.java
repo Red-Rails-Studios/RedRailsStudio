@@ -7,6 +7,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class Rail {
     String uId;
-    Integer level;
-   
+    Integer level;   
 }
