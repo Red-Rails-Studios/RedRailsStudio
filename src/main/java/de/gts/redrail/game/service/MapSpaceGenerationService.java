@@ -19,6 +19,8 @@ public class MapSpaceGenerationService {
     private final RandomNameGenerationService rNGS;
     private final Map map;
     private final ArrayList<String> usedNames = new ArrayList<>();
+    private final ArrayList<Integer> usedX = new ArrayList<>();
+    private final ArrayList<Integer> usedY = new ArrayList<>();
 
     public Map getMap() {
         return this.map;
@@ -33,6 +35,8 @@ public class MapSpaceGenerationService {
     private void fillSpace(int xStart, int xEnd, int yStart, int yEnd, int maxLocations, LocationEnum type) {
         int locationsPlaced = 0;
         String name;
+        Integer CoordinateX;
+        Integer CoordinateY;
 
         for (int x = xStart; x < xEnd && x < map.getMap().size(); x++) {
             for (int y = yStart; y < yEnd && y < map.getMap().get(x).size(); y++) {
@@ -48,7 +52,18 @@ public class MapSpaceGenerationService {
                 }
 
                 usedNames.add(name);
-                Location location = lGS.generateRandomLocation(rPGS.generateRandomPointX(xStart, xEnd), rPGS.generateRandomPointY(yStart, yEnd), type, name);
+                CoordinateX = rPGS.generateRandomPointX(xStart, xEnd);
+                CoordinateY = rPGS.generateRandomPointY(yStart, yEnd);
+                
+                while (usedX.contains(CoordinateX) && usedY.contains(CoordinateY)) {
+                    CoordinateX = rPGS.generateRandomPointX(xStart, xEnd);
+                    CoordinateY = rPGS.generateRandomPointY(yStart, yEnd);
+                }
+
+                usedX.add(CoordinateX);
+                usedY.add(CoordinateY);
+                
+                Location location = lGS.generateRandomLocation(CoordinateX, CoordinateY, type, name);
 
                 if (location != null) {
                     locationsPlaced++;

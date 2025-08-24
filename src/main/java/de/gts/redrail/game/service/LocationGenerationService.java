@@ -12,18 +12,13 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class LocationGenerationService {
-    Random random = new Random();
     RandomCustomersGenerationService customerService = new RandomCustomersGenerationService();
-    
     
     // should generate 1 Random Location using the other services that generate the needed data
     // like random name, random point, etc.
     public Location generateRandomLocation(int x, int y, LocationEnum type, String name) {
         
         int customers = customerService.generateRandomCustomers(type);
-
-        
-
 
         return new Location(type, name, customers, new Station(), x, y); 
     }
