@@ -551,6 +551,18 @@ public class SessionService {
         return null;
     }
 
+    public List<UpgradeRequirements> getBuyRequirements(String sessionName, String playerUid) {
+        SessionData sessionData = findSessionByName(sessionName);
+        if (sessionData == null) return null;
+
+        Optional<Player> playerOptional = PlayerUtil.getPlayerByUid(sessionData.getSessionPlayers(), playerUid);
+        if (playerOptional.isEmpty()) return null;
+
+        resourceCalculator.calculateResource(List.of(playerOptional.get()), sessionData.getSessionClock());
+
+        return resourceValidator.getBuyRequirements(playerOptional.get());
+    }
+
     public List<Player> getRanking(String sessionName) {
         SessionData sessionData = findSessionByName(sessionName);
         if (sessionData.getGameState().equals(NOT_CREATED) || sessionData.getGameState().equals(NOT_STARTED)) {

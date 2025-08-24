@@ -334,6 +334,23 @@ public class SessionController {
         return ResponseEntity.ok(upgradeRequirements);
     }
 
+    @GetMapping("/session/{sessionName}/player/{playerUid}/buy/getRequirements")
+    public ResponseEntity<List<UpgradeRequirements>> getBuyRequirements(@PathVariable(name = "sessionName") String sessionName, @PathVariable(name = "playerUid") String playerUid) {
+        if (!sessionService.isSessionNameMatching(sessionName)) {
+            return ResponseEntity.noContent().build();
+        }
+
+        if (!sessionService.getGameState(sessionName).equals(GameStateEnum.RUNNING)) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        List<UpgradeRequirements> requirements = sessionService.getBuyRequirements(sessionName, playerUid);
+        if (requirements == null || requirements.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(requirements);
+    }
+
     @PostMapping("/session/{sessionName}/player/{playerUid}/station")
     public ResponseEntity<String> buyStation(@PathVariable(name = "sessionName") String sessionName, @PathVariable(name = "playerUid") String playerUid) {
         if (!sessionService.isSessionNameMatching(sessionName)) {

@@ -92,6 +92,32 @@ public class ResourceValidator {
         return requirements;
     }
 
+    /**
+     * Returns the requirements for buying new components (train, station, rail).
+     * UIdOfObjectToUpgrade is set to a descriptive constant string for the new object.
+     */
+    public List<UpgradeRequirements> getBuyRequirements(Player player) {
+        List<UpgradeRequirements> requirements = new ArrayList<>();
+
+        // Train
+        int trainReqDb = NEW_TRAIN;
+        int trainReqPower = DEFAULT_TRAIN_REQUIRED_POWER;
+        int trainReqEmployees = DEFAULT_TRAIN_REQUIRED_EMPLOYEES;
+        requirements.add(new UpgradeRequirements(trainReqDb, trainReqPower, trainReqEmployees, "NEW_TRAIN"));
+
+        // Station
+        int stationReqDb = NEW_STATION;
+        int stationReqPower = DEFAULT_STATION_REQUIRED_POWER;
+        int stationReqEmployees = DEFAULT_STATION_REQUIRED_EMPLOYEES;
+        requirements.add(new UpgradeRequirements(stationReqDb, stationReqPower, stationReqEmployees, "NEW_STATION"));
+
+        // Rail (no power/employees required in current model)
+        int railReqDb = NEW_RAIL;
+        requirements.add(new UpgradeRequirements(railReqDb, 0, 0, "NEW_RAIL"));
+
+        return requirements;
+    }
+
     public boolean canUpgradeRail(Player player, String railUid) {
         Optional<Rail> railOptional = RailUtil.getRailByUid(player.getRails(), railUid);
 
