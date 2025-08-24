@@ -6,7 +6,6 @@ import java.util.List;
 
 import de.gts.redrail.game.component.GameClock;
 import de.gts.redrail.game.constants.GameStateEnum;
-import de.gts.redrail.game.models.entities.ActiveEvent;
 import lombok.Data;
 
 @Data

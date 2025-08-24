@@ -1,6 +1,5 @@
 package de.gts.redrail.game.models.entities;
 
-import de.gts.redrail.game.models.entities.GameEvent;
 import java.time.OffsetDateTime;
 import lombok.Data;
 
