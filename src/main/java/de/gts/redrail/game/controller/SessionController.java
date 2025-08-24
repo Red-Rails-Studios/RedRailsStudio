@@ -27,10 +27,6 @@ import de.gts.redrail.game.models.entities.SessionData;
 import de.gts.redrail.game.service.SessionService;
 import lombok.RequiredArgsConstructor;
 
-
-
-
-
 @RestController
 @RequiredArgsConstructor
 public class SessionController {
@@ -49,7 +45,8 @@ public class SessionController {
     }
 
     @GetMapping("/session/{sessionName}/player/{playerUid}/resource")
-    public ResponseEntity<PlayerDto> getResource(@PathVariable(name = "sessionName") String sessionName, @PathVariable(name = "playerUid")  String playerUid) {
+    public ResponseEntity<PlayerDto> getResource(@PathVariable(name = "sessionName") String sessionName,
+            @PathVariable(name = "playerUid") String playerUid) {
         if (!sessionService.isSessionNameMatching(sessionName)) {
             return ResponseEntity.badRequest().body(null);
         }
@@ -69,8 +66,7 @@ public class SessionController {
     }
 
     @PostMapping("/session/{sessionName}")
-    public ResponseEntity<SessionOverviewDto> createSession(@PathVariable(name = "sessionName")  String sessionName) {
-       
+    public ResponseEntity<SessionOverviewDto> createSession(@PathVariable(name = "sessionName") String sessionName) {
 
         return ResponseEntity.ok(sessionService.createSession(sessionName));
     }
@@ -110,7 +106,7 @@ public class SessionController {
     }
 
     @PatchMapping("/session/{sessionName}/kill")
-    public ResponseEntity<String> killSession(@PathVariable(name = "sessionName")  String sessionName) {
+    public ResponseEntity<String> killSession(@PathVariable(name = "sessionName") String sessionName) {
         if (!sessionService.isSessionNameMatching(sessionName)) {
             return ResponseEntity.noContent().build();
         }
@@ -132,9 +128,8 @@ public class SessionController {
 
     @PostMapping("/session/{sessionName}/{playerName}")
     public ResponseEntity<PlayerOverviewDto> joinSession(
-            @PathVariable(name = "sessionName")  String sessionName,
-            @PathVariable(name = "playerName")  String playerName
-            ) {
+            @PathVariable(name = "sessionName") String sessionName,
+            @PathVariable(name = "playerName") String playerName) {
         if (!sessionService.isSessionNameMatching(sessionName)) {
             return ResponseEntity.ok(sessionService.createPlayerOverview(null, null));
         }
@@ -159,8 +154,7 @@ public class SessionController {
     @PostMapping("/session/{sessionName}/{playerUid}/leave")
     public ResponseEntity<PlayerOverviewDto> leaveSession(
             @PathVariable(name = "sessionName") String sessionName,
-            @PathVariable(name = "playerUid") String playerUid
-    ) {
+            @PathVariable(name = "playerUid") String playerUid) {
         if (!sessionService.isSessionNameMatching(sessionName)) {
             return ResponseEntity.ok(sessionService.createPlayerOverview(null, null));
         }
@@ -179,7 +173,7 @@ public class SessionController {
         }
     }
 
-   @GetMapping("/session/{sessionName}/GetPlayers")
+    @GetMapping("/session/{sessionName}/GetPlayers")
     public ResponseEntity<List<PlayerOverviewDto>> getPlayers(@PathVariable(name = "sessionName") String sessionName) {
         if (!sessionService.isSessionNameMatching(sessionName)) {
             return ResponseEntity.ok(Collections.emptyList());
@@ -194,7 +188,8 @@ public class SessionController {
     }
 
     @GetMapping("/session/{sessionName}/player/{playerUid}")
-    public ResponseEntity<PlayerDto> getPlayerStatus(@PathVariable(name = "sessionName") String sessionName, @PathVariable(name = "playerUid") String playerUid) {
+    public ResponseEntity<PlayerDto> getPlayerStatus(@PathVariable(name = "sessionName") String sessionName,
+            @PathVariable(name = "playerUid") String playerUid) {
         if (!sessionService.isSessionNameMatching(sessionName)) {
             return ResponseEntity.noContent().build();
         }
@@ -214,7 +209,8 @@ public class SessionController {
     }
 
     @PostMapping("/session/{sessionName}/player/{playerUid}/rail")
-    public ResponseEntity<String> buyRail(@PathVariable(name = "sessionName") String sessionName, @PathVariable(name = "playerUid") String playerUid) {
+    public ResponseEntity<String> buyRail(@PathVariable(name = "sessionName") String sessionName,
+            @PathVariable(name = "playerUid") String playerUid) {
         if (!sessionService.isSessionNameMatching(sessionName)) {
             return ResponseEntity.noContent().build();
         }
@@ -224,7 +220,7 @@ public class SessionController {
         }
 
         ActionResult actionResult = sessionService.buyRail(sessionName, playerUid);
-        
+
         if (actionResult.isSuccessful()) {
             return ResponseEntity.ok(actionResult.getUid());
         } else {
@@ -233,11 +229,12 @@ public class SessionController {
     }
 
     @PatchMapping("/session/{sessionName}/player/{playerUid}/rail/{railUid}/upgrade")
-    public ResponseEntity<String> upgradeRail(@PathVariable(name = "sessionName") String sessionName, @PathVariable(name = "playerUid") String playerUid, @PathVariable(name = "railUid") String railUid) {
+    public ResponseEntity<String> upgradeRail(@PathVariable(name = "sessionName") String sessionName,
+            @PathVariable(name = "playerUid") String playerUid, @PathVariable(name = "railUid") String railUid) {
         if (!sessionService.isSessionNameMatching(sessionName)) {
             return ResponseEntity.noContent().build();
         }
-        
+
         if (!sessionService.getGameState(sessionName).equals(GameStateEnum.RUNNING)) {
             return ResponseEntity.badRequest().build();
         }
@@ -247,7 +244,8 @@ public class SessionController {
     }
 
     @PatchMapping("/session/{sessionName}/player/{playerUid}/train/{trainUid}/upgrade")
-    public ResponseEntity<String> upgradeTrain(@PathVariable(name = "sessionName") String sessionName, @PathVariable(name = "playerUid") String playerUid, @PathVariable(name = "trainUid") String trainUid) {
+    public ResponseEntity<String> upgradeTrain(@PathVariable(name = "sessionName") String sessionName,
+            @PathVariable(name = "playerUid") String playerUid, @PathVariable(name = "trainUid") String trainUid) {
         if (!sessionService.isSessionNameMatching(sessionName)) {
             return ResponseEntity.noContent().build();
         }
@@ -265,7 +263,8 @@ public class SessionController {
     }
 
     @PostMapping("/session/{sessionName}/player/{playerUid}/train")
-    public ResponseEntity<String> buyTrain(@PathVariable(name = "sessionName") String sessionName, @PathVariable(name = "playerUid") String playerUid) {
+    public ResponseEntity<String> buyTrain(@PathVariable(name = "sessionName") String sessionName,
+            @PathVariable(name = "playerUid") String playerUid) {
         if (!sessionService.isSessionNameMatching(sessionName)) {
             return ResponseEntity.noContent().build();
         }
@@ -284,7 +283,9 @@ public class SessionController {
     }
 
     @GetMapping("/session/{sessionName}/player/{playerUid}/trains/getUpgradeRequirements")
-    public ResponseEntity<List<UpgradeRequirements>> getTrainUpgradeRequirements(@PathVariable(name = "sessionName") String sessionName, @PathVariable(name = "playerUid") String playerUid) {
+    public ResponseEntity<List<UpgradeRequirements>> getTrainUpgradeRequirements(
+            @PathVariable(name = "sessionName") String sessionName,
+            @PathVariable(name = "playerUid") String playerUid) {
         if (!sessionService.isSessionNameMatching(sessionName)) {
             return ResponseEntity.noContent().build();
         }
@@ -293,7 +294,8 @@ public class SessionController {
             return ResponseEntity.badRequest().build();
         }
 
-        List<UpgradeRequirements> upgradeRequirements = sessionService.getTrainUpgradeRequirements(sessionName, playerUid);
+        List<UpgradeRequirements> upgradeRequirements = sessionService.getTrainUpgradeRequirements(sessionName,
+                playerUid);
         if (upgradeRequirements == null || upgradeRequirements.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
@@ -301,7 +303,9 @@ public class SessionController {
     }
 
     @GetMapping("/session/{sessionName}/player/{playerUid}/stations/getUpgradeRequirements")
-    public ResponseEntity<List<UpgradeRequirements>> getStationUpgradeRequirements(@PathVariable(name = "sessionName") String sessionName, @PathVariable(name = "playerUid") String playerUid) {
+    public ResponseEntity<List<UpgradeRequirements>> getStationUpgradeRequirements(
+            @PathVariable(name = "sessionName") String sessionName,
+            @PathVariable(name = "playerUid") String playerUid) {
         if (!sessionService.isSessionNameMatching(sessionName)) {
             return ResponseEntity.noContent().build();
         }
@@ -310,7 +314,8 @@ public class SessionController {
             return ResponseEntity.badRequest().build();
         }
 
-        List<UpgradeRequirements> upgradeRequirements = sessionService.getStationUpgradeRequirements(sessionName, playerUid);
+        List<UpgradeRequirements> upgradeRequirements = sessionService.getStationUpgradeRequirements(sessionName,
+                playerUid);
         if (upgradeRequirements == null || upgradeRequirements.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
@@ -318,7 +323,9 @@ public class SessionController {
     }
 
     @GetMapping("/session/{sessionName}/player/{playerUid}/rails/getUpgradeRequirements")
-    public ResponseEntity<List<UpgradeRequirements>> getRailUpgradeRequirements(@PathVariable(name = "sessionName") String sessionName, @PathVariable(name = "playerUid") String playerUid) {
+    public ResponseEntity<List<UpgradeRequirements>> getRailUpgradeRequirements(
+            @PathVariable(name = "sessionName") String sessionName,
+            @PathVariable(name = "playerUid") String playerUid) {
         if (!sessionService.isSessionNameMatching(sessionName)) {
             return ResponseEntity.noContent().build();
         }
@@ -327,7 +334,8 @@ public class SessionController {
             return ResponseEntity.badRequest().build();
         }
 
-        List<UpgradeRequirements> upgradeRequirements = sessionService.getRailUpgradeRequirements(sessionName, playerUid);
+        List<UpgradeRequirements> upgradeRequirements = sessionService.getRailUpgradeRequirements(sessionName,
+                playerUid);
         if (upgradeRequirements == null || upgradeRequirements.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
@@ -335,7 +343,9 @@ public class SessionController {
     }
 
     @GetMapping("/session/{sessionName}/player/{playerUid}/buy/getRequirements")
-    public ResponseEntity<List<UpgradeRequirements>> getBuyRequirements(@PathVariable(name = "sessionName") String sessionName, @PathVariable(name = "playerUid") String playerUid) {
+    public ResponseEntity<List<UpgradeRequirements>> getBuyRequirements(
+            @PathVariable(name = "sessionName") String sessionName,
+            @PathVariable(name = "playerUid") String playerUid) {
         if (!sessionService.isSessionNameMatching(sessionName)) {
             return ResponseEntity.noContent().build();
         }
@@ -352,7 +362,8 @@ public class SessionController {
     }
 
     @PostMapping("/session/{sessionName}/player/{playerUid}/station")
-    public ResponseEntity<String> buyStation(@PathVariable(name = "sessionName") String sessionName, @PathVariable(name = "playerUid") String playerUid) {
+    public ResponseEntity<String> buyStation(@PathVariable(name = "sessionName") String sessionName,
+            @PathVariable(name = "playerUid") String playerUid) {
         if (!sessionService.isSessionNameMatching(sessionName)) {
             return ResponseEntity.noContent().build();
         }
@@ -371,7 +382,8 @@ public class SessionController {
     }
 
     @GetMapping("/session/{sessionName}/player/{playerUid}/station/{stationUid}")
-    public ResponseEntity<String> upgradeStation(@PathVariable(name = "sessionName") String sessionName, @PathVariable(name = "playerUid") String playerUid, @PathVariable(name = "stationUid") String stationUid) {
+    public ResponseEntity<String> upgradeStation(@PathVariable(name = "sessionName") String sessionName,
+            @PathVariable(name = "playerUid") String playerUid, @PathVariable(name = "stationUid") String stationUid) {
         if (!sessionService.isSessionNameMatching(sessionName)) {
             return ResponseEntity.noContent().build();
         }
@@ -391,7 +403,7 @@ public class SessionController {
         if (actionResult.isSuccessful()) {
             return ResponseEntity.ok(actionResult.getMessage());
         }
-        
+
         else {
             return ResponseEntity.badRequest().body(actionResult.getMessage());
         }
@@ -444,7 +456,8 @@ public class SessionController {
     }
 
     @PostMapping("/session/{sessionName}/player/{playerUid}/power")
-    public ResponseEntity<String> buypower(@PathVariable(name = "sessionName") String sessionName, @PathVariable(name = "playerUid") String playerUid) {
+    public ResponseEntity<String> buypower(@PathVariable(name = "sessionName") String sessionName,
+            @PathVariable(name = "playerUid") String playerUid) {
         if (!sessionService.isSessionNameMatching(sessionName)) {
             return ResponseEntity.noContent().build();
         }
@@ -463,7 +476,8 @@ public class SessionController {
     }
 
     @PostMapping("/session/{sessionName}/player/{playerUid}/employees")
-    public ResponseEntity<String> buyEmployees(@PathVariable(name = "sessionName") String sessionName, @PathVariable(name = "playerUid") String playerUid) {
+    public ResponseEntity<String> buyEmployees(@PathVariable(name = "sessionName") String sessionName,
+            @PathVariable(name = "playerUid") String playerUid) {
         if (!sessionService.isSessionNameMatching(sessionName)) {
             return ResponseEntity.noContent().build();
         }
@@ -480,9 +494,5 @@ public class SessionController {
             return ResponseEntity.badRequest().body(actionResult.getMessage());
         }
     }
-    
-    
 
-    
-    
 }
