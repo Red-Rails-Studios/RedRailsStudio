@@ -35,6 +35,7 @@ import de.gts.redrail.game.utils.PlayerUtil;
 import lombok.RequiredArgsConstructor;
 import static de.gts.redrail.game.constants.ResourceCost.NEW_POWER;
 import static de.gts.redrail.game.constants.ResourceCost.NEW_EMPLOYEES;
+import de.gts.redrail.game.models.entities.UpgradeRequirements;
 
 
 @Service
@@ -47,6 +48,7 @@ public class SessionService {
     private final PlayerOverviewDtoMapper playerOverviewDtoMapper;
     private final List<SessionData> sessions = new ArrayList<>();
     private final EventService eventService;
+    private final de.gts.redrail.game.component.ResourceValidator resourceValidator;
 
     public List<SessionData> getAllSessions() {
         return sessions;
@@ -420,6 +422,133 @@ public class SessionService {
         resourceCalculator.calculateResource(List.of(playerOptional.get()), sessionData.getSessionClock());
 
         return playComponentsStore.upgradeTrain(playerOptional.get(), trainUid);
+    }
+
+    public List<UpgradeRequirements> getTrainUpgradeRequirements(String sessionName, String playerUid) {
+        SessionData sessionData = findSessionByName(sessionName);
+        if (sessionData == null) {
+            return null;
+        }
+        Optional<Player> playerOptional = PlayerUtil.getPlayerByUid(sessionData.getSessionPlayers(), playerUid);
+        if (playerOptional.isEmpty()) {
+            return null;
+        }
+
+        resourceCalculator.calculateResource(List.of(playerOptional.get()), sessionData.getSessionClock());
+
+        // Delegate to ResourceValidator to build upgrade requirements for all objects then filter trains
+        List<UpgradeRequirements> all = resourceValidator.getUpgradeRequirements(playerOptional.get());
+        if (all == null || all.isEmpty()) {
+            return null;
+        }
+
+        List<UpgradeRequirements> trainReqs = new ArrayList<>();
+        for (UpgradeRequirements req : all) {
+            boolean isTrain = playerOptional.get().getTrains().stream().anyMatch(t -> t.getUId().equals(req.getUIdOfObjectToUpgrade()));
+            if (isTrain) trainReqs.add(req);
+        }
+
+        return trainReqs.isEmpty() ? null : trainReqs;
+    }
+
+    public List<UpgradeRequirements> getStationUpgradeRequirements(String sessionName, String playerUid) {
+        SessionData sessionData = findSessionByName(sessionName);
+        if (sessionData == null) {
+            return null;
+        }
+
+        Optional<Player> playerOptional = PlayerUtil.getPlayerByUid(sessionData.getSessionPlayers(), playerUid);
+        if (playerOptional.isEmpty()) {
+            return null;
+        }
+
+        resourceCalculator.calculateResource(List.of(playerOptional.get()), sessionData.getSessionClock());
+
+        List<UpgradeRequirements> all = resourceValidator.getUpgradeRequirements(playerOptional.get());
+        if (all == null || all.isEmpty()) {
+            return null;
+        }
+
+        List<UpgradeRequirements> stationReqs = new ArrayList<>();
+        for (UpgradeRequirements req : all) {
+            boolean isStation = playerOptional.get().getStations().stream().anyMatch(s -> s.getUId().equals(req.getUIdOfObjectToUpgrade()));
+            if (isStation) stationReqs.add(req);
+        }
+
+        return stationReqs.isEmpty() ? null : stationReqs;
+    }
+
+    public UpgradeRequirements getStationUpgradeRequirements(String sessionName, String playerUid, String stationUid) {
+        SessionData sessionData = findSessionByName(sessionName);
+        if (sessionData == null) {
+            return null;
+        }
+
+        Optional<Player> playerOptional = PlayerUtil.getPlayerByUid(sessionData.getSessionPlayers(), playerUid);
+        if (playerOptional.isEmpty()) {
+            return null;
+        }
+
+        resourceCalculator.calculateResource(List.of(playerOptional.get()), sessionData.getSessionClock());
+
+        List<UpgradeRequirements> all = resourceValidator.getUpgradeRequirements(playerOptional.get());
+        if (all == null || all.isEmpty()) return null;
+
+        for (UpgradeRequirements req : all) {
+            if (req.getUIdOfObjectToUpgrade().equals(stationUid)) return req;
+        }
+
+        return null;
+    }
+
+    public List<UpgradeRequirements> getRailUpgradeRequirements(String sessionName, String playerUid) {
+        SessionData sessionData = findSessionByName(sessionName);
+        if (sessionData == null) {
+            return null;
+        }
+
+        Optional<Player> playerOptional = PlayerUtil.getPlayerByUid(sessionData.getSessionPlayers(), playerUid);
+        if (playerOptional.isEmpty()) {
+            return null;
+        }
+
+        resourceCalculator.calculateResource(List.of(playerOptional.get()), sessionData.getSessionClock());
+
+        List<UpgradeRequirements> all = resourceValidator.getUpgradeRequirements(playerOptional.get());
+        if (all == null || all.isEmpty()) {
+            return null;
+        }
+
+        List<UpgradeRequirements> railReqs = new ArrayList<>();
+        for (UpgradeRequirements req : all) {
+            boolean isRail = playerOptional.get().getRails().stream().anyMatch(r -> r.getUId().equals(req.getUIdOfObjectToUpgrade()));
+            if (isRail) railReqs.add(req);
+        }
+
+        return railReqs.isEmpty() ? null : railReqs;
+    }
+
+    public UpgradeRequirements getRailUpgradeRequirements(String sessionName, String playerUid, String railUid) {
+        SessionData sessionData = findSessionByName(sessionName);
+        if (sessionData == null) {
+            return null;
+        }
+
+        Optional<Player> playerOptional = PlayerUtil.getPlayerByUid(sessionData.getSessionPlayers(), playerUid);
+        if (playerOptional.isEmpty()) {
+            return null;
+        }
+
+        resourceCalculator.calculateResource(List.of(playerOptional.get()), sessionData.getSessionClock());
+
+        List<UpgradeRequirements> all = resourceValidator.getUpgradeRequirements(playerOptional.get());
+        if (all == null || all.isEmpty()) return null;
+
+        for (UpgradeRequirements req : all) {
+            if (req.getUIdOfObjectToUpgrade().equals(railUid)) return req;
+        }
+
+        return null;
     }
 
     public List<Player> getRanking(String sessionName) {

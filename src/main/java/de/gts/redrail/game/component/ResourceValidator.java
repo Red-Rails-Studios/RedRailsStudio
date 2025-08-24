@@ -1,6 +1,10 @@
 package de.gts.redrail.game.component;
 
 import java.util.Optional;
+import java.util.List;
+import java.util.ArrayList;
+
+import de.gts.redrail.game.models.entities.UpgradeRequirements;
 
 import org.springframework.stereotype.Component;
 
@@ -27,6 +31,65 @@ public class ResourceValidator {
 
     public boolean canBuyNewRail(Player player) {
         return player.getResourceRack().getDbCoin() >= NEW_RAIL;
+    }
+
+    /**
+     * Build upgrade requirements for all upgradable objects of the player: trains, stations and rails.
+     * Returns an empty list if none available.
+     */
+    public List<UpgradeRequirements> getUpgradeRequirements(Player player) {
+        List<UpgradeRequirements> requirements = new ArrayList<>();
+
+        if (player == null) {
+            return requirements;
+        }
+
+        // Trains
+        if (player.getTrains() != null) {
+            for (Train train : player.getTrains()) {
+                if (train == null) continue;
+                // Skip trains already at max level (assumed 10)
+                if (train.getLevel() != null && train.getLevel() >= 10) continue;
+
+                int nextLevel = (train.getLevel() == null) ? 1 : (train.getLevel() + 1);
+                int reqDb = nextLevel * UPGRADE_TRAIN_FACTOR;
+                Integer trainReqPower = train.getRequiredPower();
+                Integer trainReqEmployees = train.getRequiredEmployees();
+                int reqPower = (trainReqPower == null) ? DEFAULT_TRAIN_REQUIRED_POWER : (trainReqPower.intValue() + 1);
+                int reqEmployees = (trainReqEmployees == null) ? DEFAULT_TRAIN_REQUIRED_EMPLOYEES : (trainReqEmployees.intValue() + 1);
+                requirements.add(new UpgradeRequirements(reqDb, reqPower, reqEmployees, train.getUId()));
+            }
+        }
+
+        // Stations
+        if (player.getStations() != null) {
+            for (Station station : player.getStations()) {
+                if (station == null) continue;
+                if (station.getLevel() != null && station.getLevel() >= 10) continue;
+
+                int nextLevel = (station.getLevel() == null) ? 1 : (station.getLevel() + 1);
+                int reqDb = nextLevel * UPGRADE_STATION_FACTOR;
+                Integer stationReqPower = station.getRequiredPower();
+                Integer stationReqEmployees = station.getRequierdEmployes();
+                int reqPower = (stationReqPower == null) ? DEFAULT_STATION_REQUIRED_POWER : (stationReqPower.intValue() + 1);
+                int reqEmployees = (stationReqEmployees == null) ? DEFAULT_STATION_REQUIRED_EMPLOYEES : (stationReqEmployees.intValue() + 1);
+                requirements.add(new UpgradeRequirements(reqDb, reqPower, reqEmployees, station.getUId()));
+            }
+        }
+
+        // Rails
+        if (player.getRails() != null) {
+            for (Rail rail : player.getRails()) {
+                if (rail == null) continue;
+                if (rail.getLevel() != null && rail.getLevel() >= 10) continue;
+
+                int reqDb = (rail.getLevel() == null ? 1 : (rail.getLevel() + 1)) * UPGRADE_RAIL_FACTOR;
+                // Rails don't require power/employees in current model
+                requirements.add(new UpgradeRequirements(reqDb, 0, 0, rail.getUId()));
+            }
+        }
+
+        return requirements;
     }
 
     public boolean canUpgradeRail(Player player, String railUid) {
