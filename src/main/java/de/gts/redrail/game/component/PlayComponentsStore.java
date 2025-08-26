@@ -42,7 +42,7 @@ public class PlayComponentsStore {
         player.getRails().add(rail);
 
         Integer dbCoin = player.getResourceRack().getDbCoin();
-        player.getResourceRack().setDbCoin(dbCoin - (player.getRails().size() * NEW_RAIL)); 
+        player.getResourceRack().setDbCoin(dbCoin - (player.getRails().size() * NEW_RAIL));
 
         return new ActionResult(true, BOUGHT_NEW_PLAY_COMPONENT, rail.getUId());
     }
@@ -62,9 +62,8 @@ public class PlayComponentsStore {
 
         if (rail.getLevel() >= 5) {
             return new ActionResult(false, ACTION_FAILED_MAX_LEVEL_REACHED);
-        }   
+        }
 
-        
         Integer level = rail.getLevel() + 1;
         rail.setLevel(level);
 
@@ -74,7 +73,7 @@ public class PlayComponentsStore {
         return new ActionResult(true, BOUGHT_UPGRADE);
     }
 
-    public ActionResult buyStation (Player player) {
+    public ActionResult buyStation(Player player) {
         if (!resourceValidator.canBuyNewStation(player)) {
             return new ActionResult(false, CANT_AFFORD_NEW_PLAY_COMPONENT, null);
         }
@@ -102,8 +101,10 @@ public class PlayComponentsStore {
             return new ActionResult(false, ACTION_FAILED_NO_MATCH_PLAY_COMPONENT);
         }
 
-    if (resourceValidator.getFreeEmployees(player) < stationOptional.get().getRequiredEmployees() + 2) {
-            return new ActionResult(false, NOT_ENOUGH_EMPLOYEES); 
+
+        if (resourceValidator.getFreeEmployees(player) < stationOptional.get().getRequierdEmployes() + 2) {
+            return new ActionResult(false, NOT_ENOUGH_EMPLOYEES);
+
         }
 
         if (stationOptional.get().getLevel() >= 10) {
@@ -144,7 +145,6 @@ public class PlayComponentsStore {
         return new ActionResult(true, BOUGHT_NEW_PLAY_COMPONENT, train.getUId());
     }
 
-
     public ActionResult upgradeTrain(Player player, String trainUid) {
         if (!resourceValidator.canUpgradeTrain(player, trainUid)) {
             return new ActionResult(false, CANT_AFFORD_UPGRADE_PLAY_COMPONENT);
@@ -155,7 +155,6 @@ public class PlayComponentsStore {
         if (trainOptional.isEmpty()) {
             return new ActionResult(false, ACTION_FAILED_NO_MATCH_PLAY_COMPONENT);
         }
-        
 
         Train train = trainOptional.get();
 
@@ -164,10 +163,9 @@ public class PlayComponentsStore {
         }
 
         Integer level = train.getLevel() + 1;
-        Integer capacity = train.getCapacity() + 2; 
+        Integer capacity = train.getCapacity() + 2;
         train.setLevel(level);
         train.setCapacity(capacity);
-    
 
         Integer dbCoin = player.getResourceRack().getDbCoin();
         player.getResourceRack().setDbCoin(dbCoin - (level * UPGRADE_RAIL_FACTOR));

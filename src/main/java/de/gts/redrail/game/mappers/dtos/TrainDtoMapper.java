@@ -16,9 +16,8 @@ public class TrainDtoMapper {
         }
 
         TrainDto trainDto = new TrainDto();
-
         trainDto.setUId(train.getUId());
-        trainDto.setLevel(trainDto.getLevel());
+        trainDto.setLevel(train.getLevel()); // Fix: was trainDto.getLevel()
 
         return trainDto;
     }
