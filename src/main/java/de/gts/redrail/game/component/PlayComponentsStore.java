@@ -1,23 +1,31 @@
 package de.gts.redrail.game.component;
 
+import java.util.Optional;
+import java.util.UUID;
+
+import org.springframework.stereotype.Component;
+
+import static de.gts.redrail.game.constants.ResourceCost.NEW_RAIL;
+import static de.gts.redrail.game.constants.ResourceCost.NEW_STATION;
+import static de.gts.redrail.game.constants.ResourceCost.NEW_TRAIN;
+import static de.gts.redrail.game.constants.ResourceCost.UPGRADE_RAIL_FACTOR;
+import static de.gts.redrail.game.constants.ResponseText.ACTION_FAILED_MAX_LEVEL_REACHED;
+import static de.gts.redrail.game.constants.ResponseText.ACTION_FAILED_NO_MATCH_PLAY_COMPONENT;
+import static de.gts.redrail.game.constants.ResponseText.BOUGHT_NEW_PLAY_COMPONENT;
+import static de.gts.redrail.game.constants.ResponseText.BOUGHT_UPGRADE;
+import static de.gts.redrail.game.constants.ResponseText.CANT_AFFORD_NEW_PLAY_COMPONENT;
+import static de.gts.redrail.game.constants.ResponseText.CANT_AFFORD_UPGRADE_PLAY_COMPONENT;
+import static de.gts.redrail.game.constants.ResponseText.NOT_ENOUGH_EMPLOYEES;
+import static de.gts.redrail.game.constants.ResponseText.REQIUERMENT_NOT_MET;
 import de.gts.redrail.game.models.entities.ActionResult;
 import de.gts.redrail.game.models.entities.Player;
 import de.gts.redrail.game.models.entities.Rail;
 import de.gts.redrail.game.models.entities.Station;
 import de.gts.redrail.game.models.entities.Train;
-
+import de.gts.redrail.game.utils.RailUtil;
 import de.gts.redrail.game.utils.StationUtil;
 import de.gts.redrail.game.utils.TrainUtil;
-import de.gts.redrail.game.utils.RailUtil;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
-
-import java.util.Optional;
-import java.util.UUID;
-
-import static de.gts.redrail.game.constants.ResourceCost.NEW_RAIL;
-import static de.gts.redrail.game.constants.ResourceCost.UPGRADE_RAIL_FACTOR;
-import static de.gts.redrail.game.constants.ResponseText.*;
 
 @Component
 @RequiredArgsConstructor
@@ -36,7 +44,7 @@ public class PlayComponentsStore {
         player.getRails().add(rail);
 
         Integer dbCoin = player.getResourceRack().getDbCoin();
-        player.getResourceRack().setDbCoin(dbCoin - (player.getRails().size() * NEW_RAIL)); 
+        player.getResourceRack().setDbCoin(dbCoin - (player.getRails().size() * NEW_RAIL));
 
         return new ActionResult(true, BOUGHT_NEW_PLAY_COMPONENT, rail.getUId());
     }
@@ -56,9 +64,8 @@ public class PlayComponentsStore {
 
         if (rail.getLevel() >= 5) {
             return new ActionResult(false, ACTION_FAILED_MAX_LEVEL_REACHED);
-        }   
+        }
 
-        
         Integer level = rail.getLevel() + 1;
         rail.setLevel(level);
 
@@ -68,7 +75,7 @@ public class PlayComponentsStore {
         return new ActionResult(true, BOUGHT_UPGRADE);
     }
 
-    public ActionResult buyStation (Player player) {
+    public ActionResult buyStation(Player player) {
         if (!resourceValidator.canBuyNewStation(player)) {
             return new ActionResult(false, CANT_AFFORD_NEW_PLAY_COMPONENT, null);
         }
@@ -77,9 +84,10 @@ public class PlayComponentsStore {
         station.setUId(UUID.randomUUID().toString());
         station.setLevel(1);
         player.getStations().add(station);
+        station.setMasterUID(player.getUId());
 
-        Integer dbCoin = player.getResourceRack().getDbCoin();
-        player.getResourceRack().setDbCoin(dbCoin - NEW_RAIL);
+    Integer dbCoin = player.getResourceRack().getDbCoin();
+    player.getResourceRack().setDbCoin(dbCoin - NEW_STATION);
 
         return new ActionResult(true, BOUGHT_NEW_PLAY_COMPONENT, station.getUId());
     }
@@ -95,8 +103,10 @@ public class PlayComponentsStore {
             return new ActionResult(false, ACTION_FAILED_NO_MATCH_PLAY_COMPONENT);
         }
 
-        if (resourceValidator.getFreeEmployees(player) < stationOptional.get().getRequierdEmployes() + 2) {
-            return new ActionResult(false, NOT_ENOUGH_EMPLOYEES); 
+
+    if (resourceValidator.getFreeEmployees(player) < stationOptional.get().getRequiredEmployees() + 2) {
+            return new ActionResult(false, NOT_ENOUGH_EMPLOYEES);
+
         }
 
         if (stationOptional.get().getLevel() >= 10) {
@@ -131,12 +141,11 @@ public class PlayComponentsStore {
         train.setLevel(1);
         player.getTrains().add(train);
 
-        Integer dbCoin = player.getResourceRack().getDbCoin();
-        player.getResourceRack().setDbCoin(dbCoin - NEW_RAIL);
+    Integer dbCoin = player.getResourceRack().getDbCoin();
+    player.getResourceRack().setDbCoin(dbCoin - NEW_TRAIN);
 
         return new ActionResult(true, BOUGHT_NEW_PLAY_COMPONENT, train.getUId());
     }
-
 
     public ActionResult upgradeTrain(Player player, String trainUid) {
         if (!resourceValidator.canUpgradeTrain(player, trainUid)) {
@@ -148,7 +157,6 @@ public class PlayComponentsStore {
         if (trainOptional.isEmpty()) {
             return new ActionResult(false, ACTION_FAILED_NO_MATCH_PLAY_COMPONENT);
         }
-        
 
         Train train = trainOptional.get();
 
@@ -157,10 +165,9 @@ public class PlayComponentsStore {
         }
 
         Integer level = train.getLevel() + 1;
-        Integer capacity = train.getCapacity() + 2; 
+        Integer capacity = train.getCapacity() + 2;
         train.setLevel(level);
         train.setCapacity(capacity);
-    
 
         Integer dbCoin = player.getResourceRack().getDbCoin();
         player.getResourceRack().setDbCoin(dbCoin - (level * UPGRADE_RAIL_FACTOR));

@@ -1,15 +1,17 @@
 package de.gts.redrail.game.models.entities;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
 public class Station {
     String uId;
     Integer level;
-    Integer requierdEmployes = 3;
+    Integer requiredEmployees = 3;
     Integer requiredPower = 4;
-    Integer trainCapacity = 10; // Default capacity
+    Integer trainCapacity = 10;
     Integer railCapacity = 5;
+    String masterUID;
 }

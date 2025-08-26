@@ -17,6 +17,8 @@ import static de.gts.redrail.game.constants.GameStateEnum.FINISHED;
 import static de.gts.redrail.game.constants.GameStateEnum.NOT_CREATED;
 import static de.gts.redrail.game.constants.GameStateEnum.NOT_STARTED;
 import static de.gts.redrail.game.constants.GameStateEnum.RUNNING;
+import static de.gts.redrail.game.constants.ResourceCost.NEW_EMPLOYEES;
+import static de.gts.redrail.game.constants.ResourceCost.NEW_POWER;
 import static de.gts.redrail.game.constants.ResponseText.ACTION_FAILED_NO_MATCH_PLAYER;
 import static de.gts.redrail.game.constants.ResponseText.ACTION_FAILED_NO_TRAIN_CAPACITY_LEFT;
 import de.gts.redrail.game.mappers.dtos.PlayerDtoMapper;
@@ -26,11 +28,13 @@ import de.gts.redrail.game.models.dtos.PlayerDto;
 import de.gts.redrail.game.models.dtos.PlayerOverviewDto;
 import de.gts.redrail.game.models.dtos.SessionOverviewDto;
 import de.gts.redrail.game.models.entities.ActionResult;
+import de.gts.redrail.game.models.entities.Map;
 import de.gts.redrail.game.models.entities.Player;
 import de.gts.redrail.game.models.entities.Rail;
 import de.gts.redrail.game.models.entities.SessionData;
 import de.gts.redrail.game.models.entities.Station;
 import de.gts.redrail.game.models.entities.Train;
+import de.gts.redrail.game.models.entities.UpgradeRequirements;
 import de.gts.redrail.game.utils.PlayerUtil;
 import lombok.RequiredArgsConstructor;
 import static de.gts.redrail.game.constants.ResourceCost.NEW_POWER;
@@ -46,8 +50,11 @@ public class SessionService {
     private final PlayerDtoMapper playerDtoMapper;
     private final PlayerMapper playerMapper;
     private final PlayerOverviewDtoMapper playerOverviewDtoMapper;
+    private final MapSpaceGenerationService MapService;
     private final List<SessionData> sessions = new ArrayList<>();
     private final EventService eventService;
+    private final de.gts.redrail.game.component.ResourceValidator resourceValidator;
+
 
     public List<SessionData> getAllSessions() {
         return sessions;
@@ -86,7 +93,7 @@ public class SessionService {
         Integer dbCoin = playerOptional.get().getResourceRack().getDbCoin();
         playerOptional.get().getResourceRack().setDbCoin(dbCoin - NEW_POWER);
         playerOptional.get().getResourceRack().setPower(playerOptional.get().getResourceRack().getPower() + 5);
-        
+
         return new ActionResult(true, "Power purchased successfully");
     }
 
@@ -109,11 +116,11 @@ public class SessionService {
         Integer dbCoin = playerOptional.get().getResourceRack().getDbCoin();
         playerOptional.get().getResourceRack().setDbCoin(dbCoin - NEW_EMPLOYEES);
         playerOptional.get().getResourceRack().setEmployees(playerOptional.get().getResourceRack().getEmployees() + 3);
-        
+
         return new ActionResult(true, "Employees hired successfully");
     }
 
-    public SessionOverviewDto createSession(String name) { 
+    public SessionOverviewDto createSession(String name) {
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("Session name cannot be null or blank");
         }
@@ -126,9 +133,9 @@ public class SessionService {
         sessionData.setSessionName(name);
         sessionData.setGameState(GameStateEnum.NOT_STARTED);
         sessionData.setSessionClock(new GameClock());
-        sessionData.setSessionPlayers(new ArrayList<>()); 
+        sessionData.setSessionPlayers(new ArrayList<>());
         sessions.add(sessionData);
-        
+
         return createSessionOverview(sessionData.getSessionName());
     }
 
@@ -149,7 +156,7 @@ public class SessionService {
         if (sessionData != null) {
             sessionData.setSessionName(null);
             sessionData.setSessionClock(null);
-            sessionData.setSessionPlayers(new ArrayList<>());   
+            sessionData.setSessionPlayers(new ArrayList<>());
             sessionData.setGameState(GameStateEnum.NOT_CREATED);
         }
     }
@@ -172,7 +179,7 @@ public class SessionService {
 
     public List<PlayerOverviewDto> getAllPlayerOverview(String sessionName) {
         SessionData sessionData = findSessionByName(sessionName);
-        if (sessionData == null ) {
+        if (sessionData == null) {
             throw new IllegalStateException("get players failed - session is not running");
         }
         return playerOverviewDtoMapper.map(sessionData.getSessionPlayers());
@@ -227,16 +234,17 @@ public class SessionService {
         if (sessionData == null) {
             return null; // or throw exception
         }
-        
+
         SessionOverviewDto sessionOverviewDto = new SessionOverviewDto();
         sessionOverviewDto.setSessionName(sessionName);
         sessionOverviewDto.setPlayers(playerOverviewDtoMapper.map(sessionData.getSessionPlayers()));
         sessionOverviewDto.setGameState(sessionData.getGameState());
         sessionOverviewDto.setSessionStarted(sessionData.getSessionClock().getStarted());
         sessionOverviewDto.setSessionEnded(sessionData.getSessionClock().getEnded());
-        
+
         return sessionOverviewDto;
     }
+
 
     public boolean joinSession(PlayerOverviewDto playerWantToJoin, String sessionName) {
         SessionData sessionData = findSessionByName(sessionName);
@@ -250,7 +258,7 @@ public class SessionService {
             }
             // Check if player name matches the one trying to join
             if (player.getName().equalsIgnoreCase(playerWantToJoin.getName())) {
-                return false; 
+                return false;
             }
         } // Check if player already exists in the session
 
@@ -258,7 +266,7 @@ public class SessionService {
             return false;
         }
 
-        if(sessionData.getSessionPlayers().size() >= 4) {
+        if (sessionData.getSessionPlayers().size() >= 4) {
             return false; // Maximum of 4 players allowed
         }
 
@@ -295,13 +303,12 @@ public class SessionService {
 
         // Remove player matching the given PlayerOverviewDto
         return sessionData.getSessionPlayers().removeIf(
-            player -> PlayerUtil.isPlayerMatching(player, playerWantToLeave)
-        );
+                player -> PlayerUtil.isPlayerMatching(player, playerWantToLeave));
     }
 
     public PlayerOverviewDto getPlayerOverview(String sessionName, String playerUid) {
         SessionData sessionData = findSessionByName(sessionName);
-        if(sessionData == null){
+        if (sessionData == null) {
             return null;
         }
 
@@ -331,7 +338,7 @@ public class SessionService {
     }
 
     public PlayerDto getPlayerStatus(String sessionName, String playerUid) {
-        SessionData sessionData = findSessionByName(sessionName); 
+        SessionData sessionData = findSessionByName(sessionName);
         resourceCalculator.calculateResource(sessionData.getSessionPlayers(), sessionData.getSessionClock());
         Optional<Player> playerOptional = PlayerUtil.getPlayerByUid(sessionData.getSessionPlayers(), playerUid);
 
@@ -342,7 +349,7 @@ public class SessionService {
         return playerDtoMapper.map(playerOptional.get());
     }
 
-    public ActionResult buyRail(String sessionName, String playerUid) { 
+    public ActionResult buyRail(String sessionName, String playerUid) {
         SessionData sessionData = findSessionByName(sessionName);
         Optional<Player> playerOptional = PlayerUtil.getPlayerByUid(sessionData.getSessionPlayers(), playerUid);
 
@@ -353,10 +360,10 @@ public class SessionService {
         resourceCalculator.calculateResource(List.of(playerOptional.get()), sessionData.getSessionClock());
 
         return playComponentsStore.buyRail(playerOptional.get());
-        
+
     }
 
-    public ActionResult upgradeRail(String sessionName,String playerUid, String railUid) {
+    public ActionResult upgradeRail(String sessionName, String playerUid, String railUid) {
         SessionData sessionData = findSessionByName(sessionName);
         Optional<Player> playerOptional = PlayerUtil.getPlayerByUid(sessionData.getSessionPlayers(), playerUid);
         if (playerOptional.isEmpty()) {
@@ -367,7 +374,7 @@ public class SessionService {
 
         return playComponentsStore.upgradeRail(playerOptional.get(), railUid);
     }
-    
+
     public ActionResult buyStation(String sessionName, String playerUid) {
         SessionData sessionData = findSessionByName(sessionName);
         Optional<Player> playerOptional = PlayerUtil.getPlayerByUid(sessionData.getSessionPlayers(), playerUid);
@@ -401,11 +408,10 @@ public class SessionService {
         if (playerOptional.isEmpty()) {
             return new ActionResult(false, ACTION_FAILED_NO_MATCH_PLAYER);
         }
-       
 
         resourceCalculator.calculateResource(List.of(playerOptional.get()), sessionData.getSessionClock());
 
-        for(Station station : playerOptional.get().getStations()) {
+        for (Station station : playerOptional.get().getStations()) {
 
             if (station.getTrainCapacity() == 0) {
                 return new ActionResult(false, ACTION_FAILED_NO_TRAIN_CAPACITY_LEFT);
@@ -416,7 +422,6 @@ public class SessionService {
             }
         }
 
-        
         return playComponentsStore.buyTrain(playerOptional.get());
     }
 
@@ -427,11 +432,162 @@ public class SessionService {
         if (playerOptional.isEmpty()) {
             return new ActionResult(false, ACTION_FAILED_NO_MATCH_PLAYER);
         }
-        
 
         resourceCalculator.calculateResource(List.of(playerOptional.get()), sessionData.getSessionClock());
 
         return playComponentsStore.upgradeTrain(playerOptional.get(), trainUid);
+    }
+
+    public List<UpgradeRequirements> getTrainUpgradeRequirements(String sessionName, String playerUid) {
+        SessionData sessionData = findSessionByName(sessionName);
+        if (sessionData == null) {
+            return null;
+        }
+        Optional<Player> playerOptional = PlayerUtil.getPlayerByUid(sessionData.getSessionPlayers(), playerUid);
+        if (playerOptional.isEmpty()) {
+            return null;
+        }
+
+        resourceCalculator.calculateResource(List.of(playerOptional.get()), sessionData.getSessionClock());
+
+        // Delegate to ResourceValidator to build upgrade requirements for all objects
+        // then filter trains
+        List<UpgradeRequirements> all = resourceValidator.getUpgradeRequirements(playerOptional.get());
+        if (all == null || all.isEmpty()) {
+            return null;
+        }
+
+        List<UpgradeRequirements> trainReqs = new ArrayList<>();
+        for (UpgradeRequirements req : all) {
+            boolean isTrain = playerOptional.get().getTrains().stream()
+                    .anyMatch(t -> t.getUId().equals(req.getUIdOfObjectToUpgrade()));
+            if (isTrain)
+                trainReqs.add(req);
+        }
+
+        return trainReqs.isEmpty() ? null : trainReqs;
+    }
+
+    public List<UpgradeRequirements> getStationUpgradeRequirements(String sessionName, String playerUid) {
+        SessionData sessionData = findSessionByName(sessionName);
+        if (sessionData == null) {
+            return null;
+        }
+
+        Optional<Player> playerOptional = PlayerUtil.getPlayerByUid(sessionData.getSessionPlayers(), playerUid);
+        if (playerOptional.isEmpty()) {
+            return null;
+        }
+
+        resourceCalculator.calculateResource(List.of(playerOptional.get()), sessionData.getSessionClock());
+
+        List<UpgradeRequirements> all = resourceValidator.getUpgradeRequirements(playerOptional.get());
+        if (all == null || all.isEmpty()) {
+            return null;
+        }
+
+        List<UpgradeRequirements> stationReqs = new ArrayList<>();
+        for (UpgradeRequirements req : all) {
+            boolean isStation = playerOptional.get().getStations().stream()
+                    .anyMatch(s -> s.getUId().equals(req.getUIdOfObjectToUpgrade()));
+            if (isStation)
+                stationReqs.add(req);
+        }
+
+        return stationReqs.isEmpty() ? null : stationReqs;
+    }
+
+    public UpgradeRequirements getStationUpgradeRequirements(String sessionName, String playerUid, String stationUid) {
+        SessionData sessionData = findSessionByName(sessionName);
+        if (sessionData == null) {
+            return null;
+        }
+
+        Optional<Player> playerOptional = PlayerUtil.getPlayerByUid(sessionData.getSessionPlayers(), playerUid);
+        if (playerOptional.isEmpty()) {
+            return null;
+        }
+
+        resourceCalculator.calculateResource(List.of(playerOptional.get()), sessionData.getSessionClock());
+
+        List<UpgradeRequirements> all = resourceValidator.getUpgradeRequirements(playerOptional.get());
+        if (all == null || all.isEmpty())
+            return null;
+
+        for (UpgradeRequirements req : all) {
+            if (req.getUIdOfObjectToUpgrade().equals(stationUid))
+                return req;
+        }
+
+        return null;
+    }
+
+    public List<UpgradeRequirements> getRailUpgradeRequirements(String sessionName, String playerUid) {
+        SessionData sessionData = findSessionByName(sessionName);
+        if (sessionData == null) {
+            return null;
+        }
+
+        Optional<Player> playerOptional = PlayerUtil.getPlayerByUid(sessionData.getSessionPlayers(), playerUid);
+        if (playerOptional.isEmpty()) {
+            return null;
+        }
+
+        resourceCalculator.calculateResource(List.of(playerOptional.get()), sessionData.getSessionClock());
+
+        List<UpgradeRequirements> all = resourceValidator.getUpgradeRequirements(playerOptional.get());
+        if (all == null || all.isEmpty()) {
+            return null;
+        }
+
+        List<UpgradeRequirements> railReqs = new ArrayList<>();
+        for (UpgradeRequirements req : all) {
+            boolean isRail = playerOptional.get().getRails().stream()
+                    .anyMatch(r -> r.getUId().equals(req.getUIdOfObjectToUpgrade()));
+            if (isRail)
+                railReqs.add(req);
+        }
+
+        return railReqs.isEmpty() ? null : railReqs;
+    }
+
+    public UpgradeRequirements getRailUpgradeRequirements(String sessionName, String playerUid, String railUid) {
+        SessionData sessionData = findSessionByName(sessionName);
+        if (sessionData == null) {
+            return null;
+        }
+
+        Optional<Player> playerOptional = PlayerUtil.getPlayerByUid(sessionData.getSessionPlayers(), playerUid);
+        if (playerOptional.isEmpty()) {
+            return null;
+        }
+
+        resourceCalculator.calculateResource(List.of(playerOptional.get()), sessionData.getSessionClock());
+
+        List<UpgradeRequirements> all = resourceValidator.getUpgradeRequirements(playerOptional.get());
+        if (all == null || all.isEmpty())
+            return null;
+
+        for (UpgradeRequirements req : all) {
+            if (req.getUIdOfObjectToUpgrade().equals(railUid))
+                return req;
+        }
+
+        return null;
+    }
+
+    public List<UpgradeRequirements> getBuyRequirements(String sessionName, String playerUid) {
+        SessionData sessionData = findSessionByName(sessionName);
+        if (sessionData == null)
+            return null;
+
+        Optional<Player> playerOptional = PlayerUtil.getPlayerByUid(sessionData.getSessionPlayers(), playerUid);
+        if (playerOptional.isEmpty())
+            return null;
+
+        resourceCalculator.calculateResource(List.of(playerOptional.get()), sessionData.getSessionClock());
+
+        return resourceValidator.getBuyRequirements(playerOptional.get());
     }
 
     public List<Player> getRanking(String sessionName) {
@@ -442,20 +598,19 @@ public class SessionService {
 
         List<Player> playerDtos = new ArrayList<>(sessionData.getSessionPlayers());
         List<Player> sortedPlayers = new ArrayList<>();
-        
-        for(Player p : playerDtos)
-        {
 
-            for (Station s : p.getStations()){
+        for (Player p : playerDtos) {
+
+            for (Station s : p.getStations()) {
                 p.setPoints(p.getPoints() + (3 + (2 * s.getLevel())));
             }
 
-            for (Train t : p.getTrains()){
+            for (Train t : p.getTrains()) {
                 p.setPoints(p.getPoints() + (int) (2 + (1.5 * t.getLevel())));
             }
 
-            for (Rail r : p.getRails()){
-                p.setPoints(p.getPoints() + (int) (1 +  r.getLevel()));
+            for (Rail r : p.getRails()) {
+                p.setPoints(p.getPoints() + (int) (1 + r.getLevel()));
             }
 
             p.setPoints(p.getPoints() + (int) (p.getResourceRack().getEmployees() / 2));
@@ -473,8 +628,18 @@ public class SessionService {
                 }
             }
         }
-
         return sortedPlayers;
+    }
+
+
+    public Map getMap(String sessionName) {
+        SessionData sessionData = findSessionByName(sessionName);
+        if (sessionData == null || sessionData.getGameState().equals(NOT_CREATED)
+                || sessionData.getGameState().equals(NOT_STARTED)) {
+            throw new IllegalStateException("get map failed - session is not created or not started");
+        }
+
+        return MapService.getMap();
     }
 
     public List<SessionOverviewDto> getAllSessionsOverview() {
@@ -500,7 +665,7 @@ public class SessionService {
             dto.setPlayers(new ArrayList<>());
         }
         dto.setGameState(sessionData.getGameState());
-        
+
         // Fix: Add null checks for sessionClock
         if (sessionData.getSessionClock() != null) {
             dto.setSessionStarted(sessionData.getSessionClock().getStarted());
@@ -509,7 +674,7 @@ public class SessionService {
             dto.setSessionStarted(null);
             dto.setSessionEnded(null);
         }
-        
+
         return dto;
     }
 
@@ -544,25 +709,23 @@ public class SessionService {
             return new ActionResult(false, "Session is not running");
         }
 
-        
         long eventInterval = 60 * 5; // 5 minutes
         if (sessionData.getSessionClock().getEventClock() != null &&
-            java.time.Duration.between(sessionData.getSessionClock().getEventClock(), OffsetDateTime.now()).toSeconds() < eventInterval) {
+                java.time.Duration.between(sessionData.getSessionClock().getEventClock(), OffsetDateTime.now())
+                        .toSeconds() < eventInterval) {
             return new ActionResult(false, "Random event already triggered recently");
         }
-        
-        
+
         sessionData.getSessionClock().setEventClock(OffsetDateTime.now());
-        
-        
+
         return eventService.triggerRandomEvent(sessionData);
     }
 
-    
     public void checkExpiredEvents(String sessionName) {
         SessionData sessionData = findSessionByName(sessionName);
         if (sessionData != null) {
             eventService.checkAndReverseExpiredEvents(sessionData);
         }
+
     }
 }
