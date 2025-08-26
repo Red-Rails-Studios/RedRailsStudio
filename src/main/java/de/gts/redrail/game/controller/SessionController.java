@@ -107,14 +107,16 @@ public class SessionController {
     }
 
     @PatchMapping("/session/{sessionName}/kill")
-    public ResponseEntity<String> killSession(@PathVariable(name = "sessionName") String sessionName) {
+    public ResponseEntity<SessionOverviewDto> killSession(@PathVariable(name = "sessionName") String sessionName) {
         if (!sessionService.isSessionNameMatching(sessionName)) {
             return ResponseEntity.noContent().build();
         }
 
+        // capture current overview before killing the session so caller can get session data
+        SessionOverviewDto overview = sessionService.createSessionOverview(sessionName);
         sessionService.killSession(sessionName);
 
-        return ResponseEntity.ok("Session killed successfully");
+        return ResponseEntity.ok(overview);
     }
 
     @PatchMapping("/sessions/killall")
