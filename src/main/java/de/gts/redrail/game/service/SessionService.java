@@ -45,9 +45,11 @@ public class SessionService {
     private final PlayerDtoMapper playerDtoMapper;
     private final PlayerMapper playerMapper;
     private final PlayerOverviewDtoMapper playerOverviewDtoMapper;
+    private final MapSpaceGenerationService MapService;
     private final List<SessionData> sessions = new ArrayList<>();
     private final EventService eventService;
     private final de.gts.redrail.game.component.ResourceValidator resourceValidator;
+
 
     public List<SessionData> getAllSessions() {
         return sessions;
@@ -237,6 +239,7 @@ public class SessionService {
 
         return sessionOverviewDto;
     }
+
 
     public boolean joinSession(PlayerOverviewDto playerWantToJoin, String sessionName) {
         SessionData sessionData = findSessionByName(sessionName);
@@ -609,8 +612,18 @@ public class SessionService {
                 }
             }
         }
-
         return sortedPlayers;
+    }
+
+
+    public Map getMap() {
+        if (gameState.equals(NOT_CREATED) || gameState.equals(NOT_STARTED)) {
+            throw new IllegalStateException("get map failed - session is not created or not started");
+        }
+
+        return MapService.getMap();
+
+       
     }
 
     public List<SessionOverviewDto> getAllSessionsOverview() {
@@ -697,5 +710,6 @@ public class SessionService {
         if (sessionData != null) {
             eventService.checkAndReverseExpiredEvents(sessionData);
         }
+
     }
 }

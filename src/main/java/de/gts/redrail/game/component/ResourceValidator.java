@@ -21,7 +21,6 @@ import de.gts.redrail.game.models.entities.Train;
 import de.gts.redrail.game.utils.RailUtil;
 import de.gts.redrail.game.utils.StationUtil;
 import de.gts.redrail.game.utils.TrainUtil;
-
 @Component
 public class ResourceValidator {
     // Default values for new components
@@ -141,7 +140,6 @@ public class ResourceValidator {
     }
 
     public boolean requirmentsForTrain(Player player) {
-
         for (Station station : player.getStations()) {
             if (station.getTrainCapacity() == 0) {
                 return false;
@@ -175,7 +173,7 @@ public class ResourceValidator {
         }
 
         for (Station station : player.getStations()) {
-            freeEmployees -= station.getRequierdEmployes();
+            freeEmployees -= station.getRequiredEmployees();
         }
 
         return freeEmployees;
@@ -242,7 +240,7 @@ public class ResourceValidator {
             return false;
         }
 
-        if (getFreeEmployees(player) < stationOptional.get().getRequierdEmployes() + 1) {
+        if (getFreeEmployees(player) < stationOptional.get().getRequiredEmployees() + 1) {
             return false; // Not enough free employees to upgrade the train
         }
 
