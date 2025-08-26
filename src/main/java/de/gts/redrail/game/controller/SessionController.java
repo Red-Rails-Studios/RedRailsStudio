@@ -13,12 +13,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import de.gts.redrail.game.component.GameClock;
 import de.gts.redrail.game.constants.GameStateEnum;
-import static de.gts.redrail.game.constants.ResponseText.CREATED_SESSION;
-import static de.gts.redrail.game.constants.ResponseText.CREATE_SESSION_FAILED_SESSION_IS_ALREADY_CREATED;
-import static de.gts.redrail.game.constants.ResponseText.GET_RESOURCE_FAILED_SESSION_IS_NOT_RUNNING;
-import static de.gts.redrail.game.constants.ResponseText.PLAYER_JOINED_SESSION;
-import static de.gts.redrail.game.constants.ResponseText.PLAYER_JOIN_SESSION_FAILED;
-import static de.gts.redrail.game.constants.ResponseText.PLAYER_JOIN_SESSION_FAILED_SESSION_IS_RUNNING_OR_FINISHED;
 import static de.gts.redrail.game.constants.ResponseText.STARTED_SESSION;
 import static de.gts.redrail.game.constants.ResponseText.START_SESSION_FAILED_NO_PLAYER;
 import static de.gts.redrail.game.constants.ResponseText.START_SESSION_FAILED_SESSION_IS_NOT_CREATED_IS_RUNNING_OR_FINISHED;
@@ -27,11 +21,11 @@ import de.gts.redrail.game.models.dtos.PlayerOverviewDto;
 import de.gts.redrail.game.models.dtos.SessionEndResponseDto;
 import de.gts.redrail.game.models.dtos.SessionOverviewDto;
 import de.gts.redrail.game.models.entities.ActionResult;
-import de.gts.redrail.game.models.entities.Player;
-import de.gts.redrail.game.models.entities.UpgradeRequirements;
-import de.gts.redrail.game.models.entities.SessionData;
-import de.gts.redrail.game.service.SessionService;
 import de.gts.redrail.game.models.entities.Map;
+import de.gts.redrail.game.models.entities.Player;
+import de.gts.redrail.game.models.entities.SessionData;
+import de.gts.redrail.game.models.entities.UpgradeRequirements;
+import de.gts.redrail.game.service.SessionService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -434,26 +428,18 @@ public class SessionController {
         return ResponseEntity.ok(ranking);
     }
 
-
-        List<Player> ranking = sessionService.getRanking();   
-        return ResponseEntity.ok(ranking);
-    }   
-
-    @GetMapping("/session/{sessionName}/map")   
+    @GetMapping("/session/{sessionName}/map")
     public ResponseEntity<Map> getMap(@PathVariable(name = "sessionName") String sessionName) {
-       if (!sessionService.isSessionNameMatching(sessionName)) {
+        if (!sessionService.isSessionNameMatching(sessionName)) {
             return ResponseEntity.noContent().build();
         }
-        if (!sessionService.getGameState().equals(GameStateEnum.RUNNING)) {
+    if (!sessionService.getGameState(sessionName).equals(GameStateEnum.RUNNING)) {
             return ResponseEntity.badRequest().build();
         }
 
-        Map map = sessionService.getMap();
+    Map map = sessionService.getMap(sessionName);
         return ResponseEntity.ok(map);
-    }  
-
-}
-       
+    }
 
     @GetMapping("/session/{sessionName}/getRuntime")
     public long getRuntime(@PathVariable(name = "sessionName") String sessionName) {
@@ -487,14 +473,14 @@ public class SessionController {
         }
     }
 
-    
-       
-
-       
-@PostMapping("/session/{sessionName}/player/{playerUid}/power")
+    @PostMapping("/session/{sessionName}/player/{playerUid}/power")
     public ResponseEntity<String> buypower(@PathVariable(name = "sessionName") String sessionName,
             @PathVariable(name = "playerUid") String playerUid) {
-       if (!sessionService.getGameState(sessionName).equals(GameStateEnum.RUNNING)) {
+        if (!sessionService.isSessionNameMatching(sessionName)) {
+            return ResponseEntity.noContent().build();
+        }
+
+        if (!sessionService.getGameState(sessionName).equals(GameStateEnum.RUNNING)) {
             return ResponseEntity.badRequest().body("Session is not running");
         }
 

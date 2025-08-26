@@ -17,6 +17,8 @@ import static de.gts.redrail.game.constants.GameStateEnum.FINISHED;
 import static de.gts.redrail.game.constants.GameStateEnum.NOT_CREATED;
 import static de.gts.redrail.game.constants.GameStateEnum.NOT_STARTED;
 import static de.gts.redrail.game.constants.GameStateEnum.RUNNING;
+import static de.gts.redrail.game.constants.ResourceCost.NEW_EMPLOYEES;
+import static de.gts.redrail.game.constants.ResourceCost.NEW_POWER;
 import static de.gts.redrail.game.constants.ResponseText.ACTION_FAILED_NO_MATCH_PLAYER;
 import static de.gts.redrail.game.constants.ResponseText.ACTION_FAILED_NO_TRAIN_CAPACITY_LEFT;
 import de.gts.redrail.game.mappers.dtos.PlayerDtoMapper;
@@ -26,16 +28,15 @@ import de.gts.redrail.game.models.dtos.PlayerDto;
 import de.gts.redrail.game.models.dtos.PlayerOverviewDto;
 import de.gts.redrail.game.models.dtos.SessionOverviewDto;
 import de.gts.redrail.game.models.entities.ActionResult;
+import de.gts.redrail.game.models.entities.Map;
 import de.gts.redrail.game.models.entities.Player;
 import de.gts.redrail.game.models.entities.Rail;
 import de.gts.redrail.game.models.entities.SessionData;
 import de.gts.redrail.game.models.entities.Station;
 import de.gts.redrail.game.models.entities.Train;
+import de.gts.redrail.game.models.entities.UpgradeRequirements;
 import de.gts.redrail.game.utils.PlayerUtil;
 import lombok.RequiredArgsConstructor;
-import static de.gts.redrail.game.constants.ResourceCost.NEW_POWER;
-import static de.gts.redrail.game.constants.ResourceCost.NEW_EMPLOYEES;
-import de.gts.redrail.game.models.entities.UpgradeRequirements;
 
 @Service
 @RequiredArgsConstructor
@@ -616,14 +617,14 @@ public class SessionService {
     }
 
 
-    public Map getMap() {
-        if (gameState.equals(NOT_CREATED) || gameState.equals(NOT_STARTED)) {
+    public Map getMap(String sessionName) {
+        SessionData sessionData = findSessionByName(sessionName);
+        if (sessionData == null || sessionData.getGameState().equals(NOT_CREATED)
+                || sessionData.getGameState().equals(NOT_STARTED)) {
             throw new IllegalStateException("get map failed - session is not created or not started");
         }
 
         return MapService.getMap();
-
-       
     }
 
     public List<SessionOverviewDto> getAllSessionsOverview() {

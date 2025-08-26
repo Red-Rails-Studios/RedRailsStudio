@@ -1,10 +1,8 @@
 package de.gts.redrail.game.component;
 
-import java.util.Optional;
-import java.util.List;
 import java.util.ArrayList;
-
-import de.gts.redrail.game.models.entities.UpgradeRequirements;
+import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 
@@ -18,6 +16,7 @@ import de.gts.redrail.game.models.entities.Player;
 import de.gts.redrail.game.models.entities.Rail;
 import de.gts.redrail.game.models.entities.Station;
 import de.gts.redrail.game.models.entities.Train;
+import de.gts.redrail.game.models.entities.UpgradeRequirements;
 import de.gts.redrail.game.utils.RailUtil;
 import de.gts.redrail.game.utils.StationUtil;
 import de.gts.redrail.game.utils.TrainUtil;
@@ -76,7 +75,7 @@ public class ResourceValidator {
                 int nextLevel = (station.getLevel() == null) ? 1 : (station.getLevel() + 1);
                 int reqDb = nextLevel * UPGRADE_STATION_FACTOR;
                 Integer stationReqPower = station.getRequiredPower();
-                Integer stationReqEmployees = station.getRequierdEmployes();
+                Integer stationReqEmployees = station.getRequiredEmployees();
                 int reqPower = (stationReqPower == null) ? DEFAULT_STATION_REQUIRED_POWER
                         : (stationReqPower.intValue() + 1);
                 int reqEmployees = (stationReqEmployees == null) ? DEFAULT_STATION_REQUIRED_EMPLOYEES
