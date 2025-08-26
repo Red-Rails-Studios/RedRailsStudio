@@ -1,10 +1,14 @@
 package de.gts.redrail.game.models.entities;
 
-import lombok.Data;
-import java.util.List;
 import java.util.ArrayList;
-import de.gts.redrail.game.service.LocationGenerationService;
+import java.util.List;
 
+import org.springframework.stereotype.Component;
+
+import de.gts.redrail.game.service.LocationGenerationService;
+import lombok.Data;
+
+@Component
 @Data
 public class Map {
  private List<List<Field>> map;
