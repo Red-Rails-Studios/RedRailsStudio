@@ -1,10 +1,11 @@
 package de.gts.redrail.game.models.entities;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
 public class Station {
     String uId;
     Integer level;
