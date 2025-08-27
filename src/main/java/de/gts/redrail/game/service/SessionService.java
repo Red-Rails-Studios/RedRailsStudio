@@ -134,7 +134,7 @@ public class SessionService {
         sessionData.setGameState(GameStateEnum.NOT_STARTED);
         sessionData.setSessionClock(new GameClock());
         sessionData.setSessionPlayers(new ArrayList<>());
-        sessions.add(sessionData);
+    sessions.add(sessionData);
 
         return createSessionOverview(sessionData.getSessionName());
     }
