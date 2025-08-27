@@ -2,10 +2,9 @@ package de.gts.redrail.game.models.entities;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.springframework.stereotype.Component;
-
 import de.gts.redrail.game.service.LocationGenerationService;
+import de.gts.redrail.game.models.entities.Field;
 import lombok.Data;
 
 @Component

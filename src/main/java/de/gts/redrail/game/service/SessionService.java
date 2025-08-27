@@ -38,10 +38,8 @@ import de.gts.redrail.game.models.entities.Train;
 import de.gts.redrail.game.models.entities.UpgradeRequirements;
 import de.gts.redrail.game.utils.PlayerUtil;
 import lombok.RequiredArgsConstructor;
-import static de.gts.redrail.game.constants.ResourceCost.NEW_POWER;
-import static de.gts.redrail.game.constants.ResourceCost.NEW_EMPLOYEES;
 import de.gts.redrail.game.models.dtos.TrainDto;
-
+import de.gts.redrail.game.service.MapSpaceGenerationService;
 
 @Service
 @RequiredArgsConstructor
