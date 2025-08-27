@@ -22,12 +22,13 @@ import static de.gts.redrail.game.constants.ResourceCost.NEW_POWER;
 import static de.gts.redrail.game.constants.ResponseText.ACTION_FAILED_NO_MATCH_PLAYER;
 import static de.gts.redrail.game.constants.ResponseText.ACTION_FAILED_NO_TRAIN_CAPACITY_LEFT;
 import de.gts.redrail.game.mappers.dtos.PlayerDtoMapper;
-import de.gts.redrail.game.mappers.dtos.TrainDtoMapper;
 import de.gts.redrail.game.mappers.dtos.PlayerOverviewDtoMapper;
+import de.gts.redrail.game.mappers.dtos.TrainDtoMapper;
 import de.gts.redrail.game.mappers.entities.PlayerMapper;
 import de.gts.redrail.game.models.dtos.PlayerDto;
 import de.gts.redrail.game.models.dtos.PlayerOverviewDto;
 import de.gts.redrail.game.models.dtos.SessionOverviewDto;
+import de.gts.redrail.game.models.dtos.TrainDto;
 import de.gts.redrail.game.models.entities.ActionResult;
 import de.gts.redrail.game.models.entities.Map;
 import de.gts.redrail.game.models.entities.Player;
@@ -38,8 +39,6 @@ import de.gts.redrail.game.models.entities.Train;
 import de.gts.redrail.game.models.entities.UpgradeRequirements;
 import de.gts.redrail.game.utils.PlayerUtil;
 import lombok.RequiredArgsConstructor;
-import de.gts.redrail.game.models.dtos.TrainDto;
-import de.gts.redrail.game.service.MapSpaceGenerationService;
 
 @Service
 @RequiredArgsConstructor
@@ -136,7 +135,10 @@ public class SessionService {
         sessionData.setSessionPlayers(new ArrayList<>());
     sessions.add(sessionData);
 
-        return createSessionOverview(sessionData.getSessionName());
+    // Trigger asynchronous map generation so GET /map doesn't block the caller.
+    MapService.ensureGeneratedAsync();
+
+    return createSessionOverview(sessionData.getSessionName());
     }
 
     public void killSession(String sessionName) {
@@ -642,7 +644,27 @@ public class SessionService {
             throw new IllegalStateException("get map failed - session is not created or not started");
         }
 
-        return MapService.getMap();
+        // Ensure map locations have been generated. If no Field contains a Location yet,
+        // generate borders/locations once.
+        Map map = MapService.getMap();
+        boolean hasAnyLocation = false;
+        if (map != null && map.getMap() != null) {
+            for (var row : map.getMap()) {
+                for (var field : row) {
+                    if (field.getLocation() != null) {
+                        hasAnyLocation = true;
+                        break;
+                    }
+                }
+                if (hasAnyLocation) break;
+            }
+        }
+
+        if (!hasAnyLocation) {
+            MapService.generateBordersForPlayers();
+        }
+
+        return map;
     }
 
     public List<SessionOverviewDto> getAllSessionsOverview() {

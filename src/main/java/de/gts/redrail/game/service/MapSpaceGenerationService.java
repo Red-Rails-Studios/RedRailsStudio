@@ -1,16 +1,17 @@
 package de.gts.redrail.game.service;
 
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.springframework.stereotype.Service;
-
-import de.gts.redrail.game.models.entities.Location;
-import de.gts.redrail.game.models.entities.Map;
-import de.gts.redrail.game.constants.LocationEnum;
-import de.gts.redrail.game.constants.MaxLocation;
-import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
+import de.gts.redrail.game.constants.LocationEnum;
+import de.gts.redrail.game.constants.MaxLocation;
+import de.gts.redrail.game.models.entities.Location;
+import de.gts.redrail.game.models.entities.Map;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -22,12 +23,36 @@ public class MapSpaceGenerationService {
     private final RandomPointGenerationService rPGS;
     private final RandomNameGenerationService rNGS;
     private final Map map;
+    private final AtomicBoolean generated = new AtomicBoolean(false);
     private final ArrayList<String> usedNames = new ArrayList<>();
     // track used coordinate pairs as "x,y" to avoid placing two locations on same field
     private final java.util.Set<String> usedCoords = new java.util.HashSet<>();
 
     public Map getMap() {
         return this.map;
+    }
+
+    public boolean isGenerated() {
+        return generated.get();
+    }
+
+    /**
+     * Ensure that the map generation runs in background once. Returns immediately.
+     */
+    public void ensureGeneratedAsync() {
+        if (generated.compareAndSet(false, true)) {
+            Thread t = new Thread(() -> {
+                try {
+                    generateBordersForPlayers();
+                } catch (Exception e) {
+                    // on failure reset flag so a future attempt can retry
+                    generated.set(false);
+                    throw e;
+                }
+            }, "map-space-generation");
+            t.setDaemon(true);
+            t.start();
+        }
     }
 
     public void generateBordersForPlayers() {
