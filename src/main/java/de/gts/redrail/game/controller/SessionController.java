@@ -32,7 +32,6 @@ import de.gts.redrail.game.models.dtos.TrainDto;
 
 
 
-
 @RestController
 @RequiredArgsConstructor
 public class SessionController {
@@ -78,7 +77,7 @@ public class SessionController {
     }
 
     @PatchMapping("/session/{sessionName}/start")
-    public ResponseEntity<String> startSession(@PathVariable String sessionName) {
+    public ResponseEntity<String> startSession(@PathVariable(name = "sessionName") String sessionName) {
         if (!sessionService.isSessionNameMatching(sessionName)) {
             return ResponseEntity.noContent().build();
         }
@@ -97,7 +96,7 @@ public class SessionController {
     }
 
     @PatchMapping("/session/{sessionName}/end")
-    public ResponseEntity<SessionEndResponseDto> endSession(@PathVariable String sessionName) {
+    public ResponseEntity<SessionEndResponseDto> endSession(@PathVariable(name = "sessionName") String sessionName) {
         if (!sessionService.isSessionNameMatching(sessionName)) {
             return ResponseEntity.noContent().build();
         }
@@ -305,7 +304,7 @@ public class SessionController {
             return ResponseEntity.badRequest().body(null);
         }
 
-        List<TrainDto> trains = sessionService.getTrainsInfo();
+    List<TrainDto> trains = sessionService.getTrainsInfo(sessionName, playerUid);
 
         if (trains != null) {
             return ResponseEntity.ok(trains);
@@ -314,8 +313,7 @@ public class SessionController {
         }
     }
 
-
-
+    // KEEP THESE ONCE (duplicates removed)
     @GetMapping("/session/{sessionName}/player/{playerUid}/trains/getUpgradeRequirements")
     public ResponseEntity<List<UpgradeRequirements>> getTrainUpgradeRequirements(
             @PathVariable(name = "sessionName") String sessionName,
@@ -394,86 +392,7 @@ public class SessionController {
         }
         return ResponseEntity.ok(requirements);
     }
-
-
-    @GetMapping("/session/{sessionName}/player/{playerUid}/trains/getUpgradeRequirements")
-    public ResponseEntity<List<UpgradeRequirements>> getTrainUpgradeRequirements(
-            @PathVariable(name = "sessionName") String sessionName,
-            @PathVariable(name = "playerUid") String playerUid) {
-        if (!sessionService.isSessionNameMatching(sessionName)) {
-            return ResponseEntity.noContent().build();
-        }
-
-        if (!sessionService.getGameState(sessionName).equals(GameStateEnum.RUNNING)) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        List<UpgradeRequirements> upgradeRequirements = sessionService.getTrainUpgradeRequirements(sessionName,
-                playerUid);
-        if (upgradeRequirements == null || upgradeRequirements.isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.ok(upgradeRequirements);
-    }
-
-    @GetMapping("/session/{sessionName}/player/{playerUid}/stations/getUpgradeRequirements")
-    public ResponseEntity<List<UpgradeRequirements>> getStationUpgradeRequirements(
-            @PathVariable(name = "sessionName") String sessionName,
-            @PathVariable(name = "playerUid") String playerUid) {
-        if (!sessionService.isSessionNameMatching(sessionName)) {
-            return ResponseEntity.noContent().build();
-        }
-
-        if (!sessionService.getGameState(sessionName).equals(GameStateEnum.RUNNING)) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        List<UpgradeRequirements> upgradeRequirements = sessionService.getStationUpgradeRequirements(sessionName,
-                playerUid);
-        if (upgradeRequirements == null || upgradeRequirements.isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.ok(upgradeRequirements);
-    }
-
-    @GetMapping("/session/{sessionName}/player/{playerUid}/rails/getUpgradeRequirements")
-    public ResponseEntity<List<UpgradeRequirements>> getRailUpgradeRequirements(
-            @PathVariable(name = "sessionName") String sessionName,
-            @PathVariable(name = "playerUid") String playerUid) {
-        if (!sessionService.isSessionNameMatching(sessionName)) {
-            return ResponseEntity.noContent().build();
-        }
-
-        if (!sessionService.getGameState(sessionName).equals(GameStateEnum.RUNNING)) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        List<UpgradeRequirements> upgradeRequirements = sessionService.getRailUpgradeRequirements(sessionName,
-                playerUid);
-        if (upgradeRequirements == null || upgradeRequirements.isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.ok(upgradeRequirements);
-    }
-
-    @GetMapping("/session/{sessionName}/player/{playerUid}/buy/getRequirements")
-    public ResponseEntity<List<UpgradeRequirements>> getBuyRequirements(
-            @PathVariable(name = "sessionName") String sessionName,
-            @PathVariable(name = "playerUid") String playerUid) {
-        if (!sessionService.isSessionNameMatching(sessionName)) {
-            return ResponseEntity.noContent().build();
-        }
-
-        if (!sessionService.getGameState(sessionName).equals(GameStateEnum.RUNNING)) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        List<UpgradeRequirements> requirements = sessionService.getBuyRequirements(sessionName, playerUid);
-        if (requirements == null || requirements.isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.ok(requirements);
-    }
+    // DUPLICATE BLOCKS REMOVED ABOVE
 
     @PostMapping("/session/{sessionName}/player/{playerUid}/station")
     public ResponseEntity<String> buyStation(@PathVariable(name = "sessionName") String sessionName,

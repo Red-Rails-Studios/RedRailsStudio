@@ -22,6 +22,7 @@ import static de.gts.redrail.game.constants.ResourceCost.NEW_POWER;
 import static de.gts.redrail.game.constants.ResponseText.ACTION_FAILED_NO_MATCH_PLAYER;
 import static de.gts.redrail.game.constants.ResponseText.ACTION_FAILED_NO_TRAIN_CAPACITY_LEFT;
 import de.gts.redrail.game.mappers.dtos.PlayerDtoMapper;
+import de.gts.redrail.game.mappers.dtos.TrainDtoMapper;
 import de.gts.redrail.game.mappers.dtos.PlayerOverviewDtoMapper;
 import de.gts.redrail.game.mappers.entities.PlayerMapper;
 import de.gts.redrail.game.models.dtos.PlayerDto;
@@ -54,6 +55,7 @@ public class SessionService {
     private final List<SessionData> sessions = new ArrayList<>();
     private final EventService eventService;
     private final de.gts.redrail.game.component.ResourceValidator resourceValidator;
+    private final TrainDtoMapper trainDtoMapper;
 
 
     public List<SessionData> getAllSessions() {
@@ -327,14 +329,17 @@ public class SessionService {
     }
 
     public List<TrainDto> getTrainsInfo(String sessionName, String playerUid) {
-        SessionData sessionData = findSessionByName(sessionName); 
-        if (playerOptional.isEmpty()) {
+        SessionData sessionData = findSessionByName(sessionName);
+        if (sessionData == null) {
             return null;
         }
 
-        Player player = findPlayerByUid(playerUid);
+        Player player = findPlayerByUid(sessionData, playerUid);
+        if (player == null || player.getTrains() == null) {
+            return null;
+        }
 
-        return player.trains;
+        return trainDtoMapper.map(player.getTrains());
     }
 
     public PlayerDto getPlayerStatus(String sessionName, String playerUid) {
