@@ -23,17 +23,22 @@ public class MapSpaceGenerationService {
     private final RandomNameGenerationService rNGS;
     private final Map map;
     private final ArrayList<String> usedNames = new ArrayList<>();
-    private final ArrayList<Integer> usedX = new ArrayList<>();
-    private final ArrayList<Integer> usedY = new ArrayList<>();
+    // track used coordinate pairs as "x,y" to avoid placing two locations on same field
+    private final java.util.Set<String> usedCoords = new java.util.HashSet<>();
 
     public Map getMap() {
         return this.map;
     }
 
     public void generateBordersForPlayers() {
-        fillCorners();
-        fillSides();
-        fillMiddle();
+    // clear previously used names/coords before generating a fresh map
+    usedNames.clear();
+    usedCoords.clear();
+    logger.info("Map generation started");
+    fillCorners();
+    fillSides();
+    fillMiddle();
+    logger.info("Map generation finished");
     }
 
     private void fillSpace(int xStart, int xEnd, int yStart, int yEnd, int maxLocations, LocationEnum type) {
@@ -58,22 +63,41 @@ public class MapSpaceGenerationService {
                 usedNames.add(name);
                 CoordinateX = rPGS.generateRandomPointX(xStart, xEnd);
                 CoordinateY = rPGS.generateRandomPointY(yStart, yEnd);
-                
-                // if either X or Y already used at the same time, regenerate
-                while (usedX.contains(CoordinateX) && usedY.contains(CoordinateY)) {
+
+                // regenerate while this exact pair is already used
+                String coordKey = CoordinateX + "," + CoordinateY;
+                int safety = 0;
+                while (usedCoords.contains(coordKey) && safety < 20) {
                     CoordinateX = rPGS.generateRandomPointX(xStart, xEnd);
                     CoordinateY = rPGS.generateRandomPointY(yStart, yEnd);
+                    coordKey = CoordinateX + "," + CoordinateY;
+                    safety++;
+                }
+                if (safety >= 20) {
+                    logger.warn("fillSpace: failed to find unused coordinate after {} attempts in region x[{},{}] y[{},{}]",
+                            safety, xStart, xEnd, yStart, yEnd);
                 }
 
-                usedX.add(CoordinateX);
-                usedY.add(CoordinateY);
+                usedCoords.add(coordKey);
                 
                 Location location = lGS.generateRandomLocation(CoordinateX, CoordinateY, type, name);
 
                 if (location != null) {
-                    locationsPlaced++;
-                    map.getMap().get(location.getX()).get(location.getY()).setLocation(location);
-                    logger.info("Placed location {} at x={}, y={} type={}", name, location.getX(), location.getY(), type);
+                    // bounds check before placing
+                    if (location.getX() >= 0 && location.getX() < map.getMap().size()
+                            && location.getY() >= 0 && location.getY() < map.getMap().get(location.getX()).size()) {
+                        // only place if field is currently empty
+                        if (map.getMap().get(location.getX()).get(location.getY()).getLocation() == null) {
+                            locationsPlaced++;
+                            map.getMap().get(location.getX()).get(location.getY()).setLocation(location);
+                            logger.info("Placed location {} at x={}, y={} type={}", name, location.getX(), location.getY(), type);
+                        } else {
+                            logger.warn("Attempt to place location {} at x={}, y={} but field already occupied", name,
+                                    location.getX(), location.getY());
+                        }
+                    } else {
+                        logger.warn("Generated location out of bounds x={}, y={} for map size={}", location.getX(), location.getY(), map.getMap().size());
+                    }
                 } else {
                     logger.warn("LocationGenerationService returned null for coordinates x={}, y={} type={}", CoordinateX, CoordinateY, type);
                 }
