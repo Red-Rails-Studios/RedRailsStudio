@@ -9,10 +9,14 @@ import de.gts.redrail.game.models.entities.Map;
 import de.gts.redrail.game.constants.LocationEnum;
 import de.gts.redrail.game.constants.MaxLocation;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 @RequiredArgsConstructor
 public class MapSpaceGenerationService {
+
+    private static final Logger logger = LoggerFactory.getLogger(MapSpaceGenerationService.class);
 
     private final LocationGenerationService lGS;
     private final RandomPointGenerationService rPGS;
@@ -55,6 +59,7 @@ public class MapSpaceGenerationService {
                 CoordinateX = rPGS.generateRandomPointX(xStart, xEnd);
                 CoordinateY = rPGS.generateRandomPointY(yStart, yEnd);
                 
+                // if either X or Y already used at the same time, regenerate
                 while (usedX.contains(CoordinateX) && usedY.contains(CoordinateY)) {
                     CoordinateX = rPGS.generateRandomPointX(xStart, xEnd);
                     CoordinateY = rPGS.generateRandomPointY(yStart, yEnd);
@@ -68,6 +73,9 @@ public class MapSpaceGenerationService {
                 if (location != null) {
                     locationsPlaced++;
                     map.getMap().get(location.getX()).get(location.getY()).setLocation(location);
+                    logger.info("Placed location {} at x={}, y={} type={}", name, location.getX(), location.getY(), type);
+                } else {
+                    logger.warn("LocationGenerationService returned null for coordinates x={}, y={} type={}", CoordinateX, CoordinateY, type);
                 }
             }
         }
