@@ -5,9 +5,9 @@ import java.util.ArrayList;
 import org.springframework.stereotype.Service;
 
 import de.gts.redrail.game.models.entities.Location;
-import de.gts.redrail.game.models.entities.LocationEnum;
-import de.gts.redrail.game.models.entities.MaxLocation;
 import de.gts.redrail.game.models.entities.Map;
+import de.gts.redrail.game.constants.LocationEnum;
+import de.gts.redrail.game.constants.MaxLocation;
 import lombok.RequiredArgsConstructor;
 
 @Service
