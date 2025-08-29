@@ -4,7 +4,7 @@ import java.util.Random;
 
 import org.springframework.stereotype.Service;
 
-import de.gts.redrail.game.constants.GermanCityName;
+import de.gts.redrail.game.constants.*;
 import lombok.RequiredArgsConstructor;
 
 @Service
