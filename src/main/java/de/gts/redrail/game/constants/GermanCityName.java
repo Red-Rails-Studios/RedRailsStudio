@@ -2,7 +2,7 @@ package de.gts.redrail.game.constants;
 
 public interface GermanCityName {
 
-    public static String[] fickStadte = {
+    public static String[] Stadte = {
         "AACH", "AACHEN", "AALEN", "ABENBERG", "ABENSBERG", "ACHERN", "ACHIM", "ADELSHEIM", "ADORF_VOGTL",
         "AHAUS", "AHLEN", "AHRENSBURG", "AICHACH", "AKEN", "ALBSTADT", "ALFELD", "ALLENDORF", "ALLERSBERG",
         "ALSDORF", "ALSFELD", "ALTENA", "ALTENBERG", "ALTENBURG", "ALTENTREPTOW", "ALTLANDSBERG",
