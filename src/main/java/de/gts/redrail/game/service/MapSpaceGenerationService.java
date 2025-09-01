@@ -89,21 +89,19 @@ public class MapSpaceGenerationService {
                 CoordinateX = rPGS.generateRandomPointX(xStart, xEnd);
                 CoordinateY = rPGS.generateRandomPointY(yStart, yEnd);
 
-                // regenerate while this exact pair is already used
+                // regenerate while this exact pair is already used or adjacent to an existing location
                 String coordKey = CoordinateX + "," + CoordinateY;
                 int safety = 0;
-                while (usedCoords.contains(coordKey) && safety < 20) {
+                while ((usedCoords.contains(coordKey) || !isAdjacentFree(CoordinateX, CoordinateY)) && safety < 40) {
                     CoordinateX = rPGS.generateRandomPointX(xStart, xEnd);
                     CoordinateY = rPGS.generateRandomPointY(yStart, yEnd);
                     coordKey = CoordinateX + "," + CoordinateY;
                     safety++;
                 }
-                if (safety >= 20) {
-                    logger.warn("fillSpace: failed to find unused coordinate after {} attempts in region x[{},{}] y[{},{}]",
+                if (safety >= 40) {
+                    logger.warn("fillSpace: failed to find non-adjacent free coordinate after {} attempts in region x[{},{}] y[{},{}]",
                             safety, xStart, xEnd, yStart, yEnd);
                 }
-
-                usedCoords.add(coordKey);
                 
                 Location location = lGS.generateRandomLocation(CoordinateX, CoordinateY, type, name);
 
@@ -111,14 +109,21 @@ public class MapSpaceGenerationService {
                     // bounds check before placing
                     if (location.getX() >= 0 && location.getX() < map.getMap().size()
                             && location.getY() >= 0 && location.getY() < map.getMap().get(location.getX()).size()) {
-                        // only place if field is currently empty
-                        if (map.getMap().get(location.getX()).get(location.getY()).getLocation() == null) {
+                        // only place if field is currently empty and adjacency rule is satisfied
+                        if (map.getMap().get(location.getX()).get(location.getY()).getLocation() == null
+                                && isAdjacentFree(location.getX(), location.getY())) {
                             locationsPlaced++;
                             map.getMap().get(location.getX()).get(location.getY()).setLocation(location);
+                            usedCoords.add(coordKey);
                             logger.info("Placed location {} at x={}, y={} type={}", name, location.getX(), location.getY(), type);
                         } else {
-                            logger.warn("Attempt to place location {} at x={}, y={} but field already occupied", name,
-                                    location.getX(), location.getY());
+                            if (map.getMap().get(location.getX()).get(location.getY()).getLocation() != null) {
+                                logger.warn("Attempt to place location {} at x={}, y={} but field already occupied", name,
+                                        location.getX(), location.getY());
+                            } else {
+                                logger.warn("Attempt to place location {} at x={}, y={} violates adjacency rule", name,
+                                        location.getX(), location.getY());
+                            }
                         }
                     } else {
                         logger.warn("Generated location out of bounds x={}, y={} for map size={}", location.getX(), location.getY(), map.getMap().size());
@@ -206,5 +211,22 @@ public class MapSpaceGenerationService {
 
     private void fillMiddleMetropolises() {
         fillSpace(6, 24, 6, 24, MaxLocation.middleMaxMetropolises, LocationEnum.METROPOLIS); // Middle area
+    }
+
+    private boolean isAdjacentFree(int x, int y) {
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dy = -1; dy <= 1; dy++) {
+                if (dx == 0 && dy == 0) continue;
+                int nx = x + dx;
+                int ny = y + dy;
+                if (nx >= 0 && nx < map.getMap().size()
+                        && ny >= 0 && ny < map.getMap().get(nx).size()) {
+                    if (map.getMap().get(nx).get(ny).getLocation() != null) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
     }
 }
