@@ -2,7 +2,9 @@ package de.gts.redrail.game.component;
 
 import java.time.Duration;
 import java.time.OffsetDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Component;
 
@@ -12,9 +14,14 @@ import de.gts.redrail.game.models.entities.Player;
 import de.gts.redrail.game.models.entities.Rail;
 import de.gts.redrail.game.models.entities.Station;
 import de.gts.redrail.game.models.entities.Train;
+import de.gts.redrail.game.service.MapSpaceGenerationService;
+import lombok.RequiredArgsConstructor;
 
 @Component
+@RequiredArgsConstructor
 public class ResourceCalculator {
+
+    private final MapSpaceGenerationService mapService;
 
     public void calculateResource(List<Player> playerList, GameClock sessionClock) {
         if (sessionClock == null || sessionClock.getNextInterval() == null || sessionClock.getClock() == null) {
@@ -38,17 +45,71 @@ public class ResourceCalculator {
     private void calculateResources(Player player, Long seconds) {
         Integer dbCoins = player.getResourceRack().getDbCoin();
 
+        // Station-level generation (unchanged)
         dbCoins += calculateStation(player.getStations(), seconds);
-        dbCoins += calculateTrains(player.getTrains(), player.getRails(), seconds);
+
+        // Train generation: limited by assigned location customers per station
+        dbCoins += calculateTrainIncomeByStation(player, seconds);
+
+        // Rail income unchanged
+        dbCoins += calculateRails(player.getRails(), seconds);
+
         player.getResourceRack().setDbCoin(dbCoins);
     }
 
-    private Integer calculateTrains(List<Train> trainList, List<Rail> railList, Long seconds) {
-        Integer profit = 0;
+    private Integer calculateTrainIncomeByStation(Player player, Long seconds) {
+        int profit = 0;
 
-        for (Train train : trainList) {
-            profit += (seconds.intValue() * (TRAIN_RESOURCE_GENERATION_FACTOR * train.getCapacity()));
+        if (player.getStations() == null || player.getStations().isEmpty()) {
+            // fallback: sum all trains as before
+            if (player.getTrains() != null) {
+                for (Train t : player.getTrains()) {
+                    profit += seconds.intValue() * (TRAIN_RESOURCE_GENERATION_FACTOR * (t.getCapacity() == null ? 0 : t.getCapacity()));
+                }
+            }
+            return profit;
         }
+
+        // Build a quick map stationUid -> total capacity of trains assigned to that station
+        Map<String, Integer> stationCapacity = new HashMap<>();
+        if (player.getTrains() != null) {
+            for (Train t : player.getTrains()) {
+                String sUid = t.getStationUid();
+                if (sUid == null) continue;
+                stationCapacity.put(sUid, stationCapacity.getOrDefault(sUid, 0) + (t.getCapacity() == null ? 0 : t.getCapacity()));
+            }
+        }
+
+        // For each station, find assigned location customers via map and compute served customers
+        var map = mapService.getMap();
+
+        for (Station s : player.getStations()) {
+            int capacity = stationCapacity.getOrDefault(s.getUId(), 0);
+
+            Integer customers = 0;
+            if (map != null && map.getMap() != null) {
+                outer: for (var row : map.getMap()) {
+                    for (var field : row) {
+                        var loc = field.getLocation();
+                        if (loc != null && loc.getStation() != null && loc.getStation().getUId() != null
+                                && loc.getStation().getUId().equals(s.getUId())) {
+                            customers = loc.getCustomers();
+                            break outer;
+                        }
+                    }
+                }
+            }
+
+            int served = Math.min(customers == null ? 0 : customers.intValue(), capacity);
+
+            profit += seconds.intValue() * (TRAIN_RESOURCE_GENERATION_FACTOR * served);
+        }
+
+        return profit;
+    }
+
+    private Integer calculateRails(List<Rail> railList, Long seconds) {
+        Integer profit = 0;
 
         for (Rail rail : railList) {
             profit += seconds.intValue() * (rail.getLevel() * rail.getLevel());

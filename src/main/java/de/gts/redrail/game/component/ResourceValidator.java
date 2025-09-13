@@ -139,10 +139,20 @@ public class ResourceValidator {
     }
 
     public boolean requirmentsForTrain(Player player) {
-        for (Station station : player.getStations()) {
-            if (station.getTrainCapacity() == 0) {
-                return false;
+        // Ensure there is at least one station with remaining train capacity
+        boolean anyStationHasCapacity = false;
+
+        if (player.getStations() != null) {
+            for (Station station : player.getStations()) {
+                if (station != null && station.getTrainCapacity() != null && station.getTrainCapacity() > 0) {
+                    anyStationHasCapacity = true;
+                    break;
+                }
             }
+        }
+
+        if (!anyStationHasCapacity) {
+            return false;
         }
 
         if (getFreeEmployees(player) < DEFAULT_TRAIN_REQUIRED_EMPLOYEES) {
@@ -154,7 +164,8 @@ public class ResourceValidator {
 
         }
 
-        return player.getStations().size() >= 2 && player.getRails().size() >= player.getTrains().size() + 1;
+        return player.getStations() != null && player.getStations().size() >= 2 && player.getRails() != null
+                && player.getRails().size() >= player.getTrains().size() + 1;
     }
 
     public boolean canBuyNewTrain(Player player) {

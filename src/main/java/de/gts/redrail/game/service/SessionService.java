@@ -273,9 +273,9 @@ public class SessionService {
         }
 
         Player newPlayer = playerMapper.map(playerWantToJoin);
-        Rail rail = new Rail();
-        Station station1 = new Station();
-        Station station2 = new Station();
+    Rail rail = new Rail();
+    Station station1 = new Station();
+    Station station2 = new Station();
         Train train = new Train();
         rail.setUId(UUID.randomUUID().toString());
         rail.setLevel(1);
@@ -294,6 +294,9 @@ public class SessionService {
         newPlayer.setTrains(new ArrayList<>());
         newPlayer.getTrains().add(train);
         sessionData.getSessionPlayers().add(newPlayer);
+    // try to assign stations to free map locations
+    assignStationToAnyLocation(sessionName, newPlayer, station1);
+    assignStationToAnyLocation(sessionName, newPlayer, station2);
         return true;
     }
 
@@ -390,7 +393,36 @@ public class SessionService {
 
         resourceCalculator.calculateResource(List.of(playerOptional.get()), sessionData.getSessionClock());
 
-        return playComponentsStore.buyStation(playerOptional.get());
+        ActionResult result = playComponentsStore.buyStation(playerOptional.get());
+        if (result.isSuccessful()) {
+            // find new station and assign to free location
+            Optional<Station> stationOptional = playerOptional.get().getStations().stream()
+                    .filter(s -> s.getUId().equals(result.getUid())).findFirst();
+            stationOptional.ifPresent(s -> assignStationToAnyLocation(sessionName, playerOptional.get(), s));
+        }
+        return result;
+    }
+
+    // Finds a free (unassigned) location on the global map and attaches the station to it.
+    private void assignStationToAnyLocation(String sessionName, Player player, Station station) {
+        Map map = MapService.getMap();
+        if (map == null || map.getMap() == null || station == null)
+            return;
+
+        for (var row : map.getMap()) {
+            for (var field : row) {
+                var loc = field.getLocation();
+                if (loc != null) {
+                    var assigned = loc.getStation();
+                    if (assigned == null || assigned.getUId() == null || assigned.getUId().isEmpty()) {
+                        // assign
+                        loc.setStation(station);
+                        station.setMasterUID(player.getUId());
+                        return;
+                    }
+                }
+            }
+        }
     }
 
     public ActionResult upgradeStation(String sessionName, String playerUid, String stationUid) {
@@ -416,18 +448,104 @@ public class SessionService {
 
         resourceCalculator.calculateResource(List.of(playerOptional.get()), sessionData.getSessionClock());
 
+        // validate there's at least one station capacity (ResourceValidator already partly checks this)
+        boolean hasCapacity = false;
         for (Station station : playerOptional.get().getStations()) {
-
-            if (station.getTrainCapacity() == 0) {
-                return new ActionResult(false, ACTION_FAILED_NO_TRAIN_CAPACITY_LEFT);
-            }
-
-            else {
-                station.setTrainCapacity(station.getTrainCapacity() - 1);
+            if (station.getTrainCapacity() != null && station.getTrainCapacity() > 0) {
+                hasCapacity = true;
+                break;
             }
         }
 
-        return playComponentsStore.buyTrain(playerOptional.get());
+        if (!hasCapacity) {
+            return new ActionResult(false, ACTION_FAILED_NO_TRAIN_CAPACITY_LEFT);
+        }
+
+        // create the train via PlayComponentsStore (it will deduct resources)
+        ActionResult result = playComponentsStore.buyTrain(playerOptional.get());
+        if (!result.isSuccessful()) {
+            return result;
+        }
+
+        // Find the newly created train by uid from result
+        String newTrainUid = result.getUid();
+        Optional<Train> newTrainOpt = playerOptional.get().getTrains().stream()
+                .filter(t -> t.getUId().equals(newTrainUid)).findFirst();
+
+        if (newTrainOpt.isEmpty()) {
+            return new ActionResult(true, "Train bought but assignment failed (train not found)", newTrainUid);
+        }
+
+        Train newTrain = newTrainOpt.get();
+
+        // Determine best station: maximize remaining customer potential = location.customers - usedCapacity
+        Station bestStation = null;
+        int bestRemaining = Integer.MIN_VALUE;
+
+        Map map = MapService.getMap();
+
+        for (Station station : playerOptional.get().getStations()) {
+            if (station.getTrainCapacity() == null || station.getTrainCapacity() <= 0)
+                continue;
+
+            // find location associated with this station on the map
+            Integer customers = null;
+            if (map != null && map.getMap() != null) {
+                for (var row : map.getMap()) {
+                    for (var field : row) {
+                        var loc = field.getLocation();
+                        if (loc != null && loc.getStation() != null && loc.getStation().getUId() != null
+                                && loc.getStation().getUId().equals(station.getUId())) {
+                            customers = loc.getCustomers();
+                            break;
+                        }
+                    }
+                    if (customers != null)
+                        break;
+                }
+            }
+
+            // if no location or customers found, treat customers as 0
+            int cust = (customers == null) ? 0 : customers;
+
+            int usedCapacity = 0;
+            if (station.getTrains() != null) {
+                for (Train t : station.getTrains()) {
+                    if (t != null && t.getCapacity() != null)
+                        usedCapacity += t.getCapacity();
+                }
+            }
+
+            int remaining = cust - usedCapacity;
+
+            if (remaining > bestRemaining) {
+                bestRemaining = remaining;
+                bestStation = station;
+            }
+        }
+
+        // If no station with location/customers found or all equal/exceed threshold, pick any station with capacity
+        if (bestStation == null) {
+            for (Station station : playerOptional.get().getStations()) {
+                if (station.getTrainCapacity() != null && station.getTrainCapacity() > 0) {
+                    bestStation = station;
+                    break;
+                }
+            }
+        }
+
+        // Assign train to station
+        if (bestStation != null) {
+            newTrain.setStationUid(bestStation.getUId());
+            if (bestStation.getTrains() == null) {
+                bestStation.setTrains(new java.util.ArrayList<>());
+            }
+            bestStation.getTrains().add(newTrain);
+            // decrement available train capacity
+            bestStation.setTrainCapacity(bestStation.getTrainCapacity() - 1);
+        }
+
+    return result;
     }
 
     public ActionResult upgradeTrain(String sessionName, String playerUid, String trainUid) {
