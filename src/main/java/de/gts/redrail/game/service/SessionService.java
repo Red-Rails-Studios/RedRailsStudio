@@ -273,19 +273,50 @@ public class SessionService {
         }
 
         Player newPlayer = playerMapper.map(playerWantToJoin);
-    Rail rail = new Rail();
-    Station station1 = new Station();
-    Station station2 = new Station();
+        Rail rail = new Rail();
         Train train = new Train();
         rail.setUId(UUID.randomUUID().toString());
         rail.setLevel(1);
-        station1.setUId(UUID.randomUUID().toString());
+        // Determine corner index for this player (0..3) based on current number of players
+        int cornerIndex = sessionData.getSessionPlayers().size();
+        de.gts.redrail.game.models.entities.Location cornerLoc = findLocationAtCorner(cornerIndex);
+        Station station1 = null;
+        Station station2 = null;
+
+        if (cornerLoc != null) {
+            station1 = cornerLoc.getStation();
+        }
+        if (station1 == null) {
+            station1 = new Station();
+        }
+
+        // pick second station as the nearest unassigned station to the corner
+        int baseX = 0;
+        int baseY = 0;
+        if (cornerLoc != null) {
+            if (cornerLoc.getX() != null) baseX = cornerLoc.getX().intValue();
+            if (cornerLoc.getY() != null) baseY = cornerLoc.getY().intValue();
+        }
+        de.gts.redrail.game.models.entities.Location nearest = findNearestUnassignedLocation(baseX, baseY, station1);
+        if (nearest != null) {
+            station2 = nearest.getStation();
+        }
+        if (station2 == null) {
+            station2 = new Station();
+        }
+
+        // assign properties to the station instances (they may be blank from map)
+        if (station1.getUId() == null || station1.getUId().isEmpty()) {
+            station1.setUId(UUID.randomUUID().toString());
+        }
         station1.setLevel(1);
-        station2.setUId(UUID.randomUUID().toString());
+        if (station2.getUId() == null || station2.getUId().isEmpty()) {
+            station2.setUId(UUID.randomUUID().toString());
+        }
         station2.setLevel(1);
         train.setUId(UUID.randomUUID().toString());
         train.setLevel(1);
-        station1.setTrainCapacity(station1.getTrainCapacity() - 1);
+    station1.setTrainCapacity(station1.getTrainCapacity() - 1);
         newPlayer.setRails(new ArrayList<>());
         newPlayer.getRails().add(rail);
         newPlayer.setStations(new ArrayList<>());
@@ -294,10 +325,77 @@ public class SessionService {
         newPlayer.setTrains(new ArrayList<>());
         newPlayer.getTrains().add(train);
         sessionData.getSessionPlayers().add(newPlayer);
-    // try to assign stations to free map locations
-    assignStationToAnyLocation(sessionName, newPlayer, station1);
-    assignStationToAnyLocation(sessionName, newPlayer, station2);
+        // Ensure these stations are linked to map locations (if they were created from map they already are)
+        if (cornerLoc != null && cornerLoc.getStation() == null) {
+            cornerLoc.setStation(station1);
+        }
+        if (nearest != null && nearest.getStation() == null) {
+            nearest.setStation(station2);
+        }
         return true;
+    }
+
+    // Return the Location representing one of the four corners
+    private de.gts.redrail.game.models.entities.Location findLocationAtCorner(int cornerIndex) {
+        Map map = MapService.getMap();
+        if (map == null || map.getMap() == null)
+            return null;
+
+        int maxX = map.getMap().size() - 1;
+        int maxY = map.getMap().get(0).size() - 1;
+
+        switch (cornerIndex) {
+            case 0: // top-left
+                return map.getMap().get(0).get(0).getLocation();
+            case 1: // top-right
+                return map.getMap().get(0).get(maxY).getLocation();
+            case 2: // bottom-left
+                return map.getMap().get(maxX).get(0).getLocation();
+            case 3: // bottom-right
+                return map.getMap().get(maxX).get(maxY).getLocation();
+            default:
+                return map.getMap().get(0).get(0).getLocation();
+        }
+    }
+
+    // Find nearest location without an assigned station (or with an unowned station) to the base coordinates.
+    private de.gts.redrail.game.models.entities.Location findNearestUnassignedLocation(int baseX, int baseY, Station exclude) {
+        Map map = MapService.getMap();
+        if (map == null || map.getMap() == null)
+            return null;
+
+        de.gts.redrail.game.models.entities.Location best = null;
+        double bestDist = Double.MAX_VALUE;
+
+        for (var row : map.getMap()) {
+            for (var field : row) {
+                var loc = field.getLocation();
+                if (loc == null)
+                    continue;
+                Station s = loc.getStation();
+                // skip the explicitly excluded station
+                if (s != null && exclude != null && s.getUId() != null && exclude.getUId() != null
+                        && s.getUId().equals(exclude.getUId()))
+                    continue;
+
+                boolean available = (s == null) || (s.getUId() == null || s.getUId().isEmpty());
+                if (!available)
+                    continue;
+
+                int lx = (loc.getX() == null) ? 0 : loc.getX().intValue();
+                int ly = (loc.getY() == null) ? 0 : loc.getY().intValue();
+                double dx = (double) lx - baseX;
+                double dy = (double) ly - baseY;
+                double dist = Math.sqrt(dx * dx + dy * dy);
+
+                if (dist < bestDist) {
+                    bestDist = dist;
+                    best = loc;
+                }
+            }
+        }
+
+        return best;
     }
 
     public boolean leaveSession(PlayerOverviewDto playerWantToLeave, String sessionName) {
@@ -398,13 +496,13 @@ public class SessionService {
             // find new station and assign to free location
             Optional<Station> stationOptional = playerOptional.get().getStations().stream()
                     .filter(s -> s.getUId().equals(result.getUid())).findFirst();
-            stationOptional.ifPresent(s -> assignStationToAnyLocation(sessionName, playerOptional.get(), s));
+            stationOptional.ifPresent(s -> assignStationToAnyLocation(playerOptional.get(), s));
         }
         return result;
     }
 
     // Finds a free (unassigned) location on the global map and attaches the station to it.
-    private void assignStationToAnyLocation(String sessionName, Player player, Station station) {
+    private void assignStationToAnyLocation(Player player, Station station) {
         Map map = MapService.getMap();
         if (map == null || map.getMap() == null || station == null)
             return;

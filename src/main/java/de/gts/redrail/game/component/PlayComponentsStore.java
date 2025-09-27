@@ -94,7 +94,7 @@ public class PlayComponentsStore {
         return new ActionResult(true, BOUGHT_NEW_PLAY_COMPONENT, station.getUId());
     }
 
-    private Station findNearestStationLocation(Player player) {
+    public Station findNearestStationLocation(Player player) {
     java.util.List<java.util.List<de.gts.redrail.game.models.entities.Field>> mapRows = map.getMap();
 
         // Collect candidate unassigned station locations
@@ -107,6 +107,8 @@ public class PlayComponentsStore {
                 if (loc == null) continue;
 
                 // any location may host a station; select unassigned ones
+                // Map generation typically creates a blank Station object for each Location.
+                // Consider locations unassigned if station is null or station UID is blank.
                 if (loc.getStation() == null || loc.getStation().getUId() == null || loc.getStation().getUId().isEmpty()) {
                     candidates.add(loc);
                 } else {
@@ -123,7 +125,7 @@ public class PlayComponentsStore {
             }
         }
 
-        // If no candidates, fallback to a new Station
+        // If no candidates, fallback to a new Station (unlikely)
         if (candidates.isEmpty()) {
             return new Station();
         }
@@ -132,8 +134,8 @@ public class PlayComponentsStore {
         de.gts.redrail.game.models.entities.Location best = null;
         long bestDist = Long.MAX_VALUE;
 
-        for (var candidate : candidates) {
-            for (var pLoc : playerLocations) {
+        for (de.gts.redrail.game.models.entities.Location candidate : candidates) {
+            for (de.gts.redrail.game.models.entities.Location pLoc : playerLocations) {
                 if (candidate.getX() == null || candidate.getY() == null || pLoc.getX() == null || pLoc.getY() == null)
                     continue;
                 long dx = candidate.getX() - pLoc.getX();
@@ -150,9 +152,11 @@ public class PlayComponentsStore {
             best = candidates.get(0);
         }
 
-        Station station = new Station();
-        best.setStation(station);
-        return station;
+        // Return the existing Station instance on the Location (create one only if missing)
+        if (best.getStation() == null) {
+            best.setStation(new Station());
+        }
+        return best.getStation();
     }
 
     public ActionResult upgradeStation(Player player, String stationUid) {
