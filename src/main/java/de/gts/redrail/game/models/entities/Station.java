@@ -6,6 +6,7 @@ import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import de.gts.redrail.game.models.entities.Train;
 
 @Data
 @NoArgsConstructor
@@ -19,4 +20,5 @@ public class Station {
     Integer railCapacity = 5;
     String masterUID;
     List<Train> trains = new ArrayList<>();
+
 }

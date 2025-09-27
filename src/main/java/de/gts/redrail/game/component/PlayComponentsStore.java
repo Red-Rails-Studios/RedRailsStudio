@@ -26,12 +26,14 @@ import de.gts.redrail.game.utils.RailUtil;
 import de.gts.redrail.game.utils.StationUtil;
 import de.gts.redrail.game.utils.TrainUtil;
 import lombok.RequiredArgsConstructor;
+import de.gts.redrail.game.models.entities.Map;
 
 @Component
 @RequiredArgsConstructor
 public class PlayComponentsStore {
 
     private final ResourceValidator resourceValidator;
+    private final Map map;
 
     public ActionResult buyRail(Player player) {
         if (!resourceValidator.canBuyNewRail(player)) {
@@ -80,7 +82,7 @@ public class PlayComponentsStore {
             return new ActionResult(false, CANT_AFFORD_NEW_PLAY_COMPONENT, null);
         }
 
-        Station station = new Station();
+        Station station = findNearestStationLocation(player);
         station.setUId(UUID.randomUUID().toString());
         station.setLevel(1);
         player.getStations().add(station);
@@ -90,6 +92,67 @@ public class PlayComponentsStore {
     player.getResourceRack().setDbCoin(dbCoin - NEW_STATION);
 
         return new ActionResult(true, BOUGHT_NEW_PLAY_COMPONENT, station.getUId());
+    }
+
+    private Station findNearestStationLocation(Player player) {
+    java.util.List<java.util.List<de.gts.redrail.game.models.entities.Field>> mapRows = map.getMap();
+
+        // Collect candidate unassigned station locations
+        java.util.List<de.gts.redrail.game.models.entities.Location> candidates = new java.util.ArrayList<>();
+        java.util.List<de.gts.redrail.game.models.entities.Location> playerLocations = new java.util.ArrayList<>();
+
+        for (java.util.List<de.gts.redrail.game.models.entities.Field> row : mapRows) {
+            for (de.gts.redrail.game.models.entities.Field field : row) {
+                de.gts.redrail.game.models.entities.Location loc = field.getLocation();
+                if (loc == null) continue;
+
+                // any location may host a station; select unassigned ones
+                if (loc.getStation() == null || loc.getStation().getUId() == null || loc.getStation().getUId().isEmpty()) {
+                    candidates.add(loc);
+                } else {
+                    // location already has a station assigned; if it's the player's station, add to playerLocations
+                    if (player.getStations() != null) {
+                        for (Station s : player.getStations()) {
+                            if (s != null && s.getUId() != null && s.getUId().equals(loc.getStation().getUId())) {
+                                playerLocations.add(loc);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // If no candidates, fallback to a new Station
+        if (candidates.isEmpty()) {
+            return new Station();
+        }
+
+        // Find candidate with minimal distance to any player's existing station location
+        de.gts.redrail.game.models.entities.Location best = null;
+        long bestDist = Long.MAX_VALUE;
+
+        for (var candidate : candidates) {
+            for (var pLoc : playerLocations) {
+                if (candidate.getX() == null || candidate.getY() == null || pLoc.getX() == null || pLoc.getY() == null)
+                    continue;
+                long dx = candidate.getX() - pLoc.getX();
+                long dy = candidate.getY() - pLoc.getY();
+                long dist2 = dx * dx + dy * dy;
+                if (dist2 < bestDist) {
+                    bestDist = dist2;
+                    best = candidate;
+                }
+            }
+        }
+
+        if (best == null) {
+            best = candidates.get(0);
+        }
+
+        Station station = new Station();
+        best.setStation(station);
+        return station;
     }
 
     public ActionResult upgradeStation(Player player, String stationUid) {
