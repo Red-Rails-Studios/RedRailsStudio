@@ -8,8 +8,6 @@ import java.util.Map;
 
 import org.springframework.stereotype.Component;
 
-import static de.gts.redrail.game.constants.ResourceGeneration.STATION_RESOURCE_GENERATION_FACTOR;
-import static de.gts.redrail.game.constants.ResourceGeneration.TRAIN_RESOURCE_GENERATION_FACTOR;
 import de.gts.redrail.game.models.entities.Player;
 import de.gts.redrail.game.models.entities.Rail;
 import de.gts.redrail.game.models.entities.Station;
@@ -63,9 +61,12 @@ public class ResourceCalculator {
         if (player.getStations() == null || player.getStations().isEmpty()) {
             // fallback: sum all trains as before
             if (player.getTrains() != null) {
-                for (Train t : player.getTrains()) {
-                    profit += seconds.intValue() * (TRAIN_RESOURCE_GENERATION_FACTOR * (t.getCapacity() == null ? 0 : t.getCapacity()));
-                }
+                    for (Train t : player.getTrains()) {
+                int cap = t.getCapacity() == null ? 0 : t.getCapacity().intValue();
+                int fibIndex = Math.min(12, Math.max(0, cap));
+                int weight = fib(fibIndex + 1);
+                profit += seconds.intValue() * weight;
+                    }
             }
             return profit;
         }
@@ -75,8 +76,10 @@ public class ResourceCalculator {
         if (player.getTrains() != null) {
             for (Train t : player.getTrains()) {
                 String sUid = t.getStationUid();
-                if (sUid == null) continue;
-                stationCapacity.put(sUid, stationCapacity.getOrDefault(sUid, 0) + (t.getCapacity() == null ? 0 : t.getCapacity()));
+                if (sUid == null)
+                    continue;
+                int cap = t.getCapacity() == null ? 0 : t.getCapacity().intValue();
+                stationCapacity.put(sUid, stationCapacity.getOrDefault(sUid, 0) + cap);
             }
         }
 
@@ -100,31 +103,53 @@ public class ResourceCalculator {
                 }
             }
 
-            int served = Math.min(customers == null ? 0 : customers.intValue(), capacity);
-
-            profit += seconds.intValue() * (TRAIN_RESOURCE_GENERATION_FACTOR * served);
+                int served = Math.min(customers == null ? 0 : customers, capacity);
+            // Use a Fibonacci-based weight for less 'round' numbers. Cap the index to avoid huge values.
+            int fibIndex = Math.min(12, Math.max(0, served));
+            int weight = fib(fibIndex + 1); // shift index to avoid fib(0)=0
+            profit += seconds.intValue() * weight;
         }
 
         return profit;
     }
 
     private Integer calculateRails(List<Rail> railList, Long seconds) {
+        if (railList == null || railList.isEmpty()) return 0;
+
         Integer profit = 0;
 
         for (Rail rail : railList) {
-            profit += seconds.intValue() * (rail.getLevel() * rail.getLevel());
+            int lvl = rail.getLevel() == null ? 0 : rail.getLevel().intValue();
+            int weight = fib(Math.min(12, lvl + 1));
+            profit += seconds.intValue() * weight;
         }
 
         return profit;
     }
 
     private Integer calculateStation(List<Station> stationList, Long seconds) {
+        if (stationList == null || stationList.isEmpty()) return 0;
+
         Integer profit = 0;
 
         for (Station station : stationList) {
-            profit += seconds.intValue() * (STATION_RESOURCE_GENERATION_FACTOR * station.getLevel());
+            int lvl = station.getLevel() == null ? 0 : station.getLevel().intValue();
+            int weight = fib(Math.min(12, lvl + 2)); // shift so level 1 maps to fib(3)
+            profit += seconds.intValue() * weight;
         }
 
         return profit;
+    }
+
+    private int fib(int n) {
+        if (n <= 0) return 0;
+        if (n == 1) return 1;
+        int a = 0, b = 1;
+        for (int i = 2; i <= n; i++) {
+            int c = a + b;
+            a = b;
+            b = c;
+        }
+        return b;
     }
 }
