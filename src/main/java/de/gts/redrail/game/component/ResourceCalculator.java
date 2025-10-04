@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.springframework.stereotype.Component;
 
+import static de.gts.redrail.game.constants.ResourceGeneration.RESOURCE_GENERATION_INTERVAL_IN_SECONDS;
 import de.gts.redrail.game.models.entities.Player;
 import de.gts.redrail.game.models.entities.Rail;
 import de.gts.redrail.game.models.entities.Station;
@@ -108,6 +109,10 @@ public class ResourceCalculator {
             int fibIndex = Math.min(12, Math.max(0, served));
             int weight = fib(fibIndex + 1); // shift index to avoid fib(0)=0
             profit += seconds.intValue() * weight;
+            // Add small deterministic noise per station to avoid perfectly round totals
+            long timeBucket = System.currentTimeMillis() / (RESOURCE_GENERATION_INTERVAL_IN_SECONDS * 1000L);
+            int noise = deterministicNoise(s.getUId(), timeBucket, 8); // noise in [-8..8]
+            profit += noise;
         }
 
         return profit;
@@ -122,6 +127,9 @@ public class ResourceCalculator {
             int lvl = rail.getLevel() == null ? 0 : rail.getLevel().intValue();
             int weight = fib(Math.min(12, lvl + 1));
             profit += seconds.intValue() * weight;
+            long timeBucketRail = System.currentTimeMillis() / (RESOURCE_GENERATION_INTERVAL_IN_SECONDS * 1000L);
+            int railNoise = deterministicNoise(rail.getUId(), timeBucketRail, 6);
+            profit += railNoise;
         }
 
         return profit;
@@ -136,6 +144,9 @@ public class ResourceCalculator {
             int lvl = station.getLevel() == null ? 0 : station.getLevel().intValue();
             int weight = fib(Math.min(12, lvl + 2)); // shift so level 1 maps to fib(3)
             profit += seconds.intValue() * weight;
+            long timeBucketStation = System.currentTimeMillis() / (RESOURCE_GENERATION_INTERVAL_IN_SECONDS * 1000L);
+            int stationNoise = deterministicNoise(station.getUId(), timeBucketStation, 6);
+            profit += stationNoise;
         }
 
         return profit;
@@ -151,5 +162,15 @@ public class ResourceCalculator {
             b = c;
         }
         return b;
+    }
+
+    // Deterministic small noise in range [-range..range] based on id and time bucket
+    private int deterministicNoise(String id, long timeBucket, int range) {
+        if (id == null) id = "-";
+        String key = id + "|" + Long.toString(timeBucket);
+        int h = key.hashCode();
+        // Make it positive and mod by (2*range+1) then shift to negative..positive
+        int mod = Math.abs(h) % (2 * range + 1);
+        return mod - range;
     }
 }

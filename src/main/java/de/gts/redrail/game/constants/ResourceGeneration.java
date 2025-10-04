@@ -2,7 +2,7 @@ package de.gts.redrail.game.constants;
 public interface ResourceGeneration {
 
     Integer STATION_RESOURCE_GENERATION_FACTOR = 2;
-    Integer TRAIN_RESOURCE_GENERATION_FACTOR = 10;
+    Integer TRAIN_RESOURCE_GENERATION_FACTOR = 11;
     
     Long RESOURCE_GENERATION_INTERVAL_IN_SECONDS = 5L;
 }
