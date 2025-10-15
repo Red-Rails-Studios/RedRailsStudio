@@ -283,9 +283,25 @@ public class SessionService {
         Station station1 = null;
         Station station2 = null;
 
+        switch (cornerIndex) {
+            case 1:
+                newPlayer.setColor(de.gts.redrail.game.constants.Color.RED);
+                break;
+            case 2:
+                newPlayer.setColor(de.gts.redrail.game.constants.Color.GREEN);
+                break;
+            case 3:
+                newPlayer.setColor(de.gts.redrail.game.constants.Color.BLUE);
+                break;
+            case 4:
+                newPlayer.setColor(de.gts.redrail.game.constants.Color.YELLOW);
+                break;
+        }
+
         if (cornerLoc != null) {
             station1 = cornerLoc.getStation();
         }
+
         if (station1 == null) {
             station1 = new Station();
         }
@@ -293,14 +309,18 @@ public class SessionService {
         // pick second station as the nearest unassigned station to the corner
         int baseX = 0;
         int baseY = 0;
+
         if (cornerLoc != null) {
             if (cornerLoc.getX() != null) baseX = cornerLoc.getX().intValue();
             if (cornerLoc.getY() != null) baseY = cornerLoc.getY().intValue();
         }
+
         de.gts.redrail.game.models.entities.Location nearest = findNearestUnassignedLocation(baseX, baseY, station1);
+
         if (nearest != null) {
             station2 = nearest.getStation();
         }
+
         if (station2 == null) {
             station2 = new Station();
         }
@@ -309,14 +329,17 @@ public class SessionService {
         if (station1.getUId() == null || station1.getUId().isEmpty()) {
             station1.setUId(UUID.randomUUID().toString());
         }
+
         station1.setLevel(1);
+        
         if (station2.getUId() == null || station2.getUId().isEmpty()) {
             station2.setUId(UUID.randomUUID().toString());
         }
+
         station2.setLevel(1);
         train.setUId(UUID.randomUUID().toString());
         train.setLevel(1);
-    station1.setTrainCapacity(station1.getTrainCapacity() - 1);
+        station1.setTrainCapacity(station1.getTrainCapacity() - 1);
         newPlayer.setRails(new ArrayList<>());
         newPlayer.getRails().add(rail);
         newPlayer.setStations(new ArrayList<>());

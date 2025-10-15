@@ -7,12 +7,15 @@ import lombok.NoArgsConstructor;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.gts.redrail.game.constants.Color;
+
 @Data
 @NoArgsConstructor
 public class Player {
     String uId;
     String name;
     Integer points = 0;
+    String color;
 
     ResourceRack resourceRack = new ResourceRack();
 

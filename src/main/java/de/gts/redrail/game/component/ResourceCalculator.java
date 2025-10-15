@@ -104,7 +104,7 @@ public class ResourceCalculator {
                 }
             }
 
-                int served = Math.min(customers == null ? 0 : customers, capacity);
+            int served = Math.min(customers == null ? 0 : customers, capacity);
             // Use a Fibonacci-based weight for less 'round' numbers. Cap the index to avoid huge values.
             int fibIndex = Math.min(12, Math.max(0, served));
             int weight = fib(fibIndex + 1); // shift index to avoid fib(0)=0
