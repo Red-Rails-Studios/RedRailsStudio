@@ -1,11 +1,12 @@
 package de.gts.redrail.game.mappers.dtos;
 
-import de.gts.redrail.game.models.dtos.StationDto;
-import de.gts.redrail.game.models.entities.Station;
-import org.springframework.stereotype.Component;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import org.springframework.stereotype.Component;
+
+import de.gts.redrail.game.models.dtos.StationDto;
+import de.gts.redrail.game.models.entities.Station;
 
 @Component
 public class StationDtoMapper {
@@ -19,6 +20,7 @@ public class StationDtoMapper {
 
         stationDto.setUId(station.getUId());
         stationDto.setLevel(station.getLevel());
+        stationDto.setMasterUID(station.getMasterUID());
 
         return stationDto;
     }

@@ -12,6 +12,7 @@ import java.util.List;
 public class PlayerDto {
     String uId; 
     String name;
+    String color;
 
     Integer dbCoin;
     Integer employees;

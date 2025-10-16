@@ -22,6 +22,7 @@ public class PlayerDtoMapper {
 
         playerDto.setUId(player.getUId());
         playerDto.setName(player.getName());
+        playerDto.setColor(player.getColor());
 
         playerDto.setDbCoin(player.getResourceRack().getDbCoin());
         playerDto.setEmployees(player.getResourceRack().getEmployees());

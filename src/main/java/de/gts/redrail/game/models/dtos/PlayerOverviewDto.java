@@ -10,4 +10,5 @@ import lombok.NoArgsConstructor;
 public class PlayerOverviewDto {
     private String uId;
     private String name;
+    private String color;
 }
