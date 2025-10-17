@@ -16,6 +16,7 @@ public class PlayerMapper {
 
         player.setUId(playerOverviewDto.getUId());
         player.setName(playerOverviewDto.getName());
+        player.setColor(playerOverviewDto.getColor());
 
         return player;
     }
