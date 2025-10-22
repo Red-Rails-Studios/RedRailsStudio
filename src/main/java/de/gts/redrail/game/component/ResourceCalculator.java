@@ -44,13 +44,11 @@ public class ResourceCalculator {
     private void calculateResources(Player player, Long seconds) {
         Integer dbCoins = player.getResourceRack().getDbCoin();
 
-        // Station-level generation (unchanged)
         dbCoins += calculateStation(player.getStations(), seconds);
 
-        // Train generation: limited by assigned location customers per station
         dbCoins += calculateTrainIncomeByStation(player, seconds);
 
-        // Rail income unchanged
+    
         dbCoins += calculateRails(player.getRails(), seconds);
 
         player.getResourceRack().setDbCoin(dbCoins);
@@ -83,7 +81,6 @@ public class ResourceCalculator {
             }
         }
 
-        // For each station, find assigned location customers via map and compute served customers
         var map = mapService.getMap();
 
         for (Station s : player.getStations()) {
@@ -104,15 +101,13 @@ public class ResourceCalculator {
             }
 
             int served = Math.min(customers == null ? 0 : customers, capacity);
-            // Use a Fibonacci-based weight for less 'round' numbers. Cap the index to avoid huge values.
             int fibIndex = Math.min(12, Math.max(0, served));
-            int weight = fib(fibIndex + 1); // shift index to avoid fib(0)=0
+            int weight = fib(fibIndex + 1);
             int ticks = Math.max(1, (int) (seconds / RESOURCE_GENERATION_INTERVAL_IN_SECONDS));
             profit += ticks * weight;
-            // Add small deterministic noise per station to avoid perfectly round totals
             long timeBucket = System.currentTimeMillis() / (RESOURCE_GENERATION_INTERVAL_IN_SECONDS * 1000L);
             int noise = deterministicNoise(s.getUId(), timeBucket, 8);
-            profit += noise;
+            profit += noise * ticks;
         }
 
         return profit;
@@ -130,7 +125,7 @@ public class ResourceCalculator {
             profit += ticksRail * weight;
             long timeBucketRail = System.currentTimeMillis() / (RESOURCE_GENERATION_INTERVAL_IN_SECONDS * 1000L);
             int railNoise = deterministicNoise(rail.getUId(), timeBucketRail, 6);
-            profit += railNoise;
+            profit += railNoise * ticksRail;
         }
 
         return profit;
@@ -143,11 +138,12 @@ public class ResourceCalculator {
 
         for (Station station : stationList) {
             int lvl = station.getLevel() == null ? 0 : station.getLevel().intValue();
-            int weight = fib(Math.min(12, lvl + 2)); 
-            profit += seconds.intValue() * weight;
+            int weight = fib(Math.min(12, lvl + 2));
+            int ticksStation = Math.max(1, (int) (seconds / RESOURCE_GENERATION_INTERVAL_IN_SECONDS));
+            profit += ticksStation * weight;
             long timeBucketStation = System.currentTimeMillis() / (RESOURCE_GENERATION_INTERVAL_IN_SECONDS * 1000L);
             int stationNoise = deterministicNoise(station.getUId(), timeBucketStation, 6);
-            profit += stationNoise;
+            profit += stationNoise * ticksStation;
         }
 
         return profit;
@@ -169,7 +165,7 @@ public class ResourceCalculator {
         if (id == null) id = "-";
         String key = id + "|" + Long.toString(timeBucket);
         int h = key.hashCode();
-        int mod = Math.abs(h) % (2 * range + 1);
-        return mod - range;
+        int mod = Math.abs(h) % (range + 1);
+        return mod;
     }
 }
