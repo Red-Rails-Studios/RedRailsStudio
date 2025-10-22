@@ -24,7 +24,7 @@ public class ResourceCalculator {
 
     public void calculateResource(List<Player> playerList, GameClock sessionClock) {
         if (sessionClock == null || sessionClock.getNextInterval() == null || sessionClock.getClock() == null) {
-            return; // Skip calculation if clock is not properly initialized
+            return; 
         }
 
         OffsetDateTime now = OffsetDateTime.now();
@@ -60,7 +60,6 @@ public class ResourceCalculator {
         int profit = 0;
 
         if (player.getStations() == null || player.getStations().isEmpty()) {
-            // fallback: sum all trains as before
             if (player.getTrains() != null) {
                 int ticks = Math.max(1, (int) (seconds / RESOURCE_GENERATION_INTERVAL_IN_SECONDS));
                 for (Train t : player.getTrains()) {
@@ -73,7 +72,6 @@ public class ResourceCalculator {
             return profit;
         }
 
-        // Build a quick map stationUid -> total capacity of trains assigned to that station
         Map<String, Integer> stationCapacity = new HashMap<>();
         if (player.getTrains() != null) {
             for (Train t : player.getTrains()) {
@@ -113,7 +111,7 @@ public class ResourceCalculator {
             profit += ticks * weight;
             // Add small deterministic noise per station to avoid perfectly round totals
             long timeBucket = System.currentTimeMillis() / (RESOURCE_GENERATION_INTERVAL_IN_SECONDS * 1000L);
-            int noise = deterministicNoise(s.getUId(), timeBucket, 8); // noise in [-8..8]
+            int noise = deterministicNoise(s.getUId(), timeBucket, 8);
             profit += noise;
         }
 
@@ -145,7 +143,7 @@ public class ResourceCalculator {
 
         for (Station station : stationList) {
             int lvl = station.getLevel() == null ? 0 : station.getLevel().intValue();
-            int weight = fib(Math.min(12, lvl + 2)); // shift so level 1 maps to fib(3)
+            int weight = fib(Math.min(12, lvl + 2)); 
             profit += seconds.intValue() * weight;
             long timeBucketStation = System.currentTimeMillis() / (RESOURCE_GENERATION_INTERVAL_IN_SECONDS * 1000L);
             int stationNoise = deterministicNoise(station.getUId(), timeBucketStation, 6);
@@ -167,12 +165,10 @@ public class ResourceCalculator {
         return b;
     }
 
-    // Deterministic small noise in range [-range..range] based on id and time bucket
     private int deterministicNoise(String id, long timeBucket, int range) {
         if (id == null) id = "-";
         String key = id + "|" + Long.toString(timeBucket);
         int h = key.hashCode();
-        // Make it positive and mod by (2*range+1) then shift to negative..positive
         int mod = Math.abs(h) % (2 * range + 1);
         return mod - range;
     }
