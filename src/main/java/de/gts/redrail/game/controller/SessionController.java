@@ -149,6 +149,8 @@ public class SessionController {
         String Uid = UUID.randomUUID().toString();
         playerOverviewDto.setUId(Uid);
         playerOverviewDto.setName(playerName);
+        playerOverviewDto.setColor("000000");
+
         boolean result = sessionService.joinSession(playerOverviewDto, sessionName);
 
         if (result) {

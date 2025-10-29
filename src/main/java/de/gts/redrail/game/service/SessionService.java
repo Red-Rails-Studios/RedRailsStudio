@@ -285,16 +285,16 @@ public class SessionService {
 
         switch (cornerIndex) {
             case 1:
-                newPlayer.setColor(de.gts.redrail.game.constants.Color.RED);
+                playerWantToJoin.setColor(de.gts.redrail.game.constants.Color.RED);
                 break;
             case 2:
-                newPlayer.setColor(de.gts.redrail.game.constants.Color.GREEN);
+                playerWantToJoin.setColor(de.gts.redrail.game.constants.Color.GREEN);
                 break;
             case 3:
-                newPlayer.setColor(de.gts.redrail.game.constants.Color.BLUE);
+                playerWantToJoin.setColor(de.gts.redrail.game.constants.Color.BLUE);
                 break;
             case 4:
-                newPlayer.setColor(de.gts.redrail.game.constants.Color.YELLOW);
+                playerWantToJoin.setColor(de.gts.redrail.game.constants.Color.YELLOW);
                 break;
         }
 
