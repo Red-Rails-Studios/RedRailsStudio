@@ -32,12 +32,15 @@ import de.gts.redrail.game.models.dtos.TrainDto;
 
 
 
+
 @RestController
 @RequiredArgsConstructor
 public class SessionController {
 
     public final SessionService sessionService;
     public final GameClock gameClock;
+    
+
 
     @GetMapping("/sessions")
     public ResponseEntity<List<SessionOverviewDto>> getSessionOverview() {
@@ -352,6 +355,44 @@ public class SessionController {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.ok(upgradeRequirements);
+    }
+
+    @GetMapping("/session/{sessionName}/player/{playerUid}/power")
+    public ResponseEntity<Integer> getFreePower(
+            @PathVariable(name = "sessionName") String sessionName,
+            @PathVariable(name = "playerUid") String playerUid) {
+        if (!sessionService.isSessionNameMatching(sessionName)) {
+            return ResponseEntity.noContent().build();
+        }
+
+        if (!sessionService.getGameState(sessionName).equals(GameStateEnum.RUNNING)) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        Integer freePower = sessionService.getFreePower(sessionName, playerUid);
+        if (freePower == null) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(freePower);
+    }
+
+    @GetMapping("/session/{sessionName}/player/{playerUid}/employees")
+    public ResponseEntity<Integer> getFreeEmployees(
+            @PathVariable(name = "sessionName") String sessionName,
+            @PathVariable(name = "playerUid") String playerUid) {
+        if (!sessionService.isSessionNameMatching(sessionName)) {
+            return ResponseEntity.noContent().build();
+        }
+
+        if (!sessionService.getGameState(sessionName).equals(GameStateEnum.RUNNING)) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        Integer freeEmployees = sessionService.getFreeEmployees(sessionName, playerUid);
+        if (freeEmployees == null) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(freeEmployees);
     }
 
     @GetMapping("/session/{sessionName}/player/{playerUid}/rails/getUpgradeRequirements")

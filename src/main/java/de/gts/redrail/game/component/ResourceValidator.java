@@ -49,7 +49,6 @@ public class ResourceValidator {
             for (Train train : player.getTrains()) {
                 if (train == null)
                     continue;
-                // Skip trains already at max level (assumed 10)
                 if (train.getLevel() != null && train.getLevel() >= 10)
                     continue;
 
@@ -139,7 +138,6 @@ public class ResourceValidator {
     }
 
     public boolean requirmentsForTrain(Player player) {
-        // Ensure there is at least one station with remaining train capacity
         boolean anyStationHasCapacity = false;
 
         if (player.getStations() != null) {
