@@ -24,7 +24,7 @@ public class ResourceCalculator {
 
     public void calculateResource(List<Player> playerList, GameClock sessionClock) {
         if (sessionClock == null || sessionClock.getNextInterval() == null || sessionClock.getClock() == null) {
-            return; 
+            return;
         }
 
         OffsetDateTime now = OffsetDateTime.now();
@@ -48,7 +48,6 @@ public class ResourceCalculator {
 
         dbCoins += calculateTrainIncomeByStation(player, seconds);
 
-    
         dbCoins += calculateRails(player.getRails(), seconds);
 
         player.getResourceRack().setDbCoin(dbCoins);
@@ -114,7 +113,8 @@ public class ResourceCalculator {
     }
 
     private Integer calculateRails(List<Rail> railList, Long seconds) {
-        if (railList == null || railList.isEmpty()) return 0;
+        if (railList == null || railList.isEmpty())
+            return 0;
 
         Integer profit = 0;
 
@@ -132,7 +132,8 @@ public class ResourceCalculator {
     }
 
     private Integer calculateStation(List<Station> stationList, Long seconds) {
-        if (stationList == null || stationList.isEmpty()) return 0;
+        if (stationList == null || stationList.isEmpty())
+            return 0;
 
         Integer profit = 0;
 
@@ -150,8 +151,10 @@ public class ResourceCalculator {
     }
 
     private int fib(int n) {
-        if (n <= 0) return 0;
-        if (n == 1) return 1;
+        if (n <= 0)
+            return 0;
+        if (n == 1)
+            return 1;
         int a = 0, b = 1;
         for (int i = 2; i <= n; i++) {
             int c = a + b;
@@ -162,7 +165,8 @@ public class ResourceCalculator {
     }
 
     private int deterministicNoise(String id, long timeBucket, int range) {
-        if (id == null) id = "-";
+        if (id == null)
+            id = "-";
         String key = id + "|" + Long.toString(timeBucket);
         int h = key.hashCode();
         int mod = Math.abs(h) % (range + 1);

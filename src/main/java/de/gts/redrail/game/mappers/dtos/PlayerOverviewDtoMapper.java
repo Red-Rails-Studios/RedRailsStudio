@@ -25,20 +25,20 @@ public class PlayerOverviewDtoMapper {
     }
 
     public List<PlayerOverviewDto> map(List<Player> playerList) {
-       if (playerList == null) {
-           return null;
-       }
+        if (playerList == null) {
+            return null;
+        }
 
-       List<PlayerOverviewDto> playerOverviewDtoList = new ArrayList<>();
+        List<PlayerOverviewDto> playerOverviewDtoList = new ArrayList<>();
 
-       for (Player player : playerList) {
-           PlayerOverviewDto playerOverviewDto = map(player);
+        for (Player player : playerList) {
+            PlayerOverviewDto playerOverviewDto = map(player);
 
-           if (playerOverviewDto != null) {
-               playerOverviewDtoList.add(playerOverviewDto);
-           }
-       }
+            if (playerOverviewDto != null) {
+                playerOverviewDtoList.add(playerOverviewDto);
+            }
+        }
 
-       return playerOverviewDtoList;
+        return playerOverviewDtoList;
     }
 }

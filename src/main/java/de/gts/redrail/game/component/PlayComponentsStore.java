@@ -88,14 +88,14 @@ public class PlayComponentsStore {
         player.getStations().add(station);
         station.setMasterUID(player.getUId());
 
-    Integer dbCoin = player.getResourceRack().getDbCoin();
-    player.getResourceRack().setDbCoin(dbCoin - NEW_STATION);
+        Integer dbCoin = player.getResourceRack().getDbCoin();
+        player.getResourceRack().setDbCoin(dbCoin - NEW_STATION);
 
         return new ActionResult(true, BOUGHT_NEW_PLAY_COMPONENT, station.getUId());
     }
 
     public Station findNearestStationLocation(Player player) {
-    java.util.List<java.util.List<de.gts.redrail.game.models.entities.Field>> mapRows = map.getMap();
+        java.util.List<java.util.List<de.gts.redrail.game.models.entities.Field>> mapRows = map.getMap();
 
         // Collect candidate unassigned station locations
         java.util.List<de.gts.redrail.game.models.entities.Location> candidates = new java.util.ArrayList<>();
@@ -104,15 +104,18 @@ public class PlayComponentsStore {
         for (java.util.List<de.gts.redrail.game.models.entities.Field> row : mapRows) {
             for (de.gts.redrail.game.models.entities.Field field : row) {
                 de.gts.redrail.game.models.entities.Location loc = field.getLocation();
-                if (loc == null) continue;
+                if (loc == null)
+                    continue;
 
                 // any location may host a station; select unassigned ones
                 // Map generation typically creates a blank Station object for each Location.
                 // Consider locations unassigned if station is null or station UID is blank.
-                if (loc.getStation() == null || loc.getStation().getUId() == null || loc.getStation().getUId().isEmpty()) {
+                if (loc.getStation() == null || loc.getStation().getUId() == null
+                        || loc.getStation().getUId().isEmpty()) {
                     candidates.add(loc);
                 } else {
-                    // location already has a station assigned; if it's the player's station, add to playerLocations
+                    // location already has a station assigned; if it's the player's station, add to
+                    // playerLocations
                     if (player.getStations() != null) {
                         for (Station s : player.getStations()) {
                             if (s != null && s.getUId() != null && s.getUId().equals(loc.getStation().getUId())) {
@@ -130,7 +133,8 @@ public class PlayComponentsStore {
             return new Station();
         }
 
-        // Find candidate with minimal distance to any player's existing station location
+        // Find candidate with minimal distance to any player's existing station
+        // location
         de.gts.redrail.game.models.entities.Location best = null;
         long bestDist = Long.MAX_VALUE;
 
@@ -152,7 +156,8 @@ public class PlayComponentsStore {
             best = candidates.get(0);
         }
 
-        // Return the existing Station instance on the Location (create one only if missing)
+        // Return the existing Station instance on the Location (create one only if
+        // missing)
         if (best.getStation() == null) {
             best.setStation(new Station());
         }
@@ -170,8 +175,7 @@ public class PlayComponentsStore {
             return new ActionResult(false, ACTION_FAILED_NO_MATCH_PLAY_COMPONENT);
         }
 
-
-    if (resourceValidator.getFreeEmployees(player) < stationOptional.get().getRequiredEmployees() + 2) {
+        if (resourceValidator.getFreeEmployees(player) < stationOptional.get().getRequiredEmployees() + 2) {
             return new ActionResult(false, NOT_ENOUGH_EMPLOYEES);
 
         }
@@ -208,8 +212,8 @@ public class PlayComponentsStore {
         train.setLevel(1);
         player.getTrains().add(train);
 
-    Integer dbCoin = player.getResourceRack().getDbCoin();
-    player.getResourceRack().setDbCoin(dbCoin - NEW_TRAIN);
+        Integer dbCoin = player.getResourceRack().getDbCoin();
+        player.getResourceRack().setDbCoin(dbCoin - NEW_TRAIN);
 
         return new ActionResult(true, BOUGHT_NEW_PLAY_COMPONENT, train.getUId());
     }
