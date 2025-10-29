@@ -20,6 +20,7 @@ import de.gts.redrail.game.models.entities.UpgradeRequirements;
 import de.gts.redrail.game.utils.RailUtil;
 import de.gts.redrail.game.utils.StationUtil;
 import de.gts.redrail.game.utils.TrainUtil;
+
 @Component
 public class ResourceValidator {
     // Default values for new components

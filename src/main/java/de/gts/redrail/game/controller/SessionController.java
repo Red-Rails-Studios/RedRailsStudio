@@ -29,18 +29,12 @@ import de.gts.redrail.game.service.SessionService;
 import lombok.RequiredArgsConstructor;
 import de.gts.redrail.game.models.dtos.TrainDto;
 
-
-
-
-
 @RestController
 @RequiredArgsConstructor
 public class SessionController {
 
     public final SessionService sessionService;
     public final GameClock gameClock;
-    
-
 
     @GetMapping("/sessions")
     public ResponseEntity<List<SessionOverviewDto>> getSessionOverview() {
@@ -107,7 +101,7 @@ public class SessionController {
         if (!sessionService.getGameState(sessionName).equals(GameStateEnum.RUNNING)) {
             return ResponseEntity.badRequest().body(null);
         }
-      
+
         List<PlayerDto> players = sessionService.getAllPlayer(sessionName);
         long duration = sessionService.endSession(sessionName);
         return ResponseEntity.ok(new SessionEndResponseDto(players, duration));
@@ -119,7 +113,8 @@ public class SessionController {
             return ResponseEntity.noContent().build();
         }
 
-        // capture current overview before killing the session so caller can get session data
+        // capture current overview before killing the session so caller can get session
+        // data
         SessionOverviewDto overview = sessionService.createSessionOverview(sessionName);
         sessionService.killSession(sessionName);
 
@@ -213,8 +208,8 @@ public class SessionController {
 
         if (playerDto != null) {
             return ResponseEntity.ok(playerDto);
-        } 
-        
+        }
+
         else {
             return ResponseEntity.noContent().build();
         }
@@ -230,7 +225,7 @@ public class SessionController {
         if (!sessionService.getGameState(sessionName).equals(GameStateEnum.RUNNING)) {
             return ResponseEntity.badRequest().build();
         }
-      
+
         ActionResult actionResult = sessionService.buyRail(sessionName, playerUid);
 
         if (actionResult.isSuccessful()) {
@@ -297,7 +292,8 @@ public class SessionController {
     }
 
     @GetMapping("/session/{sessionName}/player/{playerUid}/train/infos")
-    public ResponseEntity<List<TrainDto>> getTrainInfo(@PathVariable(name = "sessionName") String sessionName, @PathVariable(name = "playerUid")  String playerUid) {
+    public ResponseEntity<List<TrainDto>> getTrainInfo(@PathVariable(name = "sessionName") String sessionName,
+            @PathVariable(name = "playerUid") String playerUid) {
         if (!sessionService.isSessionNameMatching(sessionName)) {
             return ResponseEntity.badRequest().body(null);
         }
@@ -307,7 +303,7 @@ public class SessionController {
             return ResponseEntity.badRequest().body(null);
         }
 
-    List<TrainDto> trains = sessionService.getTrainsInfo(sessionName, playerUid);
+        List<TrainDto> trains = sessionService.getTrainsInfo(sessionName, playerUid);
 
         if (trains != null) {
             return ResponseEntity.ok(trains);
@@ -433,7 +429,6 @@ public class SessionController {
         }
         return ResponseEntity.ok(requirements);
     }
-    // DUPLICATE BLOCKS REMOVED ABOVE
 
     @PostMapping("/session/{sessionName}/player/{playerUid}/station")
     public ResponseEntity<String> buyStation(@PathVariable(name = "sessionName") String sessionName,
@@ -501,11 +496,11 @@ public class SessionController {
         if (!sessionService.isSessionNameMatching(sessionName)) {
             return ResponseEntity.noContent().build();
         }
-    if (!sessionService.getGameState(sessionName).equals(GameStateEnum.RUNNING)) {
+        if (!sessionService.getGameState(sessionName).equals(GameStateEnum.RUNNING)) {
             return ResponseEntity.badRequest().build();
         }
 
-    Map map = sessionService.getMap(sessionName);
+        Map map = sessionService.getMap(sessionName);
         return ResponseEntity.ok(map);
     }
 
@@ -582,4 +577,3 @@ public class SessionController {
     }
 
 }
-
