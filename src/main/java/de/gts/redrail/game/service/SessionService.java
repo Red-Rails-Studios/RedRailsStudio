@@ -39,7 +39,7 @@ import de.gts.redrail.game.models.entities.Train;
 import de.gts.redrail.game.models.entities.UpgradeRequirements;
 import de.gts.redrail.game.utils.PlayerUtil;
 import lombok.RequiredArgsConstructor;
-
+import de.gts.redrail.game.constants.ResourceCost;
 @Service
 @RequiredArgsConstructor
 public class SessionService {
@@ -305,7 +305,6 @@ public class SessionService {
             station1 = new Station();
         }
 
-        // pick second station as the nearest unassigned station to the corner
         int baseX = 0;
         int baseY = 0;
 
@@ -890,11 +889,9 @@ public class SessionService {
             throw new IllegalStateException("get map failed - session is not created or not started");
         }
 
-        // Ensure map locations have been generated. If no Field contains a Location
-        // yet,
-        // generate borders/locations once.
         Map map = MapService.getMap();
         boolean hasAnyLocation = false;
+
         if (map != null && map.getMap() != null) {
             for (var row : map.getMap()) {
                 for (var field : row) {
@@ -1036,5 +1033,37 @@ public class SessionService {
         Player p = findPlayerByUid(sessionData, playerUid);
 
         return resourceValidator.getFreeEmployees(p);
+    }
+
+    public Integer getPowerPrice(String sessionName, String playerUid) {
+        SessionData sessionData = findSessionByName(sessionName);
+        if (sessionData == null) {
+            return null;
+        }
+
+        Player player = findPlayerByUid(sessionData, playerUid);
+        if (player == null) {
+            return null;
+        }
+
+        Integer powerPrice = ResourceCost.NEW_POWER;
+    
+        return powerPrice;
+    }
+
+    public Integer getEmployeesPrice(String sessionName, String playerUid) {
+        SessionData sessionData = findSessionByName(sessionName);
+        if (sessionData == null) {
+            return null;
+        }
+
+        Player player = findPlayerByUid(sessionData, playerUid);
+        if (player == null) {
+            return null;
+        }
+
+        Integer employeesPrice = ResourceCost.NEW_EMPLOYEES;
+    
+        return employeesPrice;
     }
 }

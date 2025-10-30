@@ -28,6 +28,8 @@ import de.gts.redrail.game.models.entities.UpgradeRequirements;
 import de.gts.redrail.game.service.SessionService;
 import lombok.RequiredArgsConstructor;
 import de.gts.redrail.game.models.dtos.TrainDto;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 @RestController
 @RequiredArgsConstructor
@@ -314,7 +316,6 @@ public class SessionController {
         }
     }
 
-    // KEEP THESE ONCE (duplicates removed)
     @GetMapping("/session/{sessionName}/player/{playerUid}/trains/getUpgradeRequirements")
     public ResponseEntity<List<UpgradeRequirements>> getTrainUpgradeRequirements(
             @PathVariable(name = "sessionName") String sessionName,
@@ -372,6 +373,44 @@ public class SessionController {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.ok(freePower);
+    }
+
+    @GetMapping("/session/{sessionName}/player/{playerUid}/power/getPrice")
+    public ResponseEntity<Integer> getPowerPrice(
+            @PathVariable(name = "sessionName") String sessionName,
+            @PathVariable(name = "playerUid") String playerUid) {
+        if (!sessionService.isSessionNameMatching(sessionName)) {
+            return ResponseEntity.noContent().build();
+        }
+
+        if (!sessionService.getGameState(sessionName).equals(GameStateEnum.RUNNING)) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        Integer powerPrice = sessionService.getPowerPrice(sessionName, playerUid);
+        if (powerPrice == null) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(powerPrice);
+    }
+
+    @GetMapping("/session/{sessionName}/player/{playerUid}/employees/getPrice")
+    public ResponseEntity<Integer> getEmployeePrice(
+            @PathVariable(name = "sessionName") String sessionName,
+            @PathVariable(name = "playerUid") String playerUid) {
+        if (!sessionService.isSessionNameMatching(sessionName)) {
+            return ResponseEntity.noContent().build();
+        }
+
+        if (!sessionService.getGameState(sessionName).equals(GameStateEnum.RUNNING)) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        Integer employeePrice = sessionService.getEmployeesPrice(sessionName, playerUid);
+        if (employeePrice == null) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(employeePrice);
     }
 
     @GetMapping("/session/{sessionName}/player/{playerUid}/employees")
