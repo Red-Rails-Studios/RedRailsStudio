@@ -17,6 +17,7 @@ import static de.gts.redrail.game.constants.GameStateEnum.FINISHED;
 import static de.gts.redrail.game.constants.GameStateEnum.NOT_CREATED;
 import static de.gts.redrail.game.constants.GameStateEnum.NOT_STARTED;
 import static de.gts.redrail.game.constants.GameStateEnum.RUNNING;
+import de.gts.redrail.game.constants.ResourceCost;
 import static de.gts.redrail.game.constants.ResourceCost.NEW_EMPLOYEES;
 import static de.gts.redrail.game.constants.ResourceCost.NEW_POWER;
 import static de.gts.redrail.game.constants.ResponseText.ACTION_FAILED_NO_MATCH_PLAYER;
@@ -39,7 +40,6 @@ import de.gts.redrail.game.models.entities.Train;
 import de.gts.redrail.game.models.entities.UpgradeRequirements;
 import de.gts.redrail.game.utils.PlayerUtil;
 import lombok.RequiredArgsConstructor;
-import de.gts.redrail.game.constants.ResourceCost;
 @Service
 @RequiredArgsConstructor
 public class SessionService {
@@ -270,6 +270,21 @@ public class SessionService {
             return false; // Maximum of 4 players allowed
         }
 
+        switch (sessionData.getSessionPlayers().size()) {
+        case 0: 
+            playerWantToJoin.setColor(de.gts.redrail.game.constants.Color.RED);    
+            break;
+        case 1:
+            playerWantToJoin.setColor(de.gts.redrail.game.constants.Color.GREEN);
+            break;
+        case 2:
+            playerWantToJoin.setColor(de.gts.redrail.game.constants.Color.BLUE);
+            break;
+        case 3:
+            playerWantToJoin.setColor(de.gts.redrail.game.constants.Color.YELLOW);
+            break;
+        }
+
         Player newPlayer = playerMapper.map(playerWantToJoin);
         Rail rail = new Rail();
         Train train = new Train();
@@ -282,20 +297,6 @@ public class SessionService {
         Station station1 = null;
         Station station2 = null;
 
-        switch (cornerIndex) {
-            case 1:
-                playerWantToJoin.setColor(de.gts.redrail.game.constants.Color.RED);
-                break;
-            case 2:
-                playerWantToJoin.setColor(de.gts.redrail.game.constants.Color.GREEN);
-                break;
-            case 3:
-                playerWantToJoin.setColor(de.gts.redrail.game.constants.Color.BLUE);
-                break;
-            case 4:
-                playerWantToJoin.setColor(de.gts.redrail.game.constants.Color.YELLOW);
-                break;
-        }
 
         if (cornerLoc != null) {
             station1 = cornerLoc.getStation();
