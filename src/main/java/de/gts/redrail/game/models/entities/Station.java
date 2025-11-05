@@ -18,7 +18,7 @@ public class Station {
     Integer requiredPower = 4;
     Integer trainCapacity = 10;
     Integer railCapacity = 5;
-    String masterUID;
+    String masterUid;
     List<Train> trains = new ArrayList<>();
 
 }
