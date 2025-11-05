@@ -250,7 +250,7 @@ public class ResourceValidator {
         }
 
         if (getFreeEmployees(player) < stationOptional.get().getRequiredEmployees() + 1) {
-            return false; // Not enough free employees to upgrade the train
+            return false; 
         }
 
         return player.getResourceRack().getDbCoin() >= (stationOptional.get().getLevel() + 1) * UPGRADE_STATION_FACTOR;
