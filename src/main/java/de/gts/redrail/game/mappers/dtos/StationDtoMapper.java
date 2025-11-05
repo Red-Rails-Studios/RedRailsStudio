@@ -20,7 +20,7 @@ public class StationDtoMapper {
 
         stationDto.setUid(station.getUId());
         stationDto.setLevel(station.getLevel());
-        stationDto.setMasterUID(station.getMasterUid());
+        stationDto.setMasterUid(station.getMasterUid());
 
         return stationDto;
     }

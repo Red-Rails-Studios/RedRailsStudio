@@ -11,5 +11,5 @@ public class StationDto {
 
     String uid;
     Integer level;
-    String masterUID;
+    String masterUid;
 }
