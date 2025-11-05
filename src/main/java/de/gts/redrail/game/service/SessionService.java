@@ -82,12 +82,10 @@ public class SessionService {
 
         resourceCalculator.calculateResource(List.of(playerOptional.get()), sessionData.getSessionClock());
 
-        // Check if player has enough coins to buy power
         if (playerOptional.get().getResourceRack().getDbCoin() < NEW_POWER) {
             return new ActionResult(false, "Not enough coins to buy power");
         }
 
-        // Deduct cost and add power
         Integer dbCoin = playerOptional.get().getResourceRack().getDbCoin();
         playerOptional.get().getResourceRack().setDbCoin(dbCoin - NEW_POWER);
         playerOptional.get().getResourceRack().setPower(playerOptional.get().getResourceRack().getPower() + 5);
@@ -105,12 +103,10 @@ public class SessionService {
 
         resourceCalculator.calculateResource(List.of(playerOptional.get()), sessionData.getSessionClock());
 
-        // Check if player has enough coins to buy employees
         if (playerOptional.get().getResourceRack().getDbCoin() < NEW_EMPLOYEES) {
             return new ActionResult(false, "Not enough coins to buy employees");
         }
 
-        // Deduct cost and add employees
         Integer dbCoin = playerOptional.get().getResourceRack().getDbCoin();
         playerOptional.get().getResourceRack().setDbCoin(dbCoin - NEW_EMPLOYEES);
         playerOptional.get().getResourceRack().setEmployees(playerOptional.get().getResourceRack().getEmployees() + 3);
@@ -134,7 +130,6 @@ public class SessionService {
         sessionData.setSessionPlayers(new ArrayList<>());
         sessions.add(sessionData);
 
-        // Trigger asynchronous map generation so GET /map doesn't block the caller.
         MapService.ensureGeneratedAsync();
 
         return createSessionOverview(sessionData.getSessionName());
@@ -233,7 +228,7 @@ public class SessionService {
     public SessionOverviewDto createCurrentSessionOverview(String sessionName) {
         SessionData sessionData = findSessionByName(sessionName);
         if (sessionData == null) {
-            return null; // or throw exception
+            return null; 
         }
 
         SessionOverviewDto sessionOverviewDto = new SessionOverviewDto();
@@ -256,18 +251,18 @@ public class SessionService {
             if (PlayerUtil.isPlayerMatching(player, playerWantToJoin)) {
                 return false;
             }
-            // Check if player name matches the one trying to join
+           
             if (player.getName().equalsIgnoreCase(playerWantToJoin.getName())) {
                 return false;
             }
-        } // Check if player already exists in the session
+        } 
 
         if (sessionData.getGameState() != NOT_STARTED) {
             return false;
         }
 
         if (sessionData.getSessionPlayers().size() >= 4) {
-            return false; // Maximum of 4 players allowed
+            return false; 
         }
 
         switch (sessionData.getSessionPlayers().size()) {
@@ -325,18 +320,19 @@ public class SessionService {
             station2 = new Station();
         }
 
-        // assign properties to the station instances (they may be blank from map)
         if (station1.getUId() == null || station1.getUId().isEmpty()) {
             station1.setUId(UUID.randomUUID().toString());
         }
 
         station1.setLevel(1);
+        station1.setMasterUid(newPlayer.getUId());  
 
         if (station2.getUId() == null || station2.getUId().isEmpty()) {
             station2.setUId(UUID.randomUUID().toString());
         }
 
         station2.setLevel(1);
+        station2.setMasterUid(newPlayer.getUId());  
         train.setUId(UUID.randomUUID().toString());
         train.setLevel(1);
         station1.setTrainCapacity(station1.getTrainCapacity() - 1);
@@ -348,8 +344,7 @@ public class SessionService {
         newPlayer.setTrains(new ArrayList<>());
         newPlayer.getTrains().add(train);
         sessionData.getSessionPlayers().add(newPlayer);
-        // Ensure these stations are linked to map locations (if they were created from
-        // map they already are)
+        
         if (cornerLoc != null && cornerLoc.getStation() == null) {
             cornerLoc.setStation(station1);
         }
@@ -359,7 +354,7 @@ public class SessionService {
         return true;
     }
 
-    // Return the Location representing one of the four corners
+   
     private de.gts.redrail.game.models.entities.Location findLocationAtCorner(int cornerIndex) {
         Map map = MapService.getMap();
         if (map == null || map.getMap() == null)
@@ -542,7 +537,7 @@ public class SessionService {
                     if (assigned == null || assigned.getUId() == null || assigned.getUId().isEmpty()) {
                         // assign
                         loc.setStation(station);
-                        station.setMasterUID(player.getUId());
+                        station.setMasterUid(player.getUId());  // Fixed case of masterUid
                         return;
                     }
                 }
