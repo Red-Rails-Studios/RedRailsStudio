@@ -14,11 +14,11 @@ public class PlayerUtil {
             return false;
         }
 
-        if (StringUtils.isEmpty(player.getUId()) || StringUtils.isEmpty(playerOverviewDto.getUId())) {
+        if (StringUtils.isEmpty(player.getUId()) || StringUtils.isEmpty(playerOverviewDto.getUid())) {
             return false;
         }
 
-        return player.getUId().equals(playerOverviewDto.getUId());
+        return player.getUId().equals(playerOverviewDto.getUid());
     }
 
     public static Optional<Player> getPlayerByUid(List<Player> playerList, String uId) {

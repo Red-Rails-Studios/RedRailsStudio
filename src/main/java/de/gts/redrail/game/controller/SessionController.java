@@ -147,7 +147,7 @@ public class SessionController {
 
         PlayerOverviewDto playerOverviewDto = new PlayerOverviewDto();
         String Uid = UUID.randomUUID().toString();
-        playerOverviewDto.setUId(Uid);
+        playerOverviewDto.setUid(Uid);
         playerOverviewDto.setName(playerName);
         playerOverviewDto.setColor("000000");
 

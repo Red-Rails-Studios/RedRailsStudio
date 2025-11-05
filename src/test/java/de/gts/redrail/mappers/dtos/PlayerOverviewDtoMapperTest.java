@@ -12,7 +12,7 @@ class PlayerOverviewDtoMapperTest {
         ObjectMapper objectMapper = new ObjectMapper();
 
         PlayerOverviewDto playerOverviewDto = new PlayerOverviewDto();
-        playerOverviewDto.setUId("12345678");
+        playerOverviewDto.setUid("12345678");
         playerOverviewDto.setName("Player1");
 
         String jsonStr = objectMapper.writeValueAsString(playerOverviewDto);

@@ -20,7 +20,7 @@ public class PlayerDtoMapper {
 
         PlayerDto playerDto = new PlayerDto();
 
-        playerDto.setUId(player.getUId());
+        playerDto.setUid(player.getUId());
         playerDto.setName(player.getName());
         playerDto.setColor(player.getColor());
 

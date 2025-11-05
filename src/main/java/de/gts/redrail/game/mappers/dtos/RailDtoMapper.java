@@ -17,7 +17,7 @@ public class RailDtoMapper {
 
         RailDto railDto = new RailDto();
 
-        railDto.setUId(rail.getUId());
+        railDto.setUid(rail.getUId());
         railDto.setLevel(rail.getLevel());
 
         return railDto;

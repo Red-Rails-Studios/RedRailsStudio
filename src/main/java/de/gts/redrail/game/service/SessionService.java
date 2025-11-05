@@ -442,7 +442,7 @@ public class SessionService {
         }
 
         for (PlayerOverviewDto player : players) {
-            if (player.getUId().equals(playerUid)) {
+            if (player.getUid().equals(playerUid)) {
                 return player;
             }
         }
@@ -954,7 +954,7 @@ public class SessionService {
 
     public PlayerOverviewDto createPlayerOverview(String uid, String name) {
         PlayerOverviewDto dto = new PlayerOverviewDto();
-        dto.setUId(uid);
+        dto.setUid(uid);
         dto.setName(name);
         return dto;
     }

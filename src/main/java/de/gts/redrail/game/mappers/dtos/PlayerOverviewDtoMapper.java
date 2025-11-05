@@ -18,7 +18,7 @@ public class PlayerOverviewDtoMapper {
         PlayerOverviewDto playerOverviewDto = new PlayerOverviewDto();
 
         playerOverviewDto.setName(player.getName());
-        playerOverviewDto.setUId(player.getUId());
+        playerOverviewDto.setUid(player.getUId());
         playerOverviewDto.setColor(player.getColor());
 
         return playerOverviewDto;
