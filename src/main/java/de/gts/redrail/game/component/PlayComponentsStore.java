@@ -186,8 +186,8 @@ public class PlayComponentsStore {
 
         Station station = stationOptional.get();
         Integer level = station.getLevel() + 1;
-        Integer trainCapacity = station.getTrainCapacity() + 2; // Assuming each upgrade increases train capacity by 1
-        Integer railCapacity = station.getRailCapacity() + 1; // Assuming each upgrade increases rail capacity by 1
+        Integer trainCapacity = station.getTrainCapacity() + 2; 
+        Integer railCapacity = station.getRailCapacity() + 1; 
         station.setTrainCapacity(trainCapacity);
         station.setRailCapacity(railCapacity);
         station.setLevel(level);
