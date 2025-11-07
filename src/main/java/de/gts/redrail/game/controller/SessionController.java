@@ -147,7 +147,7 @@ public class SessionController {
 
         PlayerOverviewDto playerOverviewDto = new PlayerOverviewDto();
         String Uid = UUID.randomUUID().toString();
-        playerOverviewDto.setUId(Uid);
+        playerOverviewDto.setUid(Uid);
         playerOverviewDto.setName(playerName);
         playerOverviewDto.setColor("000000");
 
@@ -491,7 +491,7 @@ public class SessionController {
         }
     }
 
-    @GetMapping("/session/{sessionName}/player/{playerUid}/station/{stationUid}")
+    @PatchMapping("/session/{sessionName}/player/{playerUid}/station/{stationUid}")
     public ResponseEntity<String> upgradeStation(@PathVariable(name = "sessionName") String sessionName,
             @PathVariable(name = "playerUid") String playerUid, @PathVariable(name = "stationUid") String stationUid) {
         if (!sessionService.isSessionNameMatching(sessionName)) {

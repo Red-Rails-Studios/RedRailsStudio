@@ -18,9 +18,9 @@ public class StationDtoMapper {
 
         StationDto stationDto = new StationDto();
 
-        stationDto.setUId(station.getUId());
+        stationDto.setUid(station.getUId());
         stationDto.setLevel(station.getLevel());
-        stationDto.setMasterUID(station.getMasterUID());
+        stationDto.setMasterUid(station.getMasterUid());
 
         return stationDto;
     }

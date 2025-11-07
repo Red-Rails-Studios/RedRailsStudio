@@ -9,6 +9,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class RailDto {
 
-    String uId;
+    String uid;
     Integer level;
 }

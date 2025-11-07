@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class StationDto {
 
-    String uId;
+    String uid;
     Integer level;
-    String masterUID;
+    String masterUid;
 }

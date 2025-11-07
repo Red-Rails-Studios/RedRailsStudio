@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PlayerOverviewDto {
-    private String uId;
+    private String uid;
     private String name;
     private String color;
 }

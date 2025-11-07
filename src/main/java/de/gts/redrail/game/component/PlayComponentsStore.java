@@ -86,7 +86,7 @@ public class PlayComponentsStore {
         station.setUId(UUID.randomUUID().toString());
         station.setLevel(1);
         player.getStations().add(station);
-        station.setMasterUID(player.getUId());
+        station.setMasterUid(player.getUId());
 
         Integer dbCoin = player.getResourceRack().getDbCoin();
         player.getResourceRack().setDbCoin(dbCoin - NEW_STATION);
@@ -186,8 +186,8 @@ public class PlayComponentsStore {
 
         Station station = stationOptional.get();
         Integer level = station.getLevel() + 1;
-        Integer trainCapacity = station.getTrainCapacity() + 2; // Assuming each upgrade increases train capacity by 1
-        Integer railCapacity = station.getRailCapacity() + 1; // Assuming each upgrade increases rail capacity by 1
+        Integer trainCapacity = station.getTrainCapacity() + 2; 
+        Integer railCapacity = station.getRailCapacity() + 1; 
         station.setTrainCapacity(trainCapacity);
         station.setRailCapacity(railCapacity);
         station.setLevel(level);

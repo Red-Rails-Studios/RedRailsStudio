@@ -56,7 +56,6 @@ public class MapSpaceGenerationService {
     }
 
     public void generateBordersForPlayers() {
-    // clear previously used names/coords before generating a fresh map
     usedNames.clear();
     usedCoords.clear();
     logger.info("Map generation started");

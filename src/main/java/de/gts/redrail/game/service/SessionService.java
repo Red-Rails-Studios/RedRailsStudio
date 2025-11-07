@@ -82,12 +82,10 @@ public class SessionService {
 
         resourceCalculator.calculateResource(List.of(playerOptional.get()), sessionData.getSessionClock());
 
-        // Check if player has enough coins to buy power
         if (playerOptional.get().getResourceRack().getDbCoin() < NEW_POWER) {
             return new ActionResult(false, "Not enough coins to buy power");
         }
 
-        // Deduct cost and add power
         Integer dbCoin = playerOptional.get().getResourceRack().getDbCoin();
         playerOptional.get().getResourceRack().setDbCoin(dbCoin - NEW_POWER);
         playerOptional.get().getResourceRack().setPower(playerOptional.get().getResourceRack().getPower() + 5);
@@ -105,12 +103,10 @@ public class SessionService {
 
         resourceCalculator.calculateResource(List.of(playerOptional.get()), sessionData.getSessionClock());
 
-        // Check if player has enough coins to buy employees
         if (playerOptional.get().getResourceRack().getDbCoin() < NEW_EMPLOYEES) {
             return new ActionResult(false, "Not enough coins to buy employees");
         }
 
-        // Deduct cost and add employees
         Integer dbCoin = playerOptional.get().getResourceRack().getDbCoin();
         playerOptional.get().getResourceRack().setDbCoin(dbCoin - NEW_EMPLOYEES);
         playerOptional.get().getResourceRack().setEmployees(playerOptional.get().getResourceRack().getEmployees() + 3);
@@ -134,7 +130,6 @@ public class SessionService {
         sessionData.setSessionPlayers(new ArrayList<>());
         sessions.add(sessionData);
 
-        // Trigger asynchronous map generation so GET /map doesn't block the caller.
         MapService.ensureGeneratedAsync();
 
         return createSessionOverview(sessionData.getSessionName());
@@ -233,7 +228,7 @@ public class SessionService {
     public SessionOverviewDto createCurrentSessionOverview(String sessionName) {
         SessionData sessionData = findSessionByName(sessionName);
         if (sessionData == null) {
-            return null; // or throw exception
+            return null; 
         }
 
         SessionOverviewDto sessionOverviewDto = new SessionOverviewDto();
@@ -256,6 +251,7 @@ public class SessionService {
             if (PlayerUtil.isPlayerMatching(player, playerWantToJoin)) {
                 return false;
             }
+           
             if (player.getName().equalsIgnoreCase(playerWantToJoin.getName())) {
                 return false;
             }
@@ -269,30 +265,33 @@ public class SessionService {
             return false; 
         }
 
+        switch (sessionData.getSessionPlayers().size()) {
+        case 0: 
+            playerWantToJoin.setColor(de.gts.redrail.game.constants.Color.RED);    
+            break;
+        case 1:
+            playerWantToJoin.setColor(de.gts.redrail.game.constants.Color.GREEN);
+            break;
+        case 2:
+            playerWantToJoin.setColor(de.gts.redrail.game.constants.Color.BLUE);
+            break;
+        case 3:
+            playerWantToJoin.setColor(de.gts.redrail.game.constants.Color.YELLOW);
+            break;
+        }
+
         Player newPlayer = playerMapper.map(playerWantToJoin);
         Rail rail = new Rail();
         Train train = new Train();
         rail.setUId(UUID.randomUUID().toString());
         rail.setLevel(1);
+        // Determine corner index for this player (0..3) based on current number of
+        // players
         int cornerIndex = sessionData.getSessionPlayers().size();
         de.gts.redrail.game.models.entities.Location cornerLoc = findLocationAtCorner(cornerIndex);
         Station station1 = null;
         Station station2 = null;
 
-        switch (cornerIndex) {
-            case 1:
-                playerWantToJoin.setColor(de.gts.redrail.game.constants.Color.RED);
-                break;
-            case 2:
-                playerWantToJoin.setColor(de.gts.redrail.game.constants.Color.GREEN);
-                break;
-            case 3:
-                playerWantToJoin.setColor(de.gts.redrail.game.constants.Color.BLUE);
-                break;
-            case 4:
-                playerWantToJoin.setColor(de.gts.redrail.game.constants.Color.YELLOW);
-                break;
-        }
 
         if (cornerLoc != null) {
             station1 = cornerLoc.getStation();
@@ -327,13 +326,14 @@ public class SessionService {
         }
 
         station1.setLevel(1);
+        station1.setMasterUid(newPlayer.getUId());  
 
         if (station2.getUId() == null || station2.getUId().isEmpty()) {
             station2.setUId(UUID.randomUUID().toString());
         }
 
         station2.setLevel(1);
-       
+        station2.setMasterUid(newPlayer.getUId());  
         train.setUId(UUID.randomUUID().toString());
         train.setLevel(1);
         station1.setTrainCapacity(station1.getTrainCapacity() - 1);
@@ -345,7 +345,7 @@ public class SessionService {
         newPlayer.setTrains(new ArrayList<>());
         newPlayer.getTrains().add(train);
         sessionData.getSessionPlayers().add(newPlayer);
-    
+        
         if (cornerLoc != null && cornerLoc.getStation() == null) {
             cornerLoc.setStation(station1);
         }
@@ -478,7 +478,7 @@ public class SessionService {
         }
 
         for (PlayerOverviewDto player : players) {
-            if (player.getUId().equals(playerUid)) {
+            if (player.getUid().equals(playerUid)) {
                 return player;
             }
         }
@@ -576,6 +576,7 @@ public class SessionService {
                     if (assigned == null || assigned.getUId() == null || assigned.getUId().isEmpty()) {
                         // assign to location
                         loc.setStation(station);
+                        station.setMasterUid(player.getUId());  // Fixed case of masterUid
                         return;
                     }
                 }
@@ -992,7 +993,7 @@ public class SessionService {
 
     public PlayerOverviewDto createPlayerOverview(String uid, String name) {
         PlayerOverviewDto dto = new PlayerOverviewDto();
-        dto.setUId(uid);
+        dto.setUid(uid);
         dto.setName(name);
         return dto;
     }
