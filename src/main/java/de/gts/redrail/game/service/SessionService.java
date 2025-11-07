@@ -325,15 +325,13 @@ public class SessionService {
             station1.setUId(UUID.randomUUID().toString());
         }
 
-        station1.setLevel(1);
-        station1.setMasterUid(newPlayer.getUId());  
+    station1.setLevel(1);
 
         if (station2.getUId() == null || station2.getUId().isEmpty()) {
             station2.setUId(UUID.randomUUID().toString());
         }
 
-        station2.setLevel(1);
-        station2.setMasterUid(newPlayer.getUId());  
+    station2.setLevel(1);
         train.setUId(UUID.randomUUID().toString());
         train.setLevel(1);
         station1.setTrainCapacity(station1.getTrainCapacity() - 1);
@@ -351,6 +349,12 @@ public class SessionService {
         }
         if (nearest != null && nearest.getStation() == null) {
             nearest.setStation(station2);
+        }
+        try {
+            System.out.println("joinSession: playerUid=" + newPlayer.getUId() + " name=" + newPlayer.getName());
+            if (station1 != null) System.out.println(" join: station1 uid=" + station1.getUId() + " masterUid=" + station1.getMasterUid());
+            if (station2 != null) System.out.println(" join: station2 uid=" + station2.getUId() + " masterUid=" + station2.getMasterUid());
+        } catch (Exception e) {
         }
         return true;
     }
@@ -370,7 +374,6 @@ public class SessionService {
 
         switch (cornerIndex) {
             case 0 -> { // bottom-left
-                // Search in 6x6 area at bottom-left
                 for (int x = 0; x < 6; x++) {
                     for (int y = 0; y < 6; y++) {
                         var field = map.getMap().get(x).get(y);
@@ -381,7 +384,6 @@ public class SessionService {
                 }
             }
             case 1 -> { // bottom-right
-                // Search in 6x6 area at bottom-right
                 for (int x = maxX - 5; x <= maxX; x++) {
                     for (int y = 0; y < 6; y++) {
                         var field = map.getMap().get(x).get(y);
@@ -392,7 +394,6 @@ public class SessionService {
                 }
             }
             case 2 -> { // top-left
-                // Search in 6x6 area at top-left
                 for (int x = 0; x < 6; x++) {
                     for (int y = maxY - 5; y <= maxY; y++) {
                         var field = map.getMap().get(x).get(y);
@@ -403,7 +404,6 @@ public class SessionService {
                 }
             }
             case 3 -> { // top-right
-                // Search in 6x6 area at top-right
                 for (int x = maxX - 5; x <= maxX; x++) {
                     for (int y = maxY - 5; y <= maxY; y++) {
                         var field = map.getMap().get(x).get(y);
@@ -414,7 +414,7 @@ public class SessionService {
                 }
             }
         }
-        return null; // No valid location found in the specified corner
+        return null; 
     }
     private de.gts.redrail.game.models.entities.Location findNearestUnassignedLocation(int baseX, int baseY,
             Station exclude) {
@@ -563,6 +563,7 @@ public class SessionService {
         if (map == null || map.getMap() == null || station == null)
             return;
 
+        // set ownership for the bought station and log assignment
         station.setMasterUid(player.getUId());
 
         for (var row : map.getMap()) {
@@ -573,7 +574,12 @@ public class SessionService {
                     if (assigned == null || assigned.getUId() == null || assigned.getUId().isEmpty()) {
                         // assign to location
                         loc.setStation(station);
-                        station.setMasterUid(player.getUId());  // Fixed case of masterUid
+                        station.setMasterUid(player.getUId());  // ensure owner set on station
+                        try {
+                            System.out.println("assignStationToAnyLocation: assigned stationUid=" + station.getUId()
+                                    + " to location x=" + loc.getX() + " y=" + loc.getY() + " owner=" + station.getMasterUid());
+                        } catch (Exception e) {
+                        }
                         return;
                     }
                 }
@@ -635,8 +641,6 @@ public class SessionService {
 
         Train newTrain = newTrainOpt.get();
 
-        // Determine best station: maximize remaining customer potential =
-        // location.customers - usedCapacity
         Station bestStation = null;
         int bestRemaining = Integer.MIN_VALUE;
 
@@ -646,7 +650,6 @@ public class SessionService {
             if (station.getTrainCapacity() == null || station.getTrainCapacity() <= 0)
                 continue;
 
-            // find location associated with this station on the map
             Integer customers = null;
             if (map != null && map.getMap() != null) {
                 for (var row : map.getMap()) {
@@ -663,7 +666,6 @@ public class SessionService {
                 }
             }
 
-            // if no location or customers found, treat customers as 0
             int cust = (customers == null) ? 0 : customers;
 
             int usedCapacity = 0;

@@ -25,7 +25,6 @@ public class MapSpaceGenerationService {
     private final Map map;
     private final AtomicBoolean generated = new AtomicBoolean(false);
     private final ArrayList<String> usedNames = new ArrayList<>();
-    // track used coordinate pairs as "x,y" to avoid placing two locations on same field
     private final java.util.Set<String> usedCoords = new java.util.HashSet<>();
 
     public Map getMap() {
@@ -42,7 +41,6 @@ public class MapSpaceGenerationService {
                 try {
                     generateBordersForPlayers();
                 } catch (Exception e) {
-                    // on failure reset flag so a future attempt can retry
                     generated.set(false);
                     throw e;
                 }
@@ -56,10 +54,12 @@ public class MapSpaceGenerationService {
     usedNames.clear();
     usedCoords.clear();
     logger.info("Map generation started");
+    try { System.out.println("MapSpaceGenerationService: generateBordersForPlayers started"); } catch (Exception e) {}
     fillCorners();
     fillSides();
     fillMiddle();
     logger.info("Map generation finished");
+    try { System.out.println("MapSpaceGenerationService: generateBordersForPlayers finished"); } catch (Exception e) {}
     }
 
     private void fillSpace(int xStart, int xEnd, int yStart, int yEnd, int maxLocations, LocationEnum type) {
@@ -85,7 +85,6 @@ public class MapSpaceGenerationService {
                 CoordinateX = rPGS.generateRandomPointX(xStart, xEnd);
                 CoordinateY = rPGS.generateRandomPointY(yStart, yEnd);
 
-                // regenerate while this exact pair is already used or adjacent to an existing location
                 String coordKey = CoordinateX + "," + CoordinateY;
                 int safety = 0;
                 while ((usedCoords.contains(coordKey) || !isAdjacentFree(CoordinateX, CoordinateY)) && safety < 40) {
