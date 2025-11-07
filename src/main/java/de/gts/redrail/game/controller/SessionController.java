@@ -20,6 +20,7 @@ import de.gts.redrail.game.models.dtos.PlayerDto;
 import de.gts.redrail.game.models.dtos.PlayerOverviewDto;
 import de.gts.redrail.game.models.dtos.SessionEndResponseDto;
 import de.gts.redrail.game.models.dtos.SessionOverviewDto;
+import de.gts.redrail.game.models.dtos.TrainDto;
 import de.gts.redrail.game.models.entities.ActionResult;
 import de.gts.redrail.game.models.entities.Map;
 import de.gts.redrail.game.models.entities.Player;
@@ -27,7 +28,6 @@ import de.gts.redrail.game.models.entities.SessionData;
 import de.gts.redrail.game.models.entities.UpgradeRequirements;
 import de.gts.redrail.game.service.SessionService;
 import lombok.RequiredArgsConstructor;
-import de.gts.redrail.game.models.dtos.TrainDto;
 
 
 @RestController
@@ -43,8 +43,12 @@ public class SessionController {
     }
 
     @GetMapping("/session/{sessionName}/info")
-    public ResponseEntity<SessionOverviewDto> getSessionInfo(@PathVariable(name = "sessionName") String sessionName) {
-        return ResponseEntity.ok(sessionService.createSessionOverview(sessionName));
+    public ResponseEntity<List<Player>> getSessionInfo(@PathVariable(name = "sessionName") String sessionName) {
+        if (!sessionService.isSessionNameMatching(sessionName)) {
+            return ResponseEntity.noContent().build();
+        }
+        List<Player> players = sessionService.getSessionPlayersEntities(sessionName);
+        return ResponseEntity.ok(players != null ? players : java.util.Collections.emptyList());
     }
 
     @GetMapping("/session/{sessionName}/player/{playerUid}/resource")

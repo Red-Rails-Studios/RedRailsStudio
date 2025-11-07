@@ -233,12 +233,21 @@ public class SessionService {
 
         SessionOverviewDto sessionOverviewDto = new SessionOverviewDto();
         sessionOverviewDto.setSessionName(sessionName);
-        sessionOverviewDto.setPlayers(playerOverviewDtoMapper.map(sessionData.getSessionPlayers()));
+        sessionOverviewDto.setPlayers(sessionData.getSessionPlayers());
         sessionOverviewDto.setGameState(sessionData.getGameState());
         sessionOverviewDto.setSessionStarted(sessionData.getSessionClock().getStarted());
         sessionOverviewDto.setSessionEnded(sessionData.getSessionClock().getEnded());
 
         return sessionOverviewDto;
+    }
+
+   
+    public List<Player> getSessionPlayersEntities(String sessionName) {
+        SessionData sessionData = findSessionByName(sessionName);
+        if (sessionData == null || sessionData.getSessionPlayers() == null) {
+            return new ArrayList<>();
+        }
+        return new ArrayList<>(sessionData.getSessionPlayers());
     }
 
     public boolean joinSession(PlayerOverviewDto playerWantToJoin, String sessionName) {
@@ -977,13 +986,10 @@ public class SessionService {
         SessionOverviewDto dto = new SessionOverviewDto();
         dto.setSessionName(sessionData.getSessionName());
         if (playerOverviewDtoMapper != null) {
-            dto.setPlayers(playerOverviewDtoMapper.map(sessionData.getSessionPlayers()));
-        } else {
-            dto.setPlayers(new ArrayList<>());
-        }
+            dto.setPlayers(sessionData.getSessionPlayers());
+        } 
         dto.setGameState(sessionData.getGameState());
 
-        // Fix: Add null checks for sessionClock
         if (sessionData.getSessionClock() != null) {
             dto.setSessionStarted(sessionData.getSessionClock().getStarted());
             dto.setSessionEnded(sessionData.getSessionClock().getEnded());
