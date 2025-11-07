@@ -17,6 +17,7 @@ import static de.gts.redrail.game.constants.GameStateEnum.FINISHED;
 import static de.gts.redrail.game.constants.GameStateEnum.NOT_CREATED;
 import static de.gts.redrail.game.constants.GameStateEnum.NOT_STARTED;
 import static de.gts.redrail.game.constants.GameStateEnum.RUNNING;
+import de.gts.redrail.game.constants.ResourceCost;
 import static de.gts.redrail.game.constants.ResourceCost.NEW_EMPLOYEES;
 import static de.gts.redrail.game.constants.ResourceCost.NEW_POWER;
 import static de.gts.redrail.game.constants.ResponseText.ACTION_FAILED_NO_MATCH_PLAYER;
@@ -39,7 +40,6 @@ import de.gts.redrail.game.models.entities.Train;
 import de.gts.redrail.game.models.entities.UpgradeRequirements;
 import de.gts.redrail.game.utils.PlayerUtil;
 import lombok.RequiredArgsConstructor;
-import de.gts.redrail.game.constants.ResourceCost;
 @Service
 @RequiredArgsConstructor
 public class SessionService {
@@ -256,18 +256,17 @@ public class SessionService {
             if (PlayerUtil.isPlayerMatching(player, playerWantToJoin)) {
                 return false;
             }
-            // Check if player name matches the one trying to join
             if (player.getName().equalsIgnoreCase(playerWantToJoin.getName())) {
                 return false;
             }
-        } // Check if player already exists in the session
+        } 
 
         if (sessionData.getGameState() != NOT_STARTED) {
             return false;
         }
 
         if (sessionData.getSessionPlayers().size() >= 4) {
-            return false; // Maximum of 4 players allowed
+            return false; 
         }
 
         Player newPlayer = playerMapper.map(playerWantToJoin);
@@ -275,8 +274,6 @@ public class SessionService {
         Train train = new Train();
         rail.setUId(UUID.randomUUID().toString());
         rail.setLevel(1);
-        // Determine corner index for this player (0..3) based on current number of
-        // players
         int cornerIndex = sessionData.getSessionPlayers().size();
         de.gts.redrail.game.models.entities.Location cornerLoc = findLocationAtCorner(cornerIndex);
         Station station1 = null;
@@ -325,7 +322,6 @@ public class SessionService {
             station2 = new Station();
         }
 
-        // assign properties to the station instances (they may be blank from map)
         if (station1.getUId() == null || station1.getUId().isEmpty()) {
             station1.setUId(UUID.randomUUID().toString());
         }
@@ -337,6 +333,7 @@ public class SessionService {
         }
 
         station2.setLevel(1);
+       
         train.setUId(UUID.randomUUID().toString());
         train.setLevel(1);
         station1.setTrainCapacity(station1.getTrainCapacity() - 1);
@@ -348,8 +345,7 @@ public class SessionService {
         newPlayer.setTrains(new ArrayList<>());
         newPlayer.getTrains().add(train);
         sessionData.getSessionPlayers().add(newPlayer);
-        // Ensure these stations are linked to map locations (if they were created from
-        // map they already are)
+    
         if (cornerLoc != null && cornerLoc.getStation() == null) {
             cornerLoc.setStation(station1);
         }
@@ -359,31 +355,67 @@ public class SessionService {
         return true;
     }
 
-    // Return the Location representing one of the four corners
     private de.gts.redrail.game.models.entities.Location findLocationAtCorner(int cornerIndex) {
         Map map = MapService.getMap();
-        if (map == null || map.getMap() == null)
-            return null;
+        if (map == null || map.getMap() == null || map.getMap().isEmpty()) {
+            MapService.generateBordersForPlayers();
+            map = MapService.getMap();
+            if (map == null || map.getMap() == null || map.getMap().isEmpty()) {
+                return null;
+            }
+        }
 
         int maxX = map.getMap().size() - 1;
         int maxY = map.getMap().get(0).size() - 1;
 
         switch (cornerIndex) {
-            case 0: // top-left
-                return map.getMap().get(0).get(0).getLocation();
-            case 1: // top-right
-                return map.getMap().get(0).get(maxY).getLocation();
-            case 2: // bottom-left
-                return map.getMap().get(maxX).get(0).getLocation();
-            case 3: // bottom-right
-                return map.getMap().get(maxX).get(maxY).getLocation();
-            default:
-                return map.getMap().get(0).get(0).getLocation();
+            case 0 -> { // bottom-left
+                // Search in 6x6 area at bottom-left
+                for (int x = 0; x < 6; x++) {
+                    for (int y = 0; y < 6; y++) {
+                        var field = map.getMap().get(x).get(y);
+                        if (field != null && field.getLocation() != null) {
+                            return field.getLocation();
+                        }
+                    }
+                }
+            }
+            case 1 -> { // bottom-right
+                // Search in 6x6 area at bottom-right
+                for (int x = maxX - 5; x <= maxX; x++) {
+                    for (int y = 0; y < 6; y++) {
+                        var field = map.getMap().get(x).get(y);
+                        if (field != null && field.getLocation() != null) {
+                            return field.getLocation();
+                        }
+                    }
+                }
+            }
+            case 2 -> { // top-left
+                // Search in 6x6 area at top-left
+                for (int x = 0; x < 6; x++) {
+                    for (int y = maxY - 5; y <= maxY; y++) {
+                        var field = map.getMap().get(x).get(y);
+                        if (field != null && field.getLocation() != null) {
+                            return field.getLocation();
+                        }
+                    }
+                }
+            }
+            case 3 -> { // top-right
+                // Search in 6x6 area at top-right
+                for (int x = maxX - 5; x <= maxX; x++) {
+                    for (int y = maxY - 5; y <= maxY; y++) {
+                        var field = map.getMap().get(x).get(y);
+                        if (field != null && field.getLocation() != null) {
+                            return field.getLocation();
+                        }
+                    }
+                }
+            }
         }
+        return null; // No valid location found in the specified corner
     }
-
-    // Find nearest location without an assigned station (or with an unowned
-    // station) to the base coordinates.
     private de.gts.redrail.game.models.entities.Location findNearestUnassignedLocation(int baseX, int baseY,
             Station exclude) {
         Map map = MapService.getMap();
@@ -430,7 +462,6 @@ public class SessionService {
             return false;
         }
 
-        // Remove player matching the given PlayerOverviewDto
         return sessionData.getSessionPlayers().removeIf(
                 player -> PlayerUtil.isPlayerMatching(player, playerWantToLeave));
     }
@@ -534,15 +565,17 @@ public class SessionService {
         if (map == null || map.getMap() == null || station == null)
             return;
 
+        // When buying a station (not initial assignment), set the masterUID to the player's UID
+        station.setMasterUID(player.getUId());
+
         for (var row : map.getMap()) {
             for (var field : row) {
                 var loc = field.getLocation();
                 if (loc != null) {
                     var assigned = loc.getStation();
                     if (assigned == null || assigned.getUId() == null || assigned.getUId().isEmpty()) {
-                        // assign
+                        // assign to location
                         loc.setStation(station);
-                        station.setMasterUID(player.getUId());
                         return;
                     }
                 }
