@@ -285,8 +285,6 @@ public class SessionService {
         Train train = new Train();
         rail.setUId(UUID.randomUUID().toString());
         rail.setLevel(1);
-        // Determine corner index for this player (0..3) based on current number of
-        // players
         int cornerIndex = sessionData.getSessionPlayers().size();
         de.gts.redrail.game.models.entities.Location cornerLoc = findLocationAtCorner(cornerIndex);
         Station station1 = null;
@@ -326,12 +324,14 @@ public class SessionService {
         }
 
     station1.setLevel(1);
+    station1.setMasterUid(newPlayer.getUId());
 
         if (station2.getUId() == null || station2.getUId().isEmpty()) {
             station2.setUId(UUID.randomUUID().toString());
         }
 
     station2.setLevel(1);
+    station2.setMasterUid(newPlayer.getUId());
         train.setUId(UUID.randomUUID().toString());
         train.setLevel(1);
         station1.setTrainCapacity(station1.getTrainCapacity() - 1);
