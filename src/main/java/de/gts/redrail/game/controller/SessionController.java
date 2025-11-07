@@ -28,7 +28,6 @@ import de.gts.redrail.game.models.entities.UpgradeRequirements;
 import de.gts.redrail.game.service.SessionService;
 import lombok.RequiredArgsConstructor;
 import de.gts.redrail.game.models.dtos.TrainDto;
-import org.springframework.web.bind.annotation.RequestParam;
 
 
 @RestController
