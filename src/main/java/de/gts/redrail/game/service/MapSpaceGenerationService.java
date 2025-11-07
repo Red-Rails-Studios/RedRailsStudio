@@ -36,9 +36,6 @@ public class MapSpaceGenerationService {
         return generated.get();
     }
 
-    /**
-     * Ensure that the map generation runs in background once. Returns immediately.
-     */
     public void ensureGeneratedAsync() {
         if (generated.compareAndSet(false, true)) {
             Thread t = new Thread(() -> {
