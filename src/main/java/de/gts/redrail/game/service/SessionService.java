@@ -274,19 +274,30 @@ public class SessionService {
             return false; 
         }
 
+        String assignedColor;
         switch (sessionData.getSessionPlayers().size()) {
-        case 0: 
-            playerWantToJoin.setColor(de.gts.redrail.game.constants.Color.RED);    
-            break;
-        case 1:
-            playerWantToJoin.setColor(de.gts.redrail.game.constants.Color.GREEN);
-            break;
-        case 2:
-            playerWantToJoin.setColor(de.gts.redrail.game.constants.Color.BLUE);
-            break;
-        case 3:
-            playerWantToJoin.setColor(de.gts.redrail.game.constants.Color.YELLOW);
-            break;
+            case 0: 
+                assignedColor = de.gts.redrail.game.constants.Color.RED;    
+                break;
+            case 1:
+                assignedColor = de.gts.redrail.game.constants.Color.GREEN;
+                break;
+            case 2:
+                assignedColor = de.gts.redrail.game.constants.Color.BLUE;
+                break;
+            case 3:
+                assignedColor = de.gts.redrail.game.constants.Color.YELLOW;
+                break;
+            default:
+                // Should not happen as we check for max 4 players above
+                return false;
+        }
+        
+        playerWantToJoin.setColor(assignedColor);
+        
+        // Verify the color was set
+        if (!de.gts.redrail.game.constants.Color.isValidColor(playerWantToJoin.getColor())) {
+            return false;
         }
 
         Player newPlayer = playerMapper.map(playerWantToJoin);
