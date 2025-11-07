@@ -431,17 +431,20 @@ public class SessionService {
                 if (loc == null)
                     continue;
                 Station s = loc.getStation();
-                // skip the explicitly excluded station
-                if (s != null && exclude != null && s.getUId() != null && exclude.getUId() != null
-                        && s.getUId().equals(exclude.getUId()))
-                    continue;
+                if (exclude != null) {
+                    if (s != null && s == exclude)
+                        continue;
+                    if (s != null && s.getUId() != null && exclude.getUId() != null
+                            && s.getUId().equals(exclude.getUId()))
+                        continue;
+                }
 
-                boolean available = (s == null) || (s.getUId() == null || s.getUId().isEmpty());
+                boolean available = (s == null) || (s.getMasterUid() == null || s.getMasterUid().isEmpty());
                 if (!available)
                     continue;
 
-                int lx = (loc.getX() == null) ? 0 : loc.getX().intValue();
-                int ly = (loc.getY() == null) ? 0 : loc.getY().intValue();
+                int lx = (loc.getX() == null) ? 0 : loc.getX();
+                int ly = (loc.getY() == null) ? 0 : loc.getY();
                 double dx = (double) lx - baseX;
                 double dy = (double) ly - baseY;
                 double dist = Math.sqrt(dx * dx + dy * dy);
@@ -451,6 +454,17 @@ public class SessionService {
                     best = loc;
                 }
             }
+        }
+
+        try {
+            if (best != null) {
+                Station bs = best.getStation();
+                String bsUid = (bs == null) ? "<none>" : (bs.getUId() == null ? "<no-uid>" : bs.getUId());
+                System.out.println("findNearestUnassignedLocation: chosen x=" + best.getX() + " y=" + best.getY() + " stationUid=" + bsUid);
+            } else {
+                System.out.println("findNearestUnassignedLocation: no candidate found");
+            }
+        } catch (Exception e) {
         }
 
         return best;

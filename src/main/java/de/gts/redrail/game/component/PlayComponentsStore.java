@@ -18,6 +18,7 @@ import static de.gts.redrail.game.constants.ResponseText.CANT_AFFORD_UPGRADE_PLA
 import static de.gts.redrail.game.constants.ResponseText.NOT_ENOUGH_EMPLOYEES;
 import static de.gts.redrail.game.constants.ResponseText.REQIUERMENT_NOT_MET;
 import de.gts.redrail.game.models.entities.ActionResult;
+import de.gts.redrail.game.models.entities.Map;
 import de.gts.redrail.game.models.entities.Player;
 import de.gts.redrail.game.models.entities.Rail;
 import de.gts.redrail.game.models.entities.Station;
@@ -26,7 +27,6 @@ import de.gts.redrail.game.utils.RailUtil;
 import de.gts.redrail.game.utils.StationUtil;
 import de.gts.redrail.game.utils.TrainUtil;
 import lombok.RequiredArgsConstructor;
-import de.gts.redrail.game.models.entities.Map;
 
 @Component
 @RequiredArgsConstructor
@@ -107,11 +107,11 @@ public class PlayComponentsStore {
                 if (loc == null)
                     continue;
 
-                // any location may host a station; select unassigned ones
-                // Map generation typically creates a blank Station object for each Location.
-                // Consider locations unassigned if station is null or station UID is blank.
-                if (loc.getStation() == null || loc.getStation().getUId() == null
-                        || loc.getStation().getUId().isEmpty()) {
+        // any location may host a station; select unassigned ones
+        // Map generation creates Station objects with UIds; consider a location
+        // unassigned if the station has no masterUid (no owner).
+        if (loc.getStation() == null || loc.getStation().getMasterUid() == null
+            || loc.getStation().getMasterUid().isEmpty()) {
                     candidates.add(loc);
                 } else {
                     // location already has a station assigned; if it's the player's station, add to
