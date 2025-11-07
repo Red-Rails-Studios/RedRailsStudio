@@ -558,15 +558,12 @@ public class SessionService {
         return result;
     }
 
-    // Finds a free (unassigned) location on the global map and attaches the station
-    // to it.
     private void assignStationToAnyLocation(Player player, Station station) {
         Map map = MapService.getMap();
         if (map == null || map.getMap() == null || station == null)
             return;
 
-        // When buying a station (not initial assignment), set the masterUID to the player's UID
-        station.setMasterUID(player.getUId());
+        station.setMasterUid(player.getUId());
 
         for (var row : map.getMap()) {
             for (var field : row) {
